@@ -1,0 +1,18 @@
+{
+  "npcs": [
+    {
+      "id": "villager1",
+      "name": "魔女",
+      "sprite": "npc_villager",
+      "position": { "x": 42, "y": 40 },
+      "dialogFile": "src/assets/dialog/npc1.json"
+    },
+    {
+      "id": "merchant",
+      "name": "商人",
+      "sprite": "npc_merchant",
+      "position": { "x": 50, "y": 35 },
+      "dialogFile": "src/assets/dialog/merchant.json"
+    }
+  ]
+}

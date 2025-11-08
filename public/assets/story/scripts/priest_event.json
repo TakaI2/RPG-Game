@@ -1,0 +1,72 @@
+{
+  "id": "priest_event",
+  "script": [
+    {
+      "op": "bg",
+      "name": "forest.png",
+      "x": 0,
+      "y": 0,
+      "scaleX": 1.0,
+      "scaleY": 1.0,
+      "fade": 500
+    },
+    {
+      "op": "say",
+      "name": "神父",
+      "portrait": "priest.png",
+      "portraitX": 960,
+      "portraitY": 540,
+      "portraitScale": 1.0,
+      "lines": [
+        "おや、若者よ。こんなところで何をしている？",
+        "このあたりには危険な魔物が徘徊しているのだ。"
+      ]
+    },
+    {
+      "op": "say",
+      "name": "主人公",
+      "lines": [
+        "神父様、実は記憶を失っていて...",
+        "気がついたらこの森にいたんです。"
+      ]
+    },
+    {
+      "op": "say",
+      "name": "神父",
+      "portrait": "priest.png",
+      "portraitX": 960,
+      "portraitY": 540,
+      "portraitScale": 1.0,
+      "lines": [
+        "なんと...それは大変だな。",
+        "だが、君には不思議な力を感じる。",
+        "きっと何か大きな運命に導かれているのだろう。"
+      ]
+    },
+    {
+      "op": "say",
+      "name": "神父",
+      "portrait": "priest.png",
+      "portraitX": 960,
+      "portraitY": 540,
+      "portraitScale": 1.0,
+      "lines": [
+        "この先に村がある。",
+        "まずはそこで情報を集めるといい。",
+        "気をつけて進むのだぞ。"
+      ]
+    },
+    {
+      "op": "say",
+      "name": "主人公",
+      "lines": [
+        "ありがとうございます、神父様。",
+        "気をつけて進みます。"
+      ]
+    },
+    {
+      "op": "end",
+      "returnTo": "game"
+    }
+  ]
+}

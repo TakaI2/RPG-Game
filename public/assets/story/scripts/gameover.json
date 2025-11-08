@@ -1,0 +1,62 @@
+{
+  "id": "gameover",
+  "script": [
+    {
+      "op": "bgm.play",
+      "name": "bgm1.ogg",
+      "loop": true,
+      "volume": 0.6,
+      "fade": 1000
+    },
+    {
+      "op": "bg",
+      "name": "bad2_1.png",
+      "fade": 500
+    },
+    {
+      "op": "say",
+      "name": "ナレーション",
+      "lines": [
+        "勇者は力尽きた..."
+      ]
+    },
+    {
+      "op": "say",
+      "name": "魔女",
+      "portrait": "witch.png",
+      "lines": [
+        "ふふふ...これが現実よ。",
+        "所詮、人間なんてこんなものね。"
+      ]
+    },
+    {
+      "op": "say",
+      "name": "魔女",
+      "portrait": "witch.png",
+      "lines": [
+        "この世界は私のもの。",
+        "永遠に闇に沈むのよ！"
+      ]
+    },
+    {
+      "op": "say",
+      "name": "ナレーション",
+      "lines": [
+        "世界は闇に飲み込まれていった...",
+        "しかし、まだ希望は失われていない。"
+      ]
+    },
+    {
+      "op": "say",
+      "name": "ナレーション",
+      "lines": [
+        "GAME OVER",
+        "もう一度挑戦しますか？"
+      ]
+    },
+    {
+      "op": "end",
+      "returnTo": "game"
+    }
+  ]
+}

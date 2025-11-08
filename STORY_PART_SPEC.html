@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>STORY_PART_SPEC - Phaser + TypeScript ストーリーパート設計仕様書</title>
+<style>
+  :root { --bg:#0f1115; --panel:#151822; --ink:#e7eaf0; --muted:#aab2c0; --accent:#66d9ef; --green:#a6e22e; --pink:#f92672; --orange:#fd971f; }
+  html,body{margin:0;padding:0;background:var(--bg);color:var(--ink);font-family:system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans JP", "Hiragino Kaku Gothic ProN", Meiryo, sans-serif; line-height:1.65;}
+  .wrap{max-width:1024px;margin:0 auto;padding:32px;}
+  h1,h2,h3{line-height:1.35;margin:1.2em 0 .6em}
+  h1{font-size:2.0rem}
+  h2{font-size:1.4rem;border-left:4px solid var(--accent);padding-left:.6rem}
+  h3{font-size:1.15rem;color:var(--accent)}
+  p{margin:.6em 0}
+  code,kbd{background:#0b0d12;border:1px solid #1b2030;padding:.1em .35em;border-radius:4px}
+  pre{background:#0b0d12;border:1px solid #1b2030;padding:12px;border-radius:8px;overflow:auto}
+  pre code{background:transparent;border:none;padding:0}
+  .panel{background:var(--panel);border:1px solid #202639;border-radius:12px;padding:16px;margin:16px 0}
+  table{width:100%;border-collapse:collapse;margin:12px 0;border:1px solid #22283a}
+  th,td{border:1px solid #22283a;padding:8px 10px;vertical-align:top}
+  th{background:#121521;color:#b7c4d8}
+  .muted{color:var(--muted)}
+  .mono{font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", "Courier New", monospace;}
+  .small{font-size:.92rem}
+  .footer{margin-top:32px;color:#9aa4b6;font-size:.9rem}
+  .tree{white-space:pre-wrap}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>STORY_PART_SPEC.md</h1>
+  <p class="muted">Phaser + Vite + TypeScript 向け <strong>ストーリーパート設計仕様書</strong></p>
+
+  <h2>1. 目的</h2>
+  <p>ゲーム内のストーリーパート（会話・演出パート）を導入し、以下の場面でストーリーパートとゲームパートを往復可能にする。</p>
+  <ul>
+    <li>ゲーム開始時（オープニング）</li>
+    <li>ステージクリア時（章間演出）</li>
+    <li>ゲームオーバー時（リトライ前演出）</li>
+  </ul>
+  <p>ストーリーパートでは背景・立ち絵・BGM・効果音を制御し、<kbd>Space</kbd> で会話を進行、選択肢で分岐を可能にする。</p>
+
+  <h2>2. 構成概要</h2>
+  <div class="panel tree mono small">
+src/
+ ├─ scenes/
+ │   ├─ MainScene.ts           // ゲームパート
+ │   └─ StoryScene.ts          // ストーリーパート
+ │
+ ├─ systems/
+ │   ├─ DialogUI.ts            // 既存 会話UI
+ │   ├─ StoryRunner.ts         // JSONスクリプト実行クラス
+ │   ├─ AudioBus.ts            // BGM/SE管理
+ │   ├─ Save.ts                // セーブデータ管理
+ │   └─ Events.ts              // scene間イベントEmitter
+ │
+ └─ assets/
+     └─ story/
+         ├─ scripts/
+         │   ├─ intro.json
+         │   ├─ gameclear.json
+         │   └─ gameover.json
+         ├─ bg/
+         │   ├─ forest.png
+         │   └─ town.png
+         ├─ portraits/
+         │   ├─ hero.png
+         │   └─ npc1.png
+         ├─ bgm/
+         │   ├─ prologue.ogg
+         │   └─ field.ogg
+         └─ se/
+             ├─ cursor.ogg
+             ├─ decide.ogg
+             └─ thunder.ogg
+  </div>
+
+  <h2>3. StoryScene の基本設計</h2>
+  <table>
+    <tr><th>要素</th><th>機能</th></tr>
+    <tr><td>背景表示</td><td>JSONで指定された背景をフェード表示</td></tr>
+    <tr><td>立ち絵</td><td><code>side: "left"|"right"</code> に応じて配置・切替</td></tr>
+    <tr><td>DialogUI</td><td>会話ウィンドウ、名前・セリフ表示、Spaceで進行</td></tr>
+    <tr><td>BGM/SE制御</td><td>JSONスクリプト命令により再生／停止／クロスフェード／ループ</td></tr>
+    <tr><td>分岐</td><td><code>choice</code> 命令による選択肢、<code>goto</code> 命令でラベルへ</td></tr>
+    <tr><td>条件分岐</td><td><code>if(cond, then[], else[])</code> 命令で変数に応じた分岐</td></tr>
+    <tr><td>変数管理</td><td>JSONの <code>vars</code> を StoryRunner が保持</td></tr>
+    <tr><td>セーブ／ロード</td><td><code>localStorage</code> に進行状況と変数を保存</td></tr>
+    <tr><td>復帰制御</td><td>ストーリー終了時にイベントで MainScene へ戻す</td></tr>
+  </table>
+
+  <h2>4. ストーリー JSON 仕様</h2>
+  <h3>基本構造</h3>
+  <pre><code class="mono">{
+  "id": "intro",
+  "assets": {
+    "bg": ["forest.png","town.png"],
+    "portraits": ["hero.png","npc1.png"],
+    "bgm": ["prologue.ogg","field.ogg"],
+    "se": ["cursor.ogg","decide.ogg","cancel.ogg"]
+  },
+  "vars": { "metNpc": false },
+  "script": [ ...命令列... ]
+}
+</code></pre>
+
+  <h3>命令一覧（script 内）</h3>
+  <table>
+    <tr><th>op</th><th>内容</th></tr>
+    <tr><td><code>"bg"</code></td><td>背景変更 <span class="mono">{ "name":"forest.png", "fade":250 }</span></td></tr>
+    <tr><td><code>"say"</code></td><td>セリフ表示 <span class="mono">{ "name":"主人公", "portrait":"hero.png", "side":"left", "lines":["こんにちは"] }</span></td></tr>
+    <tr><td><code>"choice"</code></td><td>選択肢 <span class="mono">{ "prompt":"どうする？", "items":[{ "label":"聞く", "goto":"@ask" }] }</span></td></tr>
+    <tr><td><code>"label"</code></td><td>ラベル定義 <span class="mono">{ "name":"@ask" }</span></td></tr>
+    <tr><td><code>"goto"</code></td><td>ジャンプ <span class="mono">{ "name":"@after" }</span></td></tr>
+    <tr><td><code>"set"</code></td><td>変数代入 <span class="mono">{ "name":"metNpc", "value": true }</span></td></tr>
+    <tr><td><code>"if"</code></td><td>条件分岐 <span class="mono">{ "cond":"metNpc==true", "then":[...], "else":[...] }</span></td></tr>
+    <tr><td><code>"bgm.play"</code></td><td>BGM再生 <span class="mono">{ "name":"prologue.ogg", "loop":true, "fade":300 }</span></td></tr>
+    <tr><td><code>"bgm.stop"</code></td><td>BGM停止 <span class="mono">{ "fade":300 }</span></td></tr>
+    <tr><td><code>"bgm.cross"</code></td><td>クロスフェード <span class="mono">{ "from":"prologue.ogg", "to":"field.ogg", "time":800, "loop":true }</span></td></tr>
+    <tr><td><code>"se"</code></td><td>効果音再生 <span class="mono">{ "name":"cursor.ogg" }</span></td></tr>
+    <tr><td><code>"end"</code></td><td>ストーリー終了 <span class="mono">{ "returnTo":"game" }</span></td></tr>
+  </table>
+
+  <h2>5. StoryRunner.ts の役割</h2>
+  <table>
+    <tr><th>機能</th><th>説明</th></tr>
+    <tr><td>命令の逐次実行</td><td>JSON <code>script</code> の <code>op</code> を順に処理</td></tr>
+    <tr><td>非同期停止</td><td><code>say</code> と <code>choice</code> は Space／選択完了まで一時停止</td></tr>
+    <tr><td>ラベルジャンプ</td><td><code>goto(name)</code> で任意の位置に移動</td></tr>
+    <tr><td>条件挿入</td><td><code>if(cond)</code> で then/else を挿入して実行</td></tr>
+    <tr><td>音管理</td><td><code>AudioBus</code> 経由で BGM/SE 命令を制御</td></tr>
+    <tr><td>状態保持</td><td><code>pc</code>（実行位置）と <code>vars</code>（変数群）を保存し再開可能</td></tr>
+  </table>
+
+  <h2>6. AudioBus.ts の役割</h2>
+  <table>
+    <tr><th>メソッド</th><th>機能</th></tr>
+    <tr><td><code>playBgm(key,opt)</code></td><td>指定BGMを再生（loop/volume/fade可）</td></tr>
+    <tr><td><code>stopBgm(opt)</code></td><td>現在のBGMをフェード停止</td></tr>
+    <tr><td><code>cross(from,to,time,loop)</code></td><td>クロスフェードで曲変更</td></tr>
+    <tr><td><code>se(key)</code></td><td>効果音を一回再生</td></tr>
+  </table>
+
+  <h2>7. Save.ts の仕様</h2>
+  <p>保存データ構造:</p>
+  <pre><code class="mono">{
+  id: string,        // ストーリーID
+  pc: number,        // 実行位置
+  vars: object,      // 変数群
+  bgm?: { key:string; time:number; volume:number }
+}
+</code></pre>
+  <p>操作関数:</p>
+  <pre><code class="mono">Save.write("auto", data)
+Save.read("auto")
+Save.clear("auto")
+</code></pre>
+
+  <h2>8. ゲームシーン間遷移</h2>
+  <h3>MainScene 側（例）</h3>
+  <pre><code class="mono">// ゲーム開始時
+this.scene.launch('StoryScene', { id: 'intro' })
+this.scene.pause()
+
+events.once('story:end', ({ id }) => {
+  this.scene.resume()
+})</code></pre>
+
+  <h3>StoryScene 側（例）</h3>
+  <pre><code class="mono">events.emit('story:end', { id: this.script.id })
+this.scene.stop()</code></pre>
+
+  <h2>9. 操作仕様</h2>
+  <table>
+    <tr><th>操作</th><th>動作</th></tr>
+    <tr><td><kbd>Space</kbd></td><td>セリフ進行・タイプスキップ</td></tr>
+    <tr><td><kbd>↑/↓</kbd></td><td>選択肢カーソル移動</td></tr>
+    <tr><td><kbd>Enter</kbd></td><td>選択肢決定</td></tr>
+    <tr><td><kbd>S</kbd></td><td>クイックセーブ（任意実装）</td></tr>
+    <tr><td><kbd>L</kbd></td><td>クイックロード（任意実装）</td></tr>
+  </table>
+
+  <h2>10. 実装ステップ</h2>
+  <ol>
+    <li><code>StoryScene.ts</code>（最小版）を導入</li>
+    <li><code>AudioBus.ts</code> と <code>StoryRunner.ts</code> を <code>systems/</code> に追加</li>
+    <li>JSON スクリプトを <code>assets/story/scripts</code> に配置</li>
+    <li><code>MainScene</code> から <code>this.scene.launch('StoryScene',{id:'intro'})</code> で呼び出し</li>
+    <li>BGM・効果音・背景を JSON に合わせて読み込み</li>
+    <li>必要に応じて <code>Save</code> を有効化</li>
+  </ol>
+
+  <h2>11. 今後の拡張予定</h2>
+  <ul>
+    <li>分岐の深度管理：選択結果をグローバルフラグに反映し、他ストーリーへ引継ぎ</li>
+    <li>シーン間セーブ連携：MainScene ⇄ StoryScene 間で変数を共有</li>
+    <li>自動送り・スキップモード</li>
+    <li>演出命令拡張：<code>shake</code> / <code>flash</code> / <code>wait</code> / <code>camera.fade</code> 等</li>
+  </ul>
+
+  <div class="footer">
+    <p><strong>Author:</strong> Ito Takayuki &nbsp;|&nbsp; <strong>Project:</strong> Phaser Vite Adventure Game &nbsp;|&nbsp; <strong>Version:</strong> 1.0 (Story System Spec) &nbsp;|&nbsp; <strong>Last Updated:</strong> 2025-10-31</p>
+  </div>
+</div>
+</body>
+</html>

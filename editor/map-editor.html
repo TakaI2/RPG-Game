@@ -1,0 +1,445 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RPG Map Editor</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #1a1a1a;
+            color: #ffffff;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        h1 {
+            margin-bottom: 20px;
+            color: #4a9eff;
+        }
+
+        .controls {
+            background: #2a2a2a;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+
+        .control-group {
+            margin-bottom: 15px;
+        }
+
+        .control-group label {
+            display: inline-block;
+            width: 120px;
+            margin-right: 10px;
+        }
+
+        .control-group input, .control-group select {
+            padding: 5px 10px;
+            border: 1px solid #444;
+            background: #333;
+            color: #fff;
+            border-radius: 4px;
+        }
+
+        .control-group button {
+            padding: 8px 16px;
+            margin-right: 10px;
+            background: #4a9eff;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        .control-group button:hover {
+            background: #3a7ed0;
+        }
+
+        .control-group button.secondary {
+            background: #666;
+        }
+
+        .control-group button.secondary:hover {
+            background: #555;
+        }
+
+        .tile-palette {
+            background: #2a2a2a;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+
+        .tile-palette h2 {
+            margin-bottom: 15px;
+            font-size: 18px;
+        }
+
+        .tile-options {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .tile-option {
+            width: 64px;
+            height: 64px;
+            border: 3px solid transparent;
+            cursor: pointer;
+            border-radius: 4px;
+            transition: all 0.2s;
+        }
+
+        .tile-option:hover {
+            transform: scale(1.1);
+        }
+
+        .tile-option.selected {
+            border-color: #4a9eff;
+            box-shadow: 0 0 10px #4a9eff;
+        }
+
+        .tile-option.floor {
+            background: #143d2a;
+        }
+
+        .tile-option.wall {
+            background: #3a3a4a;
+            border: 2px solid #2a2a36;
+        }
+
+        .tile-option.spawn {
+            background: #ff4444;
+        }
+
+        .canvas-container {
+            background: #2a2a2a;
+            padding: 20px;
+            border-radius: 8px;
+            overflow: auto;
+            max-height: 70vh;
+        }
+
+        canvas {
+            border: 2px solid #444;
+            display: block;
+            image-rendering: pixelated;
+            cursor: crosshair;
+        }
+
+        .info {
+            margin-top: 10px;
+            color: #aaa;
+            font-size: 14px;
+        }
+
+        .label-text {
+            display: inline-block;
+            margin-left: 10px;
+            color: #aaa;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>RPG Map Editor</h1>
+
+        <div class="controls">
+            <div class="control-group">
+                <label>マップ幅 (cols):</label>
+                <input type="number" id="cols" value="80" min="10" max="200">
+                <span class="label-text">タイル数</span>
+            </div>
+            <div class="control-group">
+                <label>マップ高さ (rows):</label>
+                <input type="number" id="rows" value="80" min="10" max="200">
+                <span class="label-text">タイル数</span>
+            </div>
+            <div class="control-group">
+                <label>タイルサイズ:</label>
+                <input type="number" id="tileSize" value="64" min="16" max="128" disabled>
+                <span class="label-text">px (固定)</span>
+            </div>
+            <div class="control-group">
+                <button onclick="createNewMap()">新規マップ作成</button>
+                <button onclick="clearMap()" class="secondary">マップをクリア</button>
+            </div>
+            <div class="control-group">
+                <button onclick="exportMap()">JSONエクスポート</button>
+                <button onclick="document.getElementById('fileInput').click()" class="secondary">JSONインポート</button>
+                <input type="file" id="fileInput" accept=".json" style="display: none;" onchange="importMap(event)">
+            </div>
+        </div>
+
+        <div class="tile-palette">
+            <h2>タイルパレット</h2>
+            <div class="tile-options">
+                <div class="tile-option floor selected" data-tile="0" title="床 (0)">
+                    <div style="text-align: center; line-height: 64px; font-weight: bold;">床</div>
+                </div>
+                <div class="tile-option wall" data-tile="1" title="壁 (1)">
+                    <div style="text-align: center; line-height: 64px; font-weight: bold;">壁</div>
+                </div>
+                <div class="tile-option spawn" data-tile="spawn" title="敵スポーン">
+                    <div style="text-align: center; line-height: 64px; font-weight: bold;">敵</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="canvas-container">
+            <canvas id="mapCanvas"></canvas>
+            <div class="info">
+                左クリック: タイル配置 | ドラッグ: 連続配置 | 右クリック: 削除 | マウス位置: <span id="mousePos">-</span>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const TILE_SIZE = 64;
+        let canvas, ctx;
+        let cols = 80;
+        let rows = 80;
+        let mapData = [];
+        let enemySpawns = [];
+        let selectedTile = 0;
+        let isDrawing = false;
+
+        // 初期化
+        window.onload = function() {
+            canvas = document.getElementById('mapCanvas');
+            ctx = canvas.getContext('2d');
+
+            // タイル選択
+            document.querySelectorAll('.tile-option').forEach(option => {
+                option.addEventListener('click', function() {
+                    document.querySelectorAll('.tile-option').forEach(o => o.classList.remove('selected'));
+                    this.classList.add('selected');
+                    const tileValue = this.getAttribute('data-tile');
+                    selectedTile = tileValue === 'spawn' ? 'spawn' : parseInt(tileValue);
+                });
+            });
+
+            // キャンバスイベント
+            canvas.addEventListener('mousedown', handleMouseDown);
+            canvas.addEventListener('mousemove', handleMouseMove);
+            canvas.addEventListener('mouseup', handleMouseUp);
+            canvas.addEventListener('mouseleave', handleMouseUp);
+            canvas.addEventListener('contextmenu', (e) => e.preventDefault());
+
+            createNewMap();
+        };
+
+        function createNewMap() {
+            cols = parseInt(document.getElementById('cols').value);
+            rows = parseInt(document.getElementById('rows').value);
+
+            // マップデータを初期化（全て床=0）
+            mapData = Array(rows).fill(null).map(() => Array(cols).fill(0));
+            enemySpawns = [];
+
+            // キャンバスサイズ設定
+            canvas.width = cols * TILE_SIZE;
+            canvas.height = rows * TILE_SIZE;
+
+            drawMap();
+        }
+
+        function clearMap() {
+            if (confirm('マップをクリアしますか？')) {
+                mapData = Array(rows).fill(null).map(() => Array(cols).fill(0));
+                enemySpawns = [];
+                drawMap();
+            }
+        }
+
+        function drawMap() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            // タイルを描画
+            for (let y = 0; y < rows; y++) {
+                for (let x = 0; x < cols; x++) {
+                    const tile = mapData[y][x];
+                    drawTile(x, y, tile);
+                }
+            }
+
+            // 敵スポーンを描画
+            enemySpawns.forEach(spawn => {
+                drawSpawn(spawn.x, spawn.y);
+            });
+
+            // グリッド線を描画
+            drawGrid();
+        }
+
+        function drawTile(x, y, type) {
+            const px = x * TILE_SIZE;
+            const py = y * TILE_SIZE;
+
+            if (type === 0) {
+                // 床
+                ctx.fillStyle = '#143d2a';
+                ctx.fillRect(px, py, TILE_SIZE, TILE_SIZE);
+            } else if (type === 1) {
+                // 壁
+                ctx.fillStyle = '#3a3a4a';
+                ctx.fillRect(px, py, TILE_SIZE, TILE_SIZE);
+                ctx.strokeStyle = '#2a2a36';
+                ctx.lineWidth = 2;
+                ctx.strokeRect(px + 1, py + 1, TILE_SIZE - 2, TILE_SIZE - 2);
+            }
+        }
+
+        function drawSpawn(x, y) {
+            const px = x * TILE_SIZE + TILE_SIZE / 2;
+            const py = y * TILE_SIZE + TILE_SIZE / 2;
+
+            ctx.fillStyle = '#ff4444';
+            ctx.beginPath();
+            ctx.arc(px, py, TILE_SIZE / 3, 0, Math.PI * 2);
+            ctx.fill();
+
+            // 目印のテキスト
+            ctx.fillStyle = '#ffffff';
+            ctx.font = 'bold 16px sans-serif';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillText('敵', px, py);
+        }
+
+        function drawGrid() {
+            ctx.strokeStyle = '#ffffff10';
+            ctx.lineWidth = 1;
+
+            // 縦線
+            for (let x = 0; x <= cols; x++) {
+                ctx.beginPath();
+                ctx.moveTo(x * TILE_SIZE, 0);
+                ctx.lineTo(x * TILE_SIZE, canvas.height);
+                ctx.stroke();
+            }
+
+            // 横線
+            for (let y = 0; y <= rows; y++) {
+                ctx.beginPath();
+                ctx.moveTo(0, y * TILE_SIZE);
+                ctx.lineTo(canvas.width, y * TILE_SIZE);
+                ctx.stroke();
+            }
+        }
+
+        function handleMouseDown(e) {
+            isDrawing = true;
+            placeTile(e);
+        }
+
+        function handleMouseMove(e) {
+            // マウス位置を表示
+            const rect = canvas.getBoundingClientRect();
+            const x = Math.floor((e.clientX - rect.left) / TILE_SIZE);
+            const y = Math.floor((e.clientY - rect.top) / TILE_SIZE);
+            document.getElementById('mousePos').textContent = `(${x}, ${y})`;
+
+            if (isDrawing) {
+                placeTile(e);
+            }
+        }
+
+        function handleMouseUp(e) {
+            isDrawing = false;
+        }
+
+        function placeTile(e) {
+            const rect = canvas.getBoundingClientRect();
+            const x = Math.floor((e.clientX - rect.left) / TILE_SIZE);
+            const y = Math.floor((e.clientY - rect.top) / TILE_SIZE);
+
+            if (x < 0 || x >= cols || y < 0 || y >= rows) return;
+
+            if (e.button === 2) {
+                // 右クリック - 削除
+                mapData[y][x] = 0;
+                // スポーン地点も削除
+                enemySpawns = enemySpawns.filter(s => !(s.x === x && s.y === y));
+            } else {
+                // 左クリック - 配置
+                if (selectedTile === 'spawn') {
+                    // スポーン地点を追加（重複チェック）
+                    const exists = enemySpawns.some(s => s.x === x && s.y === y);
+                    if (!exists) {
+                        enemySpawns.push({ x, y });
+                    }
+                } else {
+                    mapData[y][x] = selectedTile;
+                }
+            }
+
+            drawMap();
+        }
+
+        function exportMap() {
+            const mapJSON = {
+                cols: cols,
+                rows: rows,
+                tiles: mapData,
+                enemySpawns: enemySpawns
+            };
+
+            const jsonStr = JSON.stringify(mapJSON, null, 2);
+            const blob = new Blob([jsonStr], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'map.json';
+            a.click();
+
+            URL.revokeObjectURL(url);
+
+            alert('マップをエクスポートしました！');
+        }
+
+        function importMap(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const mapJSON = JSON.parse(e.target.result);
+
+                    cols = mapJSON.cols;
+                    rows = mapJSON.rows;
+                    mapData = mapJSON.tiles;
+                    enemySpawns = mapJSON.enemySpawns || [];
+
+                    document.getElementById('cols').value = cols;
+                    document.getElementById('rows').value = rows;
+
+                    canvas.width = cols * TILE_SIZE;
+                    canvas.height = rows * TILE_SIZE;
+
+                    drawMap();
+                    alert('マップをインポートしました！');
+                } catch (err) {
+                    alert('JSONファイルの読み込みに失敗しました: ' + err.message);
+                }
+            };
+            reader.readAsText(file);
+        }
+    </script>
+</body>
+</html>

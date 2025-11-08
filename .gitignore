@@ -1,0 +1,49 @@
+# Dependencies
+node_modules/
+
+# Build output
+dist/
+*.tsbuildinfo
+
+# TypeScript compiled files
+src/**/*.js
+src/**/*.js.map
+
+# Temporary files
+.tmp/
+
+# Heavy asset files (excluded from git)
+# Story assets (backgrounds, portraits, audio)
+public/assets/story/bg/
+public/assets/story/portraits/
+public/assets/story/bgm/
+public/assets/story/se/
+
+# OS files
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Environment variables
+.env
+.env.local
+.env.*.local
+
+# Error reference (temporary debug file)
+error_reference.txt
+
+# GitHub URL reference (temporary)
+github.txt
