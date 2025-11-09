@@ -56,6 +56,9 @@ export default class LoadingScene extends Phaser.Scene {
     // NPC設定JSON
     this.load.json('npc_config', 'assets/npcs/npcs.json')
 
+    // ボス設定JSON
+    this.load.json('volg_boss', 'assets/bosses/volg_boss.json')
+
     // NPCダイアログファイル
     this.load.json('dialog_npc1', 'assets/dialog/npc1.json')
     this.load.json('dialog_merchant', 'assets/dialog/merchant.json')

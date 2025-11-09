@@ -1,0 +1,146 @@
+{
+  "id": "volg",
+  "name": "魔獣ヴォルグ",
+  "stats": {
+    "hp": 25,
+    "speed": 80,
+    "scale": 4,
+    "damage": 1
+  },
+  "sprite": {
+    "key": "brute",
+    "tint": "0xff6666"
+  },
+  "cutin": {
+    "image": "boss_face",
+    "position": "right"
+  },
+  "phases": [
+    {
+      "phase": 1,
+      "hpRange": [13, 25],
+      "attackCooldown": 1.0,
+      "patterns": ["radial", "circle", "teleport_dash"]
+    },
+    {
+      "phase": 2,
+      "hpRange": [0, 12],
+      "attackCooldown": 0.66,
+      "patterns": ["radial", "circle", "teleport_dash", "ultimate"]
+    }
+  ],
+  "attacks": [
+    {
+      "id": "radial",
+      "name": "放射攻撃",
+      "type": "projectile_radial",
+      "config": {
+        "windupDuration": 1000,
+        "windupEffect": "blink_red",
+        "projectileCount": 8,
+        "projectileType": "arrow",
+        "projectileSpeed": 250,
+        "damage": 1,
+        "angleOffset": 0
+      },
+      "se": {
+        "windup": null,
+        "fire": "boss_radial"
+      },
+      "speech": null
+    },
+    {
+      "id": "circle",
+      "name": "円形配置",
+      "type": "projectile_circle",
+      "config": {
+        "projectileCount": 12,
+        "projectileType": "orb",
+        "radius": 120,
+        "waitDuration": 1500,
+        "projectileSpeed": 150,
+        "damage": 1,
+        "tint": "0x00ffff"
+      },
+      "se": {
+        "setup": "boss_circle_setup",
+        "fire": "boss_circle_fire"
+      },
+      "speech": null
+    },
+    {
+      "id": "teleport_dash",
+      "name": "テレポート突進",
+      "type": "teleport_dash",
+      "config": {
+        "fadeOutDuration": 500,
+        "fadeInDuration": 500,
+        "teleportDistance": 300,
+        "windupDuration": 500,
+        "dashSpeed": 400,
+        "dashDuration": 1000,
+        "damage": 2
+      },
+      "se": {
+        "teleport": "boss_teleport",
+        "dash": "boss_dash"
+      },
+      "speech": null
+    },
+    {
+      "id": "ultimate",
+      "name": "混沌の渦",
+      "type": "ultimate",
+      "config": {
+        "projectileCount": 20,
+        "projectileType": "orb",
+        "spiralAngleStep": 18,
+        "spiralRadiusStep": 10,
+        "spiralRadiusStart": 100,
+        "spawnInterval": 50,
+        "projectileSpeed": 200,
+        "damage": 2,
+        "tint": "0xff00ff"
+      },
+      "se": {
+        "ultimate": "boss_ultimate"
+      },
+      "cutin": {
+        "enabled": true,
+        "skillName": "混沌の渦",
+        "duration": 2500
+      },
+      "speech": {
+        "text": "混沌に飲まれろ！",
+        "duration": 1500,
+        "color": "#ff6666"
+      },
+      "cameraEffects": {
+        "darken": {
+          "enabled": true,
+          "alpha": 0.7,
+          "duration": 300
+        },
+        "flash": {
+          "enabled": true,
+          "duration": 200,
+          "color": [255, 100, 100]
+        }
+      },
+      "bgmControl": {
+        "volumeDown": 0.3,
+        "duration": 2000
+      }
+    }
+  ],
+  "speeches": {
+    "intro": "我が名はヴォルグ...貴様を滅ぼす者だ",
+    "phase2": "フハハハ！まだまだだ！",
+    "lowHp": "ぐぬぬ...小癪な！",
+    "defeat": "バカな...この私が..."
+  },
+  "se": {
+    "damage": "boss_damage",
+    "defeat": "boss_defeat"
+  }
+}

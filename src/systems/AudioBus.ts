@@ -128,6 +128,53 @@ export class AudioBus {
   }
 
   /**
+   * SE再生（詳細設定版）
+   * @param key アセットキー
+   * @param options ボリューム・ピッチ設定
+   */
+  playSe(key: string, options?: { volume?: number; rate?: number }) {
+    if (!this.scene.cache.audio.exists(key)) {
+      console.warn(`[AudioBus] SE not found: ${key}`)
+      return
+    }
+
+    const volume = options?.volume ?? 1.0
+    const rate = options?.rate ?? 1.0
+
+    const se = this.scene.sound.add(key, { volume })
+    se.setRate(rate)
+    se.play()
+
+    // 再生終了後に自動削除
+    se.once('complete', () => {
+      se.destroy()
+    })
+
+    console.log(`[AudioBus] SE played: ${key} (volume: ${volume}, rate: ${rate})`)
+  }
+
+  /**
+   * BGM音量設定
+   * @param volume 音量（0.0-1.0）
+   */
+  setVolume(volume: number) {
+    if (this.currentBgm && 'setVolume' in this.currentBgm) {
+      (this.currentBgm as Phaser.Sound.WebAudioSound | Phaser.Sound.HTML5AudioSound).setVolume(volume)
+      console.log(`[AudioBus] BGM volume set to ${volume}`)
+    }
+  }
+
+  /**
+   * 現在のBGM音量を取得
+   */
+  getVolume(): number {
+    if (this.currentBgm && 'volume' in this.currentBgm) {
+      return (this.currentBgm as Phaser.Sound.WebAudioSound | Phaser.Sound.HTML5AudioSound).volume
+    }
+    return 0
+  }
+
+  /**
    * クリーンアップ
    */
   destroy() {

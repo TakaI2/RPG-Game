@@ -144,3 +144,78 @@ export function updateHomingOrbs(scene: Phaser.Scene) {
     if (!list[i] || !list[i].active) list.splice(i, 1)
   }
 }
+
+/**
+ * 矢を角度指定で発射（ボス用）
+ */
+export function fireArrowAngle(
+  scene: Phaser.Scene,
+  projectiles: Phaser.Physics.Arcade.Group,
+  x: number,
+  y: number,
+  angle: number,
+  speed = 420
+): Projectile {
+  const proj = projectiles.create(x, y, 'arrow') as Projectile
+
+  const vx = Math.cos(angle) * speed
+  const vy = Math.sin(angle) * speed
+  proj.setVelocity(vx, vy)
+  proj.damage = 1
+  proj.bornAt = scene.time.now
+  proj.life = 2500
+
+  // 矢の向きを設定
+  proj.setRotation(angle)
+  proj.setSize(32, 16)
+  proj.setOffset(16, 24)
+
+  // 寿命で自動消滅
+  scene.time.delayedCall(proj.life, () => {
+    if (proj.active) proj.destroy()
+  })
+
+  return proj
+}
+
+/**
+ * 誘導魔法弾を座標指定で発射（ボス用）
+ */
+export function fireOrbAt(
+  scene: Phaser.Scene,
+  projectiles: Phaser.Physics.Arcade.Group,
+  x: number,
+  y: number,
+  target: Phaser.GameObjects.Sprite,
+  speed = 220
+): HomingOrb {
+  const orb = projectiles.create(x, y, 'orb') as HomingOrb
+
+  orb.target = target
+  orb.speed = speed
+  orb.turnRate = 6.0
+  orb.bornAt = scene.time.now
+  orb.life = 3000
+  orb.damage = 1
+
+  // 初期速度をターゲット方向に設定
+  const dir = new Phaser.Math.Vector2(target.x - x, target.y - y).normalize()
+  orb.setVelocity(dir.x * speed, dir.y * speed)
+
+  // グロー効果
+  orb.setBlendMode(Phaser.BlendModes.ADD)
+  orb.setScale(0.8)
+
+  // 寿命で自動消滅
+  scene.time.delayedCall(orb.life, () => {
+    if (orb.active) orb.destroy()
+  })
+
+  // シーンの誘導弾リストに追加
+  if (!(scene as any).homingOrbs) {
+    (scene as any).homingOrbs = []
+  }
+  (scene as any).homingOrbs.push(orb)
+
+  return orb
+}

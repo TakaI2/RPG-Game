@@ -26,6 +26,12 @@ import { NPCManager } from '../systems/NPCManager'
 import { updateHomingOrbs, Projectile } from '../systems/Projectile'
 import { events } from '../systems/Events'
 import { EventTriggerManager, EventTrigger, TriggerResult } from '../systems/EventTriggerManager'
+import { Boss } from '../types/BossTypes'
+import { makeBoss, updateBossAI } from '../systems/BossAI'
+import { AudioBus } from '../systems/AudioBus'
+import { BossHpUI } from '../systems/BossHpUI'
+import { BossSpeechBubble } from '../systems/BossSpeechBubble'
+import { CutinSystem } from '../systems/CutinSystem'
 
 export default class MainScene extends Phaser.Scene {
   private cursors!: Phaser.Types.Input.Keyboard.CursorKeys
@@ -50,6 +56,13 @@ export default class MainScene extends Phaser.Scene {
   private currentMapId: string = 'demo_map' // 現在のマップID
   private currentMapData: Record<string, unknown> | null = null // 現在のマップデータ
   private colliders: Phaser.Physics.Arcade.Collider[] = [] // 衝突判定の配列
+
+  // ボス関連
+  private boss: Boss | null = null
+  private audioBus!: AudioBus
+  private bossHpUI: BossHpUI | null = null
+  private bossSpeechBubble!: BossSpeechBubble
+  private cutinSystem!: CutinSystem
 
   constructor() { super('MainScene') }
 
@@ -79,6 +92,14 @@ export default class MainScene extends Phaser.Scene {
     this.player.setCollideWorldBounds(true)
     this.player.setDepth(10) // プレイヤーを前面に表示
     this.player.play('hero-walk-down') // 初期アニメ
+
+    // 飛び道具グループ初期化
+    this.projectiles = this.physics.add.group()
+
+    // ボスシステム初期化
+    this.audioBus = new AudioBus(this)
+    this.bossSpeechBubble = new BossSpeechBubble(this)
+    this.cutinSystem = new CutinSystem(this)
 
     // DialogUI初期化
     this.ui = new DialogUI(this)
@@ -192,7 +213,7 @@ export default class MainScene extends Phaser.Scene {
     this.updateHPDisplay()
   }
 
-  update() {
+  update(time: number, delta: number) {
     // ゲームオーバー時は処理を停止
     if (this.isGameOver) {
       this.player.setVelocity(0)
@@ -208,6 +229,26 @@ export default class MainScene extends Phaser.Scene {
     } else {
       if (this.player.anims.currentAnim && !this.isAttacking) {
         this.player.anims.resume()
+      }
+    }
+
+    // ボスAI更新
+    if (this.boss && this.boss.state !== 'defeated') {
+      updateBossAI(
+        this,
+        this.boss,
+        this.player,
+        this.projectiles!,
+        this.audioBus,
+        this.cutinSystem,
+        this.bossSpeechBubble,
+        time,
+        delta
+      )
+
+      // ボスHP表示を更新
+      if (this.bossHpUI) {
+        this.bossHpUI.update(this.boss.hp, this.boss.maxHp, this.boss.phase)
       }
     }
 
@@ -722,9 +763,6 @@ export default class MainScene extends Phaser.Scene {
 
     this.archers.forEach(archer => {
       if (archer) {
-        if (archer.arrows) {
-          archer.arrows.clear(true, true)
-        }
         archer.destroy()
       }
     })
@@ -732,9 +770,6 @@ export default class MainScene extends Phaser.Scene {
 
     this.mages.forEach(mage => {
       if (mage) {
-        if (mage.orbs) {
-          mage.orbs.clear(true, true)
-        }
         mage.destroy()
       }
     })
@@ -746,6 +781,17 @@ export default class MainScene extends Phaser.Scene {
       }
     })
     this.brutes = []
+
+    // ボスとUIを破棄
+    if (this.boss) {
+      this.boss.destroy()
+      this.boss = null
+    }
+
+    if (this.bossHpUI) {
+      this.bossHpUI.destroy()
+      this.bossHpUI = null
+    }
 
     // 飛び道具を破棄
     if (this.projectiles) {
@@ -814,6 +860,11 @@ export default class MainScene extends Phaser.Scene {
     const playerWallCollider = this.physics.add.collider(this.player, this.walls)
     this.colliders.push(playerWallCollider)
 
+    // ボス生成（boss_mapの場合のみ）
+    if (mapId === 'boss_map') {
+      this.spawnBoss()
+    }
+
     // 敵とイベントトリガーを初期化
     this.initializeEnemiesAndTriggers(mapData)
 
@@ -823,5 +874,134 @@ export default class MainScene extends Phaser.Scene {
     this.colliders.push(...npcColliders)
 
     console.log(`[MainScene] Map loaded: ${mapId}`)
+  }
+
+  /**
+   * ボス生成
+   */
+  private spawnBoss() {
+    console.log('[MainScene] Spawning boss...')
+
+    // ボス生成（マップ中央に配置）
+    const bossX = 25 * TILE
+    const bossY = 25 * TILE
+    this.boss = makeBoss(this, bossX, bossY, 'volg_boss')
+
+    // ボスと壁の衝突判定
+    const bossWallCollider = this.physics.add.collider(this.boss, this.walls)
+    this.colliders.push(bossWallCollider)
+
+    // ボスとプレイヤーの被ダメージ処理
+    this.setupBossHit()
+
+    // ボスHP UI表示
+    this.bossHpUI = new BossHpUI(this, this.boss.name)
+    this.bossHpUI.show()
+    this.bossHpUI.update(this.boss.hp, this.boss.maxHp, this.boss.phase)
+
+    console.log(`[MainScene] Boss spawned: ${this.boss.name}`)
+  }
+
+  /**
+   * ボスとの攻撃判定を設定
+   */
+  private setupBossHit() {
+    if (!this.boss) return
+
+    // プレイヤー→ボスへの攻撃判定
+    const playerAttackCollider = this.physics.add.overlap(this.hitbox, this.boss, () => {
+      if (!this.boss || !this.boss.active) return
+
+      if (!this.boss.getData('hitCool')) {
+        // ダメージ処理
+        this.boss.hp -= 1
+        this.boss.setTint(0xffffaa)
+        this.boss.setData('hitCool', true)
+
+        // SE再生
+        if (this.boss.config.se.damage) {
+          this.audioBus.playSe(this.boss.config.se.damage, { volume: 0.7 })
+        }
+
+        this.time.delayedCall(120, () => {
+          if (this.boss) this.boss.clearTint()
+        })
+        this.time.delayedCall(250, () => {
+          if (this.boss) this.boss.setData('hitCool', false)
+        })
+
+        // HP0で撃破
+        if (this.boss.hp <= 0) {
+          this.defeatBoss()
+        }
+      }
+    })
+    this.colliders.push(playerAttackCollider)
+
+    // ボス→プレイヤーへの接触ダメージ（突進中）
+    const bossContactCollider = this.physics.add.overlap(this.player, this.boss, () => {
+      if (!this.boss || !this.boss.active) return
+
+      const dashDamage = this.boss.getData('dashDamage') || 0
+      if (dashDamage > 0 && !this.player.getData('hitCool') && !this.isGameOver) {
+        const oldHP = (this.player as any).hp
+        ;(this.player as any).hp = Math.max(0, oldHP - dashDamage)
+
+        console.log(`Player hit by boss dash! HP: ${oldHP} -> ${(this.player as any).hp}`)
+
+        this.updateHPDisplay()
+        this.player.setTint(0xffaaaa)
+        this.player.setData('hitCool', true)
+        this.time.delayedCall(120, () => this.player.clearTint())
+        this.time.delayedCall(500, () => this.player.setData('hitCool', false))
+
+        // HPが0になったらゲームオーバー
+        if ((this.player as any).hp <= 0) {
+          this.triggerGameOver()
+        }
+      }
+    })
+    this.colliders.push(bossContactCollider)
+  }
+
+  /**
+   * ボス撃破処理
+   */
+  private defeatBoss() {
+    if (!this.boss) return
+
+    console.log('[MainScene] Boss defeated!')
+
+    this.boss.state = 'defeated'
+
+    // 撃破SE再生
+    if (this.boss.config.se.defeat) {
+      this.audioBus.playSe(this.boss.config.se.defeat, { volume: 0.8 })
+    }
+
+    // 撃破セリフ
+    if (this.boss.config.speeches.defeat) {
+      this.bossSpeechBubble.show(this.boss, this.boss.config.speeches.defeat, 2000)
+    }
+
+    // ボスHP UI非表示
+    if (this.bossHpUI) {
+      this.bossHpUI.hide()
+    }
+
+    // フェードアウト演出
+    this.tweens.add({
+      targets: this.boss,
+      alpha: 0,
+      scale: 6,
+      duration: 1500,
+      onComplete: () => {
+        if (this.boss) {
+          this.boss.disableBody(true, true)
+        }
+        // ゲームクリア
+        this.triggerGameClear()
+      }
+    })
   }
 }
