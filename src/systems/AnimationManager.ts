@@ -17,62 +17,78 @@ export function getRowFrames(row: number, frames = 4): number[] {
  */
 export function createPlayerAnimations(scene: Phaser.Scene, key: string) {
   // 歩行アニメーション（4方向）
-  scene.anims.create({
-    key: `${key}-walk-down`,
-    frames: getRowFrames(0).map(f => ({ key, frame: f })),
-    frameRate: 10,
-    repeat: -1
-  })
+  if (!scene.anims.exists(`${key}-walk-down`)) {
+    scene.anims.create({
+      key: `${key}-walk-down`,
+      frames: getRowFrames(0).map(f => ({ key, frame: f })),
+      frameRate: 10,
+      repeat: -1
+    })
+  }
 
-  scene.anims.create({
-    key: `${key}-walk-left`,
-    frames: getRowFrames(1).map(f => ({ key, frame: f })),
-    frameRate: 10,
-    repeat: -1
-  })
+  if (!scene.anims.exists(`${key}-walk-left`)) {
+    scene.anims.create({
+      key: `${key}-walk-left`,
+      frames: getRowFrames(1).map(f => ({ key, frame: f })),
+      frameRate: 10,
+      repeat: -1
+    })
+  }
 
-  scene.anims.create({
-    key: `${key}-walk-right`,
-    frames: getRowFrames(2).map(f => ({ key, frame: f })),
-    frameRate: 10,
-    repeat: -1
-  })
+  if (!scene.anims.exists(`${key}-walk-right`)) {
+    scene.anims.create({
+      key: `${key}-walk-right`,
+      frames: getRowFrames(2).map(f => ({ key, frame: f })),
+      frameRate: 10,
+      repeat: -1
+    })
+  }
 
-  scene.anims.create({
-    key: `${key}-walk-up`,
-    frames: getRowFrames(3).map(f => ({ key, frame: f })),
-    frameRate: 10,
-    repeat: -1
-  })
+  if (!scene.anims.exists(`${key}-walk-up`)) {
+    scene.anims.create({
+      key: `${key}-walk-up`,
+      frames: getRowFrames(3).map(f => ({ key, frame: f })),
+      frameRate: 10,
+      repeat: -1
+    })
+  }
 
   // 攻撃アニメーション（4方向）
-  scene.anims.create({
-    key: `${key}-atk-down`,
-    frames: getRowFrames(4).map(f => ({ key, frame: f })),
-    frameRate: 14,
-    repeat: 0
-  })
+  if (!scene.anims.exists(`${key}-atk-down`)) {
+    scene.anims.create({
+      key: `${key}-atk-down`,
+      frames: getRowFrames(4).map(f => ({ key, frame: f })),
+      frameRate: 14,
+      repeat: 0
+    })
+  }
 
-  scene.anims.create({
-    key: `${key}-atk-left`,
-    frames: getRowFrames(5).map(f => ({ key, frame: f })),
-    frameRate: 14,
-    repeat: 0
-  })
+  if (!scene.anims.exists(`${key}-atk-left`)) {
+    scene.anims.create({
+      key: `${key}-atk-left`,
+      frames: getRowFrames(5).map(f => ({ key, frame: f })),
+      frameRate: 14,
+      repeat: 0
+    })
+  }
 
-  scene.anims.create({
-    key: `${key}-atk-right`,
-    frames: getRowFrames(6).map(f => ({ key, frame: f })),
-    frameRate: 14,
-    repeat: 0
-  })
+  if (!scene.anims.exists(`${key}-atk-right`)) {
+    scene.anims.create({
+      key: `${key}-atk-right`,
+      frames: getRowFrames(6).map(f => ({ key, frame: f })),
+      frameRate: 14,
+      repeat: 0
+    })
+  }
 
-  scene.anims.create({
-    key: `${key}-atk-up`,
-    frames: getRowFrames(7).map(f => ({ key, frame: f })),
-    frameRate: 14,
-    repeat: 0
-  })
+  if (!scene.anims.exists(`${key}-atk-up`)) {
+    scene.anims.create({
+      key: `${key}-atk-up`,
+      frames: getRowFrames(7).map(f => ({ key, frame: f })),
+      frameRate: 14,
+      repeat: 0
+    })
+  }
 }
 
 /**
@@ -82,62 +98,78 @@ export function createPlayerAnimations(scene: Phaser.Scene, key: string) {
  */
 export function createEnemyAnimations(scene: Phaser.Scene, key: string) {
   // 歩行アニメーション（4方向）
-  scene.anims.create({
-    key: `${key}-walk-down`,
-    frames: getRowFrames(0).map(f => ({ key, frame: f })),
-    frameRate: 8,
-    repeat: -1
-  })
+  if (!scene.anims.exists(`${key}-walk-down`)) {
+    scene.anims.create({
+      key: `${key}-walk-down`,
+      frames: getRowFrames(0).map(f => ({ key, frame: f })),
+      frameRate: 8,
+      repeat: -1
+    })
+  }
 
-  scene.anims.create({
-    key: `${key}-walk-left`,
-    frames: getRowFrames(1).map(f => ({ key, frame: f })),
-    frameRate: 8,
-    repeat: -1
-  })
+  if (!scene.anims.exists(`${key}-walk-left`)) {
+    scene.anims.create({
+      key: `${key}-walk-left`,
+      frames: getRowFrames(1).map(f => ({ key, frame: f })),
+      frameRate: 8,
+      repeat: -1
+    })
+  }
 
-  scene.anims.create({
-    key: `${key}-walk-right`,
-    frames: getRowFrames(2).map(f => ({ key, frame: f })),
-    frameRate: 8,
-    repeat: -1
-  })
+  if (!scene.anims.exists(`${key}-walk-right`)) {
+    scene.anims.create({
+      key: `${key}-walk-right`,
+      frames: getRowFrames(2).map(f => ({ key, frame: f })),
+      frameRate: 8,
+      repeat: -1
+    })
+  }
 
-  scene.anims.create({
-    key: `${key}-walk-up`,
-    frames: getRowFrames(3).map(f => ({ key, frame: f })),
-    frameRate: 8,
-    repeat: -1
-  })
+  if (!scene.anims.exists(`${key}-walk-up`)) {
+    scene.anims.create({
+      key: `${key}-walk-up`,
+      frames: getRowFrames(3).map(f => ({ key, frame: f })),
+      frameRate: 8,
+      repeat: -1
+    })
+  }
 
   // 攻撃アニメーション（4方向）
-  scene.anims.create({
-    key: `${key}-atk-down`,
-    frames: getRowFrames(4).map(f => ({ key, frame: f })),
-    frameRate: 10,
-    repeat: 0
-  })
+  if (!scene.anims.exists(`${key}-atk-down`)) {
+    scene.anims.create({
+      key: `${key}-atk-down`,
+      frames: getRowFrames(4).map(f => ({ key, frame: f })),
+      frameRate: 10,
+      repeat: 0
+    })
+  }
 
-  scene.anims.create({
-    key: `${key}-atk-left`,
-    frames: getRowFrames(5).map(f => ({ key, frame: f })),
-    frameRate: 10,
-    repeat: 0
-  })
+  if (!scene.anims.exists(`${key}-atk-left`)) {
+    scene.anims.create({
+      key: `${key}-atk-left`,
+      frames: getRowFrames(5).map(f => ({ key, frame: f })),
+      frameRate: 10,
+      repeat: 0
+    })
+  }
 
-  scene.anims.create({
-    key: `${key}-atk-right`,
-    frames: getRowFrames(6).map(f => ({ key, frame: f })),
-    frameRate: 10,
-    repeat: 0
-  })
+  if (!scene.anims.exists(`${key}-atk-right`)) {
+    scene.anims.create({
+      key: `${key}-atk-right`,
+      frames: getRowFrames(6).map(f => ({ key, frame: f })),
+      frameRate: 10,
+      repeat: 0
+    })
+  }
 
-  scene.anims.create({
-    key: `${key}-atk-up`,
-    frames: getRowFrames(7).map(f => ({ key, frame: f })),
-    frameRate: 10,
-    repeat: 0
-  })
+  if (!scene.anims.exists(`${key}-atk-up`)) {
+    scene.anims.create({
+      key: `${key}-atk-up`,
+      frames: getRowFrames(7).map(f => ({ key, frame: f })),
+      frameRate: 10,
+      repeat: 0
+    })
+  }
 }
 
 /**

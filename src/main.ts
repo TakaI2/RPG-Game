@@ -3,6 +3,10 @@ import { GAME_W, GAME_H } from './config'
 import LoadingScene from './scenes/LoadingScene'
 import MainScene from './scenes/MainScene'
 import StoryScene from './scenes/StoryScene'
+import { logger } from './utils/Logger'
+
+// コンソールログの自動記録を開始
+logger.startCapture()
 
 console.log('=== GAME STARTING ===')
 console.log('Game dimensions:', GAME_W, GAME_H)

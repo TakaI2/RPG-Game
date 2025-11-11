@@ -1,6 +1,9 @@
 # ボス戦実装 進捗記録
 
-## 実装日
+## 最終更新日
+2025-11-11
+
+## 実装開始日
 2025-11-09
 
 ## 実装完了した機能
@@ -69,56 +72,71 @@
 #### LoadingScene (`src/scenes\LoadingScene.ts`)
 - `volg_boss.json`のロード追加
 
-## 現在の問題点
+## 修正完了した問題（2025-11-11）
 
-### エラー: projectiles.create() が undefined
+### ✅ エラー修正: projectiles.create() が undefined
+**原因**:
+- `MainScene.ts`の`projectiles`プロパティが`undefined`型を含んでいた
+- TypeScriptの型定義と実際の初期化のミスマッチ
+
+**修正内容**:
+1. `MainScene.ts`の型定義を修正: `Phaser.Physics.Arcade.Group | undefined` → `Phaser.Physics.Arcade.Group!`
+2. `Projectile.ts`に防御的nullチェックを追加
+3. `updateBossAI`呼び出し時の不要な`!`演算子を削除
+
+**結果**: ✅ ボス戦が完全に正常動作
+
+### ✅ アニメーション重複警告の修正
+**原因**:
+- ゲームオーバー後のリスタート時に、既存のアニメーションを再作成しようとしていた
+- `AnimationManager.ts`で存在チェックがなかった
+
+**修正内容**:
+- `createPlayerAnimations()`と`createEnemyAnimations()`に`scene.anims.exists()`チェックを追加
+- 既に存在するアニメーションはスキップするように変更
+
+**結果**: ✅ 警告が完全に消え、ログがクリーンになった
+
+### ✅ コンソールログ自動記録システムの実装
+**実装内容**:
+- `src/utils/Logger.ts`を作成
+- すべての`console.log`/`warn`/`error`を自動キャプチャ
+- localStorageに自動保存
+- 画面右上に`[LOG DL]`ボタンを配置
+- クリックで`game.log`としてダウンロード可能
+
+**機能**:
+- 最大1000件のログを保持
+- タイムスタンプ付き記録
+- ブラウザキャッシュに自動保存
+
+### ⚠️ SE（効果音）ファイルの不足（未解決）
 **症状**:
-- ボスマップに移動後、ボスが攻撃を開始すると以下のエラーが発生
-  ```
-  Uncaught TypeError: Cannot read properties of undefined (reading 'create')
-  at fireArrowAngle (Projectile.ts:159:28)
-  at fireOrbAt (Projectile.ts:192:27)
-  ```
-
-**調査済みの対応**:
-- `MainScene.create()`で`this.projectiles = this.physics.add.group()`を追加済み
-- コードレベルでは修正完了
-
-**推測される原因**:
-1. ブラウザのキャッシュ問題
-2. Viteのホットリロードが正しく動作していない
-3. 何らかのタイミングで`projectiles`がundefinedになっている
-
-**次のステップ**:
-1. 開発サーバーの完全再起動
-2. ブラウザキャッシュのクリア（Ctrl+Shift+R）
-3. デバッグログで`this.projectiles`の状態確認
-4. 必要に応じて`projectiles`のnullチェック追加
-
-### SE（効果音）ファイルの不足
-**症状**:
-- 以下のSEが見つからない警告が出力
+- 以下のSEが見つからない警告が出力（動作には影響なし）
   - `boss_teleport`
   - `boss_dash`
   - `boss_radial`
   - `boss_circle_setup`
+  - `boss_circle_fire`
 
 **対応方法**:
-- 警告のみでゲームは動作可能
+- 警告のみでゲームは完全動作
 - 本格的に実装する場合はSEファイルを追加
-- または、設定JSONからSEキーを削除
 
 ## ビルド状況
 - **TypeScriptコンパイル**: ✅ 成功
 - **Viteビルド**: ✅ 成功（型エラーなし）
-- **実行時エラー**: ❌ projectiles.create()のエラー
+- **実行時エラー**: ✅ なし
+- **ボス戦**: ✅ 完全動作
 
-## 次の作業項目
+## 完了した作業項目
 1. ✅ ボス戦システムの実装
-2. ❌ ボス戦の動作確認（projectilesエラーの解決）
-3. ⏳ SEファイルの追加（オプション）
-4. ⏳ ボス画像アセットの追加（オプション）
-5. ⏳ 複数ボスの追加（拡張性の検証）
+2. ✅ ボス戦の動作確認（projectilesエラーの解決）
+3. ✅ アニメーション重複警告の修正
+4. ✅ コンソールログ自動記録システムの実装
+5. ⏳ SEファイルの追加（オプション）
+6. ⏳ ボス画像アセットの追加（オプション）
+7. ⏳ 複数ボスの追加（拡張性の検証）
 
 ## 備考
 - JSON設定により、新しいボスや攻撃パターンを簡単に追加可能

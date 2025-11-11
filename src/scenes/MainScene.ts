@@ -32,6 +32,7 @@ import { AudioBus } from '../systems/AudioBus'
 import { BossHpUI } from '../systems/BossHpUI'
 import { BossSpeechBubble } from '../systems/BossSpeechBubble'
 import { CutinSystem } from '../systems/CutinSystem'
+import { logger } from '../utils/Logger'
 
 export default class MainScene extends Phaser.Scene {
   private cursors!: Phaser.Types.Input.Keyboard.CursorKeys
@@ -47,7 +48,7 @@ export default class MainScene extends Phaser.Scene {
   private ui!: DialogUI
   private playerDirection: string = 'down' // プレイヤーの現在の向き
   private isAttacking: boolean = false // 攻撃中フラグ
-  private projectiles: Phaser.Physics.Arcade.Group | undefined
+  private projectiles!: Phaser.Physics.Arcade.Group
   private hpText!: Phaser.GameObjects.Text // HP表示テキスト
   private isGameOver: boolean = false // ゲームオーバーフラグ
   private gameOverText?: Phaser.GameObjects.Text // ゲームオーバーテキスト
@@ -112,6 +113,9 @@ export default class MainScene extends Phaser.Scene {
 
     // HP表示を先に作成（DialogUIより前）
     this.createHPDisplay()
+
+    // ログダウンロードボタンを作成
+    this.createLogDownloadButton()
 
     // プレイヤーと壁の衝突判定を設定
     const playerWallCollider = this.physics.add.collider(this.player, this.walls)
@@ -213,6 +217,46 @@ export default class MainScene extends Phaser.Scene {
     this.updateHPDisplay()
   }
 
+  private createLogDownloadButton() {
+    // ログダウンロードボタンを作成（画面右上、カメラに固定）
+    const buttonText = this.add.text(GAME_W - 200, 20, '[LOG DL]', {
+      fontSize: '24px',
+      color: '#00ff00',
+      fontFamily: 'Courier New, monospace',
+      fontStyle: 'bold',
+      stroke: '#000000',
+      strokeThickness: 4,
+      backgroundColor: '#00000088',
+      padding: { x: 12, y: 8 }
+    })
+
+    buttonText.setScrollFactor(0, 0)
+    buttonText.setOrigin(0, 0)
+    buttonText.setDepth(10000)
+    buttonText.setInteractive({ useHandCursor: true })
+
+    // ホバー時の色変更
+    buttonText.on('pointerover', () => {
+      buttonText.setColor('#ffff00')
+    })
+
+    buttonText.on('pointerout', () => {
+      buttonText.setColor('#00ff00')
+    })
+
+    // クリック時にログをダウンロード
+    buttonText.on('pointerdown', () => {
+      console.log('[MainScene] Log download button clicked')
+      logger.downloadLogs()
+      buttonText.setColor('#ff00ff')
+      this.time.delayedCall(200, () => {
+        buttonText.setColor('#00ff00')
+      })
+    })
+
+    console.log('[MainScene] Log download button created')
+  }
+
   update(time: number, delta: number) {
     // ゲームオーバー時は処理を停止
     if (this.isGameOver) {
@@ -238,7 +282,7 @@ export default class MainScene extends Phaser.Scene {
         this,
         this.boss,
         this.player,
-        this.projectiles!,
+        this.projectiles,
         this.audioBus,
         this.cutinSystem,
         this.bossSpeechBubble,

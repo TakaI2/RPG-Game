@@ -156,6 +156,9 @@ export function fireArrowAngle(
   angle: number,
   speed = 420
 ): Projectile {
+  if (!projectiles) {
+    throw new Error('[Projectile] projectiles group is undefined in fireArrowAngle')
+  }
   const proj = projectiles.create(x, y, 'arrow') as Projectile
 
   const vx = Math.cos(angle) * speed
@@ -189,6 +192,9 @@ export function fireOrbAt(
   target: Phaser.GameObjects.Sprite,
   speed = 220
 ): HomingOrb {
+  if (!projectiles) {
+    throw new Error('[Projectile] projectiles group is undefined in fireOrbAt')
+  }
   const orb = projectiles.create(x, y, 'orb') as HomingOrb
 
   orb.target = target
