@@ -33,6 +33,8 @@ import { BossHpUI } from '../systems/BossHpUI'
 import { BossSpeechBubble } from '../systems/BossSpeechBubble'
 import { CutinSystem } from '../systems/CutinSystem'
 import { logger } from '../utils/Logger'
+import { VirtualJoystick } from '../ui/VirtualJoystick'
+import { AttackButton } from '../ui/AttackButton'
 
 export default class MainScene extends Phaser.Scene {
   private cursors!: Phaser.Types.Input.Keyboard.CursorKeys
@@ -64,6 +66,10 @@ export default class MainScene extends Phaser.Scene {
   private bossHpUI: BossHpUI | null = null
   private bossSpeechBubble!: BossSpeechBubble
   private cutinSystem!: CutinSystem
+
+  // マウス/タッチ操作UI
+  private virtualJoystick: VirtualJoystick | null = null
+  private attackButton: AttackButton | null = null
 
   constructor() { super('MainScene') }
 
@@ -116,6 +122,9 @@ export default class MainScene extends Phaser.Scene {
 
     // ログダウンロードボタンを作成
     this.createLogDownloadButton()
+
+    // 仮想ジョイスティックと攻撃ボタンを作成
+    this.createVirtualControls()
 
     // プレイヤーと壁の衝突判定を設定
     const playerWallCollider = this.physics.add.collider(this.player, this.walls)
@@ -257,6 +266,19 @@ export default class MainScene extends Phaser.Scene {
     console.log('[MainScene] Log download button created')
   }
 
+  private createVirtualControls() {
+    // 仮想ジョイスティック（画面左下）
+    this.virtualJoystick = new VirtualJoystick(this, 150, GAME_H - 150)
+
+    // 攻撃ボタン（画面右下）
+    this.attackButton = new AttackButton(this, GAME_W - 150, GAME_H - 150)
+    this.attackButton.setOnAttack(() => {
+      this.performAttack()
+    })
+
+    console.log('[MainScene] Virtual controls created')
+  }
+
   update(time: number, delta: number) {
     // ゲームオーバー時は処理を停止
     if (this.isGameOver) {
@@ -384,8 +406,18 @@ export default class MainScene extends Phaser.Scene {
     }
 
     const speed: number = (this.player as any).speed
-    const vx = (this.cursors.left?.isDown ? -1 : this.cursors.right?.isDown ? 1 : 0)
-    const vy = (this.cursors.up?.isDown ? -1 : this.cursors.down?.isDown ? 1 : 0)
+
+    // キーボード入力
+    let vx = (this.cursors.left?.isDown ? -1 : this.cursors.right?.isDown ? 1 : 0)
+    let vy = (this.cursors.up?.isDown ? -1 : this.cursors.down?.isDown ? 1 : 0)
+
+    // ジョイスティック入力（キーボード入力がない場合のみ）
+    if (vx === 0 && vy === 0 && this.virtualJoystick && this.virtualJoystick.active) {
+      const joystickVector = this.virtualJoystick.getVector()
+      vx = joystickVector.x
+      vy = joystickVector.y
+    }
+
     const v = new Phaser.Math.Vector2(vx, vy)
 
     if (v.lengthSq() > 0) {
@@ -600,6 +632,13 @@ export default class MainScene extends Phaser.Scene {
     this.time.delayedCall(300, () => {
       ;(this.hitbox.body as Phaser.Physics.Arcade.Body).setEnable(false)
     })
+  }
+
+  /**
+   * 攻撃ボタン用のラッパーメソッド
+   */
+  private performAttack() {
+    this.doAttack()
   }
 
   private getFacingVector() {
