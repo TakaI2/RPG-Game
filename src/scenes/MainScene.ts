@@ -89,7 +89,7 @@ export default class MainScene extends Phaser.Scene {
     // プレイヤー（64x64スプライト）
     this.player = this.physics.add.sprite(40 * TILE, 40 * TILE, 'hero')
     ;(this.player as any).speed = 260
-    ;(this.player as any).hp = 5
+    ;(this.player as any).hp = 100
     this.player.setCollideWorldBounds(true)
     this.player.setDepth(10) // プレイヤーを前面に表示
     this.player.play('hero-walk-down') // 初期アニメ
@@ -189,7 +189,7 @@ export default class MainScene extends Phaser.Scene {
 
   private createHPDisplay() {
     // HP表示テキストを作成（カメラに固定）- 初期テキストを設定
-    const initialText = 'HP: 5/5 [█████]'
+    const initialText = 'HP: 100/100'
     this.hpText = this.add.text(20, 20, initialText, {
       fontSize: '32px',
       color: '#ffffff',
@@ -617,20 +617,22 @@ export default class MainScene extends Phaser.Scene {
     }
 
     const currentHP = (this.player as any).hp || 0
-    const maxHP = 5 // 最大HP
+    const maxHP = 100 // 最大HP
 
-    // シンプルなバー表示
-    const filledBars = '█'.repeat(Math.max(0, currentHP))
-    const emptyBars = '░'.repeat(Math.max(0, maxHP - currentHP))
+    // パーセンテージバー表示（20個の█で100%を表現）
+    const barLength = 20
+    const filledCount = Math.floor((currentHP / maxHP) * barLength)
+    const filledBars = '█'.repeat(Math.max(0, filledCount))
+    const emptyBars = '░'.repeat(Math.max(0, barLength - filledCount))
 
     const newText = `HP: ${currentHP}/${maxHP} [${filledBars}${emptyBars}]`
     this.hpText.setText(newText)
     // console.log('HP Display updated:', newText) // デバッグ用（通常はコメントアウト）
 
     // HPに応じて色を変更
-    if (currentHP <= 1) {
+    if (currentHP <= 20) {
       this.hpText.setColor('#ff0000') // 赤（危険）
-    } else if (currentHP <= 2) {
+    } else if (currentHP <= 40) {
       this.hpText.setColor('#ffaa00') // オレンジ（警告）
     } else {
       this.hpText.setColor('#ffffff') // 白（正常）
@@ -958,7 +960,9 @@ export default class MainScene extends Phaser.Scene {
 
       if (!this.boss.getData('hitCool')) {
         // ダメージ処理
+        const oldHP = this.boss.hp
         this.boss.hp -= 1
+        console.log(`[MainScene] Boss damaged! HP: ${oldHP} -> ${this.boss.hp} (Phase: ${this.boss.phase})`)
         this.boss.setTint(0xffffaa)
         this.boss.setData('hitCool', true)
 

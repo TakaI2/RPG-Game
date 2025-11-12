@@ -62,6 +62,15 @@ export default class LoadingScene extends Phaser.Scene {
     // NPCダイアログファイル
     this.load.json('dialog_npc1', 'assets/dialog/npc1.json')
     this.load.json('dialog_merchant', 'assets/dialog/merchant.json')
+
+    // ボスカットイン用画像（オプション：画像がない場合はプレースホルダー表示）
+    this.load.image('boss_face', 'assets/images/boss_face.png')
+
+    // エラーハンドリング：画像が見つからない場合でもゲームを続行
+    this.load.on('loaderror', (fileObj: Phaser.Loader.File) => {
+      console.warn(`[LoadingScene] Failed to load: ${fileObj.key} (${fileObj.url})`)
+      // エラーがあっても続行
+    })
   }
 
   private createLoadingUI() {
