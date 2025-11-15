@@ -66,6 +66,13 @@ export default class LoadingScene extends Phaser.Scene {
     // ボスカットイン用画像（オプション：画像がない場合はプレースホルダー表示）
     this.load.image('boss_face', 'assets/images/boss_face.png')
 
+    // タイトル画面用アセット
+    this.load.image('title', 'assets/images/title.png')
+
+    // ゲームBGM（マップ用）
+    this.load.audio('spiral', 'assets/story/bgm/spiral.ogg')
+    this.load.audio('redmoon', 'assets/story/bgm/redmoon.ogg')
+
     // エラーハンドリング：画像が見つからない場合でもゲームを続行
     this.load.on('loaderror', (fileObj: Phaser.Loader.File) => {
       console.warn(`[LoadingScene] Failed to load: ${fileObj.key} (${fileObj.url})`)
@@ -142,8 +149,8 @@ export default class LoadingScene extends Phaser.Scene {
       alpha: 0,
       duration: 500,
       onComplete: () => {
-        // MainSceneへ遷移
-        this.scene.start('MainScene')
+        // TitleSceneへ遷移
+        this.scene.start('TitleScene')
       }
     })
   }

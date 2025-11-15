@@ -35,6 +35,9 @@ import { CutinSystem } from '../systems/CutinSystem'
 import { logger } from '../utils/Logger'
 import { VirtualJoystick } from '../ui/VirtualJoystick'
 import { AttackButton } from '../ui/AttackButton'
+import { BGMManager } from '../systems/BGMManager'
+import { PauseMenu } from '../ui/PauseMenu'
+import { GameStateManager } from '../systems/GameStateManager'
 
 export default class MainScene extends Phaser.Scene {
   private cursors!: Phaser.Types.Input.Keyboard.CursorKeys
@@ -70,6 +73,11 @@ export default class MainScene extends Phaser.Scene {
   // マウス/タッチ操作UI
   private virtualJoystick: VirtualJoystick | null = null
   private attackButton: AttackButton | null = null
+
+  // タイトル画面・ポーズメニュー関連
+  private bgmManager?: BGMManager
+  private pauseMenu?: PauseMenu
+  private escKey?: Phaser.Input.Keyboard.Key
 
   constructor() { super('MainScene') }
 
@@ -176,24 +184,37 @@ export default class MainScene extends Phaser.Scene {
       this.doAttack()
     })
 
-    // 初回起動時にストーリーシーンを起動（create()の最後で実行）
-    const hasSeenIntro = this.registry.get('hasSeenIntro') as boolean
-    if (!hasSeenIntro) {
-      console.log('[MainScene] Starting intro story')
-      this.registry.set('hasSeenIntro', true)
+    // BGMManagerの初期化
+    this.bgmManager = new BGMManager(this, this.audioBus)
+    console.log('[MainScene] BGMManager initialized')
 
-      // 少し遅延させてからStorySceneを起動
-      this.time.delayedCall(100, () => {
-        this.scene.launch('StoryScene', { id: 'intro' })
-        this.scene.pause()
-      })
+    // PauseMenuの初期化
+    this.pauseMenu = new PauseMenu(this)
+    this.pauseMenu.setBackToTitleCallback(() => {
+      // ゲーム状態をリセットしてタイトルに戻る
+      GameStateManager.reset(this)
+      this.scene.start('TitleScene')
+    })
+    console.log('[MainScene] PauseMenu initialized')
 
-      // ストーリー終了時にゲームを再開
-      events.once('story:end', () => {
-        console.log('[MainScene] Story ended, resuming game')
-        this.scene.resume()
-      })
-    }
+    // Escキーの登録
+    this.escKey = this.input.keyboard?.addKey(Phaser.Input.Keyboard.KeyCodes.ESC)
+    console.log('[MainScene] ESC key registered')
+
+    // マップロード完了イベントを発火（初回マップロード）
+    events.emit('map-loaded', this.currentMapId)
+    console.log('[MainScene] Initial map loaded event emitted:', this.currentMapId)
+
+    // シャットダウン時のクリーンアップ
+    this.events.once('shutdown', () => {
+      if (this.bgmManager) {
+        this.bgmManager.destroy()
+      }
+      if (this.pauseMenu) {
+        this.pauseMenu.destroy()
+      }
+      console.log('[MainScene] Cleanup complete')
+    })
   }
 
   private createHPDisplay() {
@@ -280,6 +301,23 @@ export default class MainScene extends Phaser.Scene {
   }
 
   update(time: number, delta: number) {
+    // Escキーでポーズメニューの表示/非表示を切り替え
+    if (this.escKey && Phaser.Input.Keyboard.JustDown(this.escKey)) {
+      if (this.pauseMenu) {
+        if (this.pauseMenu.isShowing()) {
+          this.pauseMenu.hide()
+        } else {
+          this.pauseMenu.show()
+        }
+      }
+    }
+
+    // ポーズメニュー表示中は処理を停止
+    if (this.pauseMenu && this.pauseMenu.isShowing()) {
+      this.player.setVelocity(0)
+      return
+    }
+
     // ゲームオーバー時は処理を停止
     if (this.isGameOver) {
       this.player.setVelocity(0)
@@ -914,6 +952,10 @@ export default class MainScene extends Phaser.Scene {
 
     // カメラを追従させる
     this.cameras.main.startFollow(this.player, true, 0.12, 0.12)
+
+    // マップロード完了イベントを発火（BGM切り替え用）
+    events.emit('map-loaded', mapId)
+    console.log('[MainScene] Map loaded event emitted:', mapId)
   }
 
   /**

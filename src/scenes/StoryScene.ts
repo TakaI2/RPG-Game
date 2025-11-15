@@ -75,6 +75,10 @@ export default class StoryScene extends Phaser.Scene {
   private initializeStory(scriptData: { script: { op: string; [key: string]: unknown }[] }) {
     console.log('[StoryScene] initializeStory')
 
+    // ストーリー開始イベントを発火（BGM停止用）
+    events.emit('story-start')
+    console.log('[StoryScene] story-start event emitted')
+
     // 黒背景
     this.cameras.main.setBackgroundColor('#000000')
     this.cameras.main.fadeIn(300)
@@ -346,8 +350,18 @@ export default class StoryScene extends Phaser.Scene {
         // 手動でクリーンアップを呼ぶ（shutdownイベントより前に実行）
         this.cleanup()
 
-        events.emit('story:end', { id: this.scriptId })
+        // ストーリー終了イベントを発火
+        events.emit('story-end', { nextScene: returnTo })
+        console.log('[StoryScene] story-end event emitted, nextScene:', returnTo)
+
         this.scene.stop()
+
+        // clear/gameoverの場合はタイトルに、それ以外は指定されたシーンに遷移
+        if (returnTo === 'title' || this.scriptId === 'clear' || this.scriptId === 'gameover') {
+          this.scene.start('TitleScene')
+        } else if (returnTo && returnTo !== 'none') {
+          this.scene.start(returnTo)
+        }
       }
     })
   }
