@@ -34,6 +34,12 @@
       "description": "プレイヤー位置によってポーズメニューの位置が変わる",
       "solution": "PauseMenuのcontainerにsetScrollFactor(0)を追加",
       "resolvedDate": "2025-11-16"
+    },
+    {
+      "issue": "ポーズメニューのボタン当たり判定ずれ",
+      "description": "ボタンの表示位置と当たり判定がずれて押せない",
+      "solution": "scrollFactorを廃止し、show()時にカメラ位置に合わせて動的配置に変更",
+      "resolvedDate": "2025-11-16"
     }
   ],
   "currentIssues": [
@@ -41,15 +47,12 @@
       "issue": "タイトル画面の表示問題",
       "description": "ゲームクリア/オーバー後、タイトル画面に遷移するが背景とボタンが表示されない",
       "impact": "ゲーム終了後、タイトルに戻れない（画面は真っ黒だがUIは存在）",
-      "hypothesis": "StoryScene.endStory()で手動cleanup()後にscene.start()しているため、シーンが不正な状態",
-      "nextAction": "cleanup処理をshutdownイベントに委譲し、endStory()をシンプル化"
-    },
-    {
-      "issue": "ポーズメニューのボタンが押せない",
-      "description": "ポーズ画面でボタンをクリックできない（位置ずれの可能性）",
-      "impact": "ポーズ中に再開・タイトル戻るができない",
-      "hypothesis": "createButton()で作成された子containerにscrollFactorが未設定",
-      "nextAction": "ボタンcontainerにもsetScrollFactor(0)を明示的に設定"
+      "triedSolutions": [
+        "StoryScene.endStory()のcleanup処理をshutdownイベントに委譲",
+        "TitleScene.create()をシンプル化し、シーン・カメラを明示的にアクティブ化"
+      ],
+      "status": "継続調査中",
+      "nextAction": "次回セッションで詳細ログを確認して原因特定"
     }
   ],
   "mainDocuments": [

@@ -193,6 +193,22 @@ export default class StoryScene extends Phaser.Scene {
   private cleanup() {
     console.log('[StoryScene] cleanup')
 
+    // BGM停止
+    if (this.audio) {
+      this.audio.stopBgm({ fade: 0 })
+      this.audio.destroy()
+    }
+
+    // 画像の削除
+    if (this.bgImage) {
+      this.bgImage.destroy()
+      this.bgImage = undefined
+    }
+    if (this.portraitImage) {
+      this.portraitImage.destroy()
+      this.portraitImage = undefined
+    }
+
     // Spaceキーリスナーを削除
     if (this.spaceKey) {
       this.spaceKey.removeAllListeners()
@@ -337,32 +353,9 @@ export default class StoryScene extends Phaser.Scene {
   private endStory(returnTo: string) {
     console.log(`[StoryScene] endStory, returnTo: ${returnTo}`)
 
-    // BGM停止
-    this.audio.stopBgm({ fade: 500 })
-
-    // クリーンアップ
-    if (this.bgImage) {
-      this.bgImage.destroy()
-    }
-    if (this.portraitImage) {
-      this.portraitImage.destroy()
-    }
-    this.audio.destroy()
-
-    // 手動でクリーンアップを呼ぶ
-    this.cleanup()
-
     // ストーリー終了イベントを発火
     events.emit('story-end', { nextScene: returnTo })
     console.log('[StoryScene] story-end event emitted, nextScene:', returnTo)
-
-    // デバッグ情報を出力
-    console.log('[StoryScene] Scene transition check:')
-    console.log('  returnTo:', returnTo)
-    console.log('  scriptId:', this.scriptId)
-    console.log('  returnTo === "title":', returnTo === 'title')
-    console.log('  scriptId === "clear":', this.scriptId === 'clear')
-    console.log('  scriptId === "gameover":', this.scriptId === 'gameover')
 
     // clear/gameoverの場合はタイトルに、それ以外は指定されたシーンに遷移
     let targetScene: string | null = null
@@ -373,12 +366,12 @@ export default class StoryScene extends Phaser.Scene {
     } else if (returnTo && returnTo !== 'none') {
       // シーンキーのマッピング（game -> MainScene）
       targetScene = returnTo === 'game' ? 'MainScene' : returnTo
-      console.log(`[StoryScene] Transitioning to scene: ${targetScene} (original returnTo: ${returnTo})`)
+      console.log(`[StoryScene] Transitioning to scene: ${targetScene}`)
     }
 
     if (targetScene) {
-      // シーンを開始（start()が自動的に現在のシーンを停止する）
       console.log('[StoryScene] Starting scene:', targetScene)
+      // scene.start()が自動的にStorySceneをシャットダウンし、shutdownイベントでcleanup()が呼ばれる
       this.scene.start(targetScene)
     } else {
       console.warn('[StoryScene] No scene to start! returnTo:', returnTo)
