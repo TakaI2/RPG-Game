@@ -18,11 +18,14 @@ export class PauseMenu {
   private create(): void {
     // コンテナを作成（最初は非表示）
     this.container = this.scene.add.container(0, 0);
-    this.container.setDepth(1000); // 最前面に表示
+    this.container.setDepth(10000); // タッチUIより前面に表示
+    this.container.setScrollFactor(0); // カメラ追従を無効化（画面固定）
     this.container.setVisible(false);
 
     // 半透明黒のオーバーレイ（全画面）
     this.overlay = this.scene.add.rectangle(960, 540, 1920, 1080, 0x000000, 0.7);
+    // オーバーレイをインタラクティブにして、下のクリックイベントをブロック
+    this.overlay.setInteractive();
 
     // "PAUSED" テキスト
     this.pausedText = this.scene.add.text(960, 300, 'PAUSED', {

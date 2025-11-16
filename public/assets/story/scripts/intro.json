@@ -119,7 +119,7 @@
     },
     {
       "op": "end",
-      "returnTo": "game"
+      "returnTo": "MainScene"
     }
   ]
 }

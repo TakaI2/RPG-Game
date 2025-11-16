@@ -62,11 +62,11 @@ export class BGMManager {
 
     // 古いBGMがあればフェードアウトして停止
     if (this.currentBgmKey) {
-      this.audioBus.stopBGM(this.currentBgmKey, { fadeOut: 1000 });
+      this.audioBus.stopBgm({ fade: 1000 });
     }
 
     // 新しいBGMをフェードインして再生
-    this.audioBus.playBGM(bgmKey, { loop: true, fadeIn: 1000 });
+    this.audioBus.playBgm(bgmKey, { loop: true, fade: 1000 });
     this.currentBgmKey = bgmKey;
 
     console.log(`[BGMManager] Playing BGM: ${bgmKey} for map: ${mapId}`);
@@ -74,7 +74,7 @@ export class BGMManager {
 
   stopMapBGM(): void {
     if (this.currentBgmKey && this.audioBus) {
-      this.audioBus.stopBGM(this.currentBgmKey, { fadeOut: 1000 });
+      this.audioBus.stopBgm({ fade: 1000 });
       this.currentBgmKey = null;
     }
   }
@@ -83,7 +83,7 @@ export class BGMManager {
     this.isStoryActive = true;
     // マップBGMを停止
     if (this.currentBgmKey && this.audioBus) {
-      this.audioBus.stopBGM(this.currentBgmKey, { fadeOut: 500 });
+      this.audioBus.stopBgm({ fade: 500 });
     }
     console.log('[BGMManager] Story started, map BGM stopped');
   }

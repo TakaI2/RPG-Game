@@ -1,263 +1,64 @@
 {
   "project": {
-    "name": "Li-BERTE",
-    "startDate": "2025-10-19",
-    "targetReleaseDate": "2025-10-30",
-    "currentPhase": "Phase2-MVP"
+    "name": "RPGGame",
+    "type": "Phaser 3 RPG",
+    "startDate": "2025-10-18",
+    "currentBranch": "feature/title-screen-and-pause-menu"
   },
-  "phases": [
+  "latestUpdate": "2025-11-16",
+  "status": "タイトル画面・ポーズメニュー機能のバグ修正中",
+  "completedFeatures": [
+    "タイトル画面実装",
+    "ポーズメニュー実装",
+    "BGM管理システム",
+    "タッチ操作対応（仮想ジョイスティック・攻撃ボタン）",
+    "ボスバトルシステム",
+    "ストーリーシステム",
+    "ゲーム状態管理システム"
+  ],
+  "resolvedIssues": [
     {
-      "id": "phase1",
-      "name": "Phase 1: 基盤構築",
-      "status": "completed",
-      "startDate": "2025-10-19",
-      "endDate": "2025-10-21",
-      "progress": 100
+      "issue": "古いコンパイル済みJSファイル問題",
+      "description": "src/フォルダに残った.js/.js.mapファイルがViteに優先読み込みされた",
+      "solution": "find src -name '*.js' -delete で全削除",
+      "resolvedDate": "2025-11-16"
     },
     {
-      "id": "phase2",
-      "name": "Phase 2: MVP完成",
-      "status": "in-progress",
-      "startDate": "2025-10-22",
-      "endDate": "2025-10-24",
-      "progress": 0
+      "issue": "ストーリー終了後のシーン遷移",
+      "description": "clear.json/gameover.jsonのreturnToが'game'になっていた",
+      "solution": "returnToを'title'に変更",
+      "resolvedDate": "2025-11-16"
     },
     {
-      "id": "phase3",
-      "name": "Phase 3: ベータテスト",
-      "status": "pending",
-      "startDate": "2025-10-25",
-      "endDate": "2025-10-29",
-      "progress": 0
-    },
-    {
-      "id": "phase4",
-      "name": "Phase 4: 本番リリース",
-      "status": "pending",
-      "startDate": "2025-10-30",
-      "endDate": "2025-10-30",
-      "progress": 0
+      "issue": "ポーズメニューの位置ずれ",
+      "description": "プレイヤー位置によってポーズメニューの位置が変わる",
+      "solution": "PauseMenuのcontainerにsetScrollFactor(0)を追加",
+      "resolvedDate": "2025-11-16"
     }
   ],
-  "tasks": [
+  "currentIssues": [
     {
-      "id": "task-001",
-      "title": "PWAアイコン作成・設定",
-      "phase": "phase2",
-      "priority": "high",
-      "estimatedHours": 1,
-      "actualHours": 0,
-      "status": "pending",
-      "assignee": "Dev Team",
-      "dependencies": [],
-      "startDate": "2025-10-22",
-      "dueDate": "2025-10-22"
+      "issue": "タイトル画面の表示問題",
+      "description": "ゲームクリア/オーバー後、タイトル画面に遷移するが背景とボタンが表示されない",
+      "impact": "ゲーム終了後、タイトルに戻れない（画面は真っ黒だがUIは存在）",
+      "hypothesis": "StoryScene.endStory()で手動cleanup()後にscene.start()しているため、シーンが不正な状態",
+      "nextAction": "cleanup処理をshutdownイベントに委譲し、endStory()をシンプル化"
     },
     {
-      "id": "task-002",
-      "title": "ダッシュボードページのデザイン完成",
-      "phase": "phase2",
-      "priority": "high",
-      "estimatedHours": 3,
-      "actualHours": 0,
-      "status": "pending",
-      "assignee": "Dev Team",
-      "dependencies": [],
-      "startDate": "2025-10-22",
-      "dueDate": "2025-10-22"
-    },
-    {
-      "id": "task-003",
-      "title": "チャット/チャットボットページのデザイン改善",
-      "phase": "phase2",
-      "priority": "medium",
-      "estimatedHours": 2,
-      "actualHours": 0,
-      "status": "pending",
-      "assignee": "Dev Team",
-      "dependencies": [],
-      "startDate": "2025-10-22",
-      "dueDate": "2025-10-22"
-    },
-    {
-      "id": "task-004",
-      "title": "いいね機能のUI実装",
-      "phase": "phase2",
-      "priority": "high",
-      "estimatedHours": 2,
-      "actualHours": 0,
-      "status": "pending",
-      "assignee": "Dev Team",
-      "dependencies": [],
-      "startDate": "2025-10-22",
-      "dueDate": "2025-10-22"
-    },
-    {
-      "id": "task-005",
-      "title": "入力値バリデーション追加",
-      "phase": "phase2",
-      "priority": "high",
-      "estimatedHours": 2,
-      "actualHours": 0,
-      "status": "pending",
-      "assignee": "Dev Team",
-      "dependencies": [],
-      "startDate": "2025-10-23",
-      "dueDate": "2025-10-23"
-    },
-    {
-      "id": "task-006",
-      "title": "エラーハンドリング統一",
-      "phase": "phase2",
-      "priority": "medium",
-      "estimatedHours": 2,
-      "actualHours": 0,
-      "status": "pending",
-      "assignee": "Dev Team",
-      "dependencies": [],
-      "startDate": "2025-10-23",
-      "dueDate": "2025-10-23"
-    },
-    {
-      "id": "task-007",
-      "title": "画像最適化（Next.js Image導入）",
-      "phase": "phase2",
-      "priority": "medium",
-      "estimatedHours": 2,
-      "actualHours": 0,
-      "status": "pending",
-      "assignee": "Dev Team",
-      "dependencies": [],
-      "startDate": "2025-10-23",
-      "dueDate": "2025-10-23"
-    },
-    {
-      "id": "task-008",
-      "title": "モバイルレスポンシブ調整",
-      "phase": "phase2",
-      "priority": "high",
-      "estimatedHours": 2,
-      "actualHours": 0,
-      "status": "pending",
-      "assignee": "Dev Team",
-      "dependencies": [],
-      "startDate": "2025-10-23",
-      "dueDate": "2025-10-23"
-    },
-    {
-      "id": "task-009",
-      "title": "利用規約・プライバシーポリシー作成",
-      "phase": "phase2",
-      "priority": "high",
-      "estimatedHours": 2,
-      "actualHours": 0,
-      "status": "pending",
-      "assignee": "Dev Team",
-      "dependencies": [],
-      "startDate": "2025-10-24",
-      "dueDate": "2025-10-24"
-    },
-    {
-      "id": "task-010",
-      "title": "お問い合わせページ作成",
-      "phase": "phase2",
-      "priority": "medium",
-      "estimatedHours": 2,
-      "actualHours": 0,
-      "status": "pending",
-      "assignee": "Dev Team",
-      "dependencies": [],
-      "startDate": "2025-10-24",
-      "dueDate": "2025-10-24"
-    },
-    {
-      "id": "task-011",
-      "title": "Vercel本番デプロイ",
-      "phase": "phase2",
-      "priority": "high",
-      "estimatedHours": 1,
-      "actualHours": 0,
-      "status": "pending",
-      "assignee": "Dev Team",
-      "dependencies": ["task-001", "task-002", "task-003", "task-004"],
-      "startDate": "2025-10-24",
-      "dueDate": "2025-10-24"
-    },
-    {
-      "id": "task-012",
-      "title": "スマホでの動作確認・調整",
-      "phase": "phase2",
-      "priority": "high",
-      "estimatedHours": 3,
-      "actualHours": 0,
-      "status": "pending",
-      "assignee": "Dev Team",
-      "dependencies": ["task-011"],
-      "startDate": "2025-10-24",
-      "dueDate": "2025-10-24"
+      "issue": "ポーズメニューのボタンが押せない",
+      "description": "ポーズ画面でボタンをクリックできない（位置ずれの可能性）",
+      "impact": "ポーズ中に再開・タイトル戻るができない",
+      "hypothesis": "createButton()で作成された子containerにscrollFactorが未設定",
+      "nextAction": "ボタンcontainerにもsetScrollFactor(0)を明示的に設定"
     }
   ],
-  "completedTasks": [
-    {
-      "id": "completed-001",
-      "title": "Next.js + TypeScript セットアップ",
-      "completedDate": "2025-10-19",
-      "actualHours": 2
-    },
-    {
-      "id": "completed-002",
-      "title": "Supabase データベース構築",
-      "completedDate": "2025-10-19",
-      "actualHours": 3
-    },
-    {
-      "id": "completed-003",
-      "title": "認証機能実装",
-      "completedDate": "2025-10-20",
-      "actualHours": 4
-    },
-    {
-      "id": "completed-004",
-      "title": "プロフィール機能実装",
-      "completedDate": "2025-10-20",
-      "actualHours": 5
-    },
-    {
-      "id": "completed-005",
-      "title": "マッチング機能実装",
-      "completedDate": "2025-10-20",
-      "actualHours": 4
-    },
-    {
-      "id": "completed-006",
-      "title": "チャット機能実装",
-      "completedDate": "2025-10-20",
-      "actualHours": 3
-    },
-    {
-      "id": "completed-007",
-      "title": "LLMチャットボット実装",
-      "completedDate": "2025-10-20",
-      "actualHours": 2
-    },
-    {
-      "id": "completed-008",
-      "title": "デザインシステム構築",
-      "completedDate": "2025-10-21",
-      "actualHours": 8
-    },
-    {
-      "id": "completed-009",
-      "title": "PWA設定",
-      "completedDate": "2025-10-21",
-      "actualHours": 1
-    }
-  ],
-  "metrics": {
-    "totalEstimatedHours": 72,
-    "totalActualHours": 32,
-    "completedTasks": 9,
-    "pendingTasks": 12,
-    "overallProgress": 44
-  }
+  "mainDocuments": [
+    "PROJECT_STRUCTURE_AND_SPEC.md - メインの仕様・構成ドキュメント",
+    "PROGRESS_LOG.md - 最新の開発進捗（2025-11-16更新）",
+    "test_11_16.txt - 最新のテスト結果",
+    "README.md - 起動方法とアニメ仕様",
+    "ANIMATION_SPRITES_UPDATE.md - スプライト/アニメ定義",
+    "ENEMY_UPDATE_SPEC.md - 敵AI仕様",
+    "PROGRESS_BOSS_IMPLEMENTATION.md - ボス実装進捗"
+  ]
 }

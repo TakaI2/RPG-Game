@@ -79,6 +79,10 @@ export default class StoryScene extends Phaser.Scene {
     events.emit('story-start')
     console.log('[StoryScene] story-start event emitted')
 
+    // 全てのBGMを強制停止（MainSceneのBGMを確実に停止）
+    this.sound.stopAll()
+    console.log('[StoryScene] All sounds stopped')
+
     // 黒背景
     this.cameras.main.setBackgroundColor('#000000')
     this.cameras.main.fadeIn(300)
@@ -336,33 +340,49 @@ export default class StoryScene extends Phaser.Scene {
     // BGM停止
     this.audio.stopBgm({ fade: 500 })
 
-    this.cameras.main.fadeOut(300, 0, 0, 0, (_: unknown, progress: number) => {
-      if (progress === 1) {
-        // クリーンアップ
-        if (this.bgImage) {
-          this.bgImage.destroy()
-        }
-        if (this.portraitImage) {
-          this.portraitImage.destroy()
-        }
-        this.audio.destroy()
+    // クリーンアップ
+    if (this.bgImage) {
+      this.bgImage.destroy()
+    }
+    if (this.portraitImage) {
+      this.portraitImage.destroy()
+    }
+    this.audio.destroy()
 
-        // 手動でクリーンアップを呼ぶ（shutdownイベントより前に実行）
-        this.cleanup()
+    // 手動でクリーンアップを呼ぶ
+    this.cleanup()
 
-        // ストーリー終了イベントを発火
-        events.emit('story-end', { nextScene: returnTo })
-        console.log('[StoryScene] story-end event emitted, nextScene:', returnTo)
+    // ストーリー終了イベントを発火
+    events.emit('story-end', { nextScene: returnTo })
+    console.log('[StoryScene] story-end event emitted, nextScene:', returnTo)
 
-        this.scene.stop()
+    // デバッグ情報を出力
+    console.log('[StoryScene] Scene transition check:')
+    console.log('  returnTo:', returnTo)
+    console.log('  scriptId:', this.scriptId)
+    console.log('  returnTo === "title":', returnTo === 'title')
+    console.log('  scriptId === "clear":', this.scriptId === 'clear')
+    console.log('  scriptId === "gameover":', this.scriptId === 'gameover')
 
-        // clear/gameoverの場合はタイトルに、それ以外は指定されたシーンに遷移
-        if (returnTo === 'title' || this.scriptId === 'clear' || this.scriptId === 'gameover') {
-          this.scene.start('TitleScene')
-        } else if (returnTo && returnTo !== 'none') {
-          this.scene.start(returnTo)
-        }
-      }
-    })
+    // clear/gameoverの場合はタイトルに、それ以外は指定されたシーンに遷移
+    let targetScene: string | null = null
+
+    if (returnTo === 'title' || this.scriptId === 'clear' || this.scriptId === 'gameover') {
+      console.log('[StoryScene] Transitioning to TitleScene')
+      targetScene = 'TitleScene'
+    } else if (returnTo && returnTo !== 'none') {
+      // シーンキーのマッピング（game -> MainScene）
+      targetScene = returnTo === 'game' ? 'MainScene' : returnTo
+      console.log(`[StoryScene] Transitioning to scene: ${targetScene} (original returnTo: ${returnTo})`)
+    }
+
+    if (targetScene) {
+      // シーンを開始（start()が自動的に現在のシーンを停止する）
+      console.log('[StoryScene] Starting scene:', targetScene)
+      this.scene.start(targetScene)
+    } else {
+      console.warn('[StoryScene] No scene to start! returnTo:', returnTo)
+      this.scene.stop()
+    }
   }
 }

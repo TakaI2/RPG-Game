@@ -56,7 +56,7 @@
     },
     {
       "op": "end",
-      "returnTo": "game"
+      "returnTo": "title"
     }
   ]
 }

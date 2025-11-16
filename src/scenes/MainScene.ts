@@ -315,7 +315,22 @@ export default class MainScene extends Phaser.Scene {
     // ポーズメニュー表示中は処理を停止
     if (this.pauseMenu && this.pauseMenu.isShowing()) {
       this.player.setVelocity(0)
+      // タッチ操作UIを非表示
+      if (this.virtualJoystick) {
+        this.virtualJoystick.setVisible(false)
+      }
+      if (this.attackButton) {
+        this.attackButton.setVisible(false)
+      }
       return
+    } else {
+      // ポーズメニューが非表示の時はタッチ操作UIを表示
+      if (this.virtualJoystick) {
+        this.virtualJoystick.setVisible(true)
+      }
+      if (this.attackButton) {
+        this.attackButton.setVisible(true)
+      }
     }
 
     // ゲームオーバー時は処理を停止

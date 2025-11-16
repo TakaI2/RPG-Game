@@ -11,12 +11,59 @@ export default class TitleScene extends Phaser.Scene {
   }
 
   create(): void {
+    console.log('[TitleScene] create() called');
+
+    // アクティブなシーンを確認
+    const activeScenes = this.scene.manager.getScenes(true);
+    console.log('[TitleScene] Active scenes:', activeScenes.map(s => s.scene.key));
+
+    // StorySceneが残っていたら強制停止
+    if (this.scene.manager.isActive('StoryScene')) {
+      console.log('[TitleScene] StoryScene is still active, stopping it');
+      this.scene.manager.stop('StoryScene');
+    }
+
+    // カメラの状態をデバッグ
+    console.log('[TitleScene] Camera before reset:', {
+      alpha: this.cameras.main.alpha,
+      visible: this.cameras.main.visible,
+      x: this.cameras.main.x,
+      y: this.cameras.main.y
+    });
+
+    // カメラを完全にリセット
+    this.cameras.main.setBackgroundColor('#FF0000'); // 赤背景で確認
+    this.cameras.main.setAlpha(1);
+    this.cameras.main.resetPostPipeline();
+    this.cameras.main.fadeIn(0); // 即座にフェードイン
+
+    console.log('[TitleScene] Camera after reset:', {
+      alpha: this.cameras.main.alpha,
+      visible: this.cameras.main.visible
+    });
+
     // 背景画像の表示（画面中央、1920x1080にスケール）
     this.background = this.add.image(960, 540, 'title');
     this.background.setDisplaySize(1920, 1080);
+    this.background.setDepth(0);
+    console.log('[TitleScene] Background created:', this.background.visible, this.background.alpha);
 
     // Playボタンの作成
     this.createPlayButton();
+
+    // テスト用テキスト（大きく、最前面に表示）
+    const testText = this.add.text(960, 540, 'TITLE SCENE TEST', {
+      fontSize: '64px',
+      color: '#00FF00',
+      fontStyle: 'bold',
+      backgroundColor: '#000000'
+    });
+    testText.setOrigin(0.5);
+    testText.setDepth(10000);
+    console.log('[TitleScene] Test text created:', testText.visible, testText.alpha);
+
+    console.log('[TitleScene] create() completed');
+    console.log('[TitleScene] Scene is active:', this.scene.isActive());
   }
 
   private createPlayButton(): void {
