@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Story Editor - RPG Game</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div id="app">
+    <!-- Header -->
+    <header class="header">
+      <h1>Story Editor</h1>
+      <div class="header-actions">
+        <button id="btn-new" title="新規作成">📄 新規</button>
+        <button id="btn-import" title="JSONを読み込み">📂 開く</button>
+        <button id="btn-export" title="JSONを保存">💾 保存</button>
+        <input type="file" id="file-input" accept=".json" hidden>
+      </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="main-content">
+      <!-- Timeline Panel -->
+      <aside class="timeline-panel">
+        <div class="panel-header">
+          <span>タイムライン</span>
+          <button id="btn-add-command" title="コマンド追加">+ 追加</button>
+        </div>
+        <div id="timeline" class="timeline-list">
+          <!-- Commands will be inserted here -->
+        </div>
+      </aside>
+
+      <!-- Preview Panel -->
+      <section class="preview-panel">
+        <div class="panel-header">
+          <span>プレビュー</span>
+          <div class="preview-controls">
+            <button id="btn-prev" title="前へ">◀</button>
+            <span id="preview-index">0 / 0</span>
+            <button id="btn-next" title="次へ">▶</button>
+            <button id="btn-play" title="再生">▶️ 再生</button>
+          </div>
+        </div>
+        <div id="preview-container" class="preview-container">
+          <div id="preview-bg" class="preview-bg"></div>
+          <img id="preview-portrait" class="preview-portrait" src="" alt="" draggable="true">
+          <div id="preview-dialog" class="preview-dialog">
+            <div id="preview-name" class="preview-name"></div>
+            <div id="preview-text" class="preview-text"></div>
+          </div>
+          <!-- Safe area guide (game screen boundary) -->
+          <div id="safe-area-guide" class="safe-area-guide">
+            <div class="safe-area-label">1920 x 1080 (ゲーム画面)</div>
+          </div>
+          <!-- Position indicator -->
+          <div id="position-indicator" class="position-indicator"></div>
+        </div>
+        <div class="preview-options">
+          <label>
+            <input type="checkbox" id="toggle-safe-area" checked>
+            ゲーム画面範囲を表示
+          </label>
+          <label>
+            <input type="checkbox" id="toggle-grid">
+            グリッド表示
+          </label>
+        </div>
+      </section>
+
+      <!-- Properties Panel -->
+      <aside class="properties-panel">
+        <div class="panel-header">
+          <span>プロパティ</span>
+        </div>
+        <div id="properties-content" class="properties-content">
+          <p class="placeholder">コマンドを選択してください</p>
+        </div>
+      </aside>
+    </main>
+
+    <!-- Add Command Modal -->
+    <div id="modal-add-command" class="modal hidden">
+      <div class="modal-content">
+        <h3>コマンド追加</h3>
+        <div class="command-buttons">
+          <button data-cmd="say" class="cmd-btn cmd-say">💬 セリフ</button>
+          <button data-cmd="bg" class="cmd-btn cmd-bg">🖼️ 背景</button>
+          <button data-cmd="bgm.play" class="cmd-btn cmd-bgm">🎵 BGM再生</button>
+          <button data-cmd="bgm.stop" class="cmd-btn cmd-bgm">⏹️ BGM停止</button>
+          <button data-cmd="se" class="cmd-btn cmd-se">🔊 効果音</button>
+          <button data-cmd="end" class="cmd-btn cmd-end">🏁 終了</button>
+        </div>
+        <button id="btn-cancel-add" class="btn-cancel">キャンセル</button>
+      </div>
+    </div>
+
+    <!-- Story ID Input -->
+    <div class="story-id-bar">
+      <label>ストーリーID: </label>
+      <input type="text" id="story-id" value="new_story" placeholder="story_id">
+    </div>
+  </div>
+
+  <script src="editor.js"></script>
+</body>
+</html>
