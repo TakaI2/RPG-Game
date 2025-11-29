@@ -33,7 +33,6 @@ import { BossHpUI } from '../systems/BossHpUI'
 import { BossSpeechBubble } from '../systems/BossSpeechBubble'
 import { CutinSystem } from '../systems/CutinSystem'
 import { logger } from '../utils/Logger'
-import { VirtualJoystick } from '../ui/VirtualJoystick'
 import { AttackButton } from '../ui/AttackButton'
 import { BGMManager } from '../systems/BGMManager'
 import { PauseMenu } from '../ui/PauseMenu'
@@ -71,8 +70,10 @@ export default class MainScene extends Phaser.Scene {
   private cutinSystem!: CutinSystem
 
   // マウス/タッチ操作UI
-  private virtualJoystick: VirtualJoystick | null = null
   private attackButton: AttackButton | null = null
+  private isMouseMoving: boolean = false // マウスによる移動中フラグ
+  private mouseWorldX: number = 0 // マウスのワールドX座標
+  private mouseWorldY: number = 0 // マウスのワールドY座標
 
   // タイトル画面・ポーズメニュー関連
   private bgmManager?: BGMManager
@@ -288,16 +289,84 @@ export default class MainScene extends Phaser.Scene {
   }
 
   private createVirtualControls() {
-    // 仮想ジョイスティック（画面左下）
-    this.virtualJoystick = new VirtualJoystick(this, 150, GAME_H - 150)
-
     // 攻撃ボタン（画面右下）
     this.attackButton = new AttackButton(this, GAME_W - 150, GAME_H - 150)
     this.attackButton.setOnAttack(() => {
       this.performAttack()
     })
 
+    // マウス移動機能のセットアップ
+    this.setupMouseMovement()
+
     console.log('[MainScene] Virtual controls created')
+  }
+
+  /**
+   * マウス移動機能をセットアップ
+   * - 左クリック押下中: マウス位置の方向に移動
+   * - 右クリック: 攻撃
+   */
+  private setupMouseMovement() {
+    // 右クリックで攻撃
+    this.input.on('pointerdown', (pointer: Phaser.Input.Pointer) => {
+      if (pointer.rightButtonDown()) {
+        this.performAttack()
+      }
+    })
+
+    // 左クリック押下開始
+    this.input.on('pointerdown', (pointer: Phaser.Input.Pointer) => {
+      if (pointer.leftButtonDown()) {
+        // 攻撃ボタンの範囲外かチェック
+        if (!this.isPointerOnAttackButton(pointer)) {
+          this.isMouseMoving = true
+          this.updateMouseWorldPosition(pointer)
+        }
+      }
+    })
+
+    // マウス移動中（ドラッグ中も含む）
+    this.input.on('pointermove', (pointer: Phaser.Input.Pointer) => {
+      if (this.isMouseMoving && pointer.leftButtonDown()) {
+        this.updateMouseWorldPosition(pointer)
+      }
+    })
+
+    // 左クリック解除
+    this.input.on('pointerup', (pointer: Phaser.Input.Pointer) => {
+      if (!pointer.leftButtonDown()) {
+        this.isMouseMoving = false
+      }
+    })
+
+    // 右クリックのデフォルト動作を無効化
+    this.input.mouse?.disableContextMenu()
+
+    console.log('[MainScene] Mouse movement controls setup complete')
+  }
+
+  /**
+   * マウスのワールド座標を更新
+   */
+  private updateMouseWorldPosition(pointer: Phaser.Input.Pointer) {
+    // スクリーン座標からワールド座標に変換
+    const worldPoint = this.cameras.main.getWorldPoint(pointer.x, pointer.y)
+    this.mouseWorldX = worldPoint.x
+    this.mouseWorldY = worldPoint.y
+  }
+
+  /**
+   * ポインターが攻撃ボタンの上にあるかチェック
+   */
+  private isPointerOnAttackButton(pointer: Phaser.Input.Pointer): boolean {
+    // 攻撃ボタンの位置（画面右下、半径50）
+    const buttonX = GAME_W - 150
+    const buttonY = GAME_H - 150
+    const buttonRadius = 60 // 少し余裕を持たせる
+
+    const dx = pointer.x - buttonX
+    const dy = pointer.y - buttonY
+    return (dx * dx + dy * dy) < (buttonRadius * buttonRadius)
   }
 
   update(time: number, delta: number) {
@@ -315,19 +384,14 @@ export default class MainScene extends Phaser.Scene {
     // ポーズメニュー表示中は処理を停止
     if (this.pauseMenu && this.pauseMenu.isShowing()) {
       this.player.setVelocity(0)
+      this.isMouseMoving = false // マウス移動も停止
       // タッチ操作UIを非表示
-      if (this.virtualJoystick) {
-        this.virtualJoystick.setVisible(false)
-      }
       if (this.attackButton) {
         this.attackButton.setVisible(false)
       }
       return
     } else {
       // ポーズメニューが非表示の時はタッチ操作UIを表示
-      if (this.virtualJoystick) {
-        this.virtualJoystick.setVisible(true)
-      }
       if (this.attackButton) {
         this.attackButton.setVisible(true)
       }
@@ -464,11 +528,19 @@ export default class MainScene extends Phaser.Scene {
     let vx = (this.cursors.left?.isDown ? -1 : this.cursors.right?.isDown ? 1 : 0)
     let vy = (this.cursors.up?.isDown ? -1 : this.cursors.down?.isDown ? 1 : 0)
 
-    // ジョイスティック入力（キーボード入力がない場合のみ）
-    if (vx === 0 && vy === 0 && this.virtualJoystick && this.virtualJoystick.active) {
-      const joystickVector = this.virtualJoystick.getVector()
-      vx = joystickVector.x
-      vy = joystickVector.y
+    // マウス移動入力（キーボード入力がない場合のみ）
+    if (vx === 0 && vy === 0 && this.isMouseMoving) {
+      // プレイヤーからマウス位置への方向ベクトルを計算
+      const dx = this.mouseWorldX - this.player.x
+      const dy = this.mouseWorldY - this.player.y
+      const distance = Math.sqrt(dx * dx + dy * dy)
+
+      // 一定距離以上離れている場合のみ移動（到着判定）
+      const arrivalThreshold = 20 // 20ピクセル以内で到着とみなす
+      if (distance > arrivalThreshold) {
+        vx = dx / distance
+        vy = dy / distance
+      }
     }
 
     const v = new Phaser.Math.Vector2(vx, vy)

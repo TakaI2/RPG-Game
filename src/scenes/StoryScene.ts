@@ -115,7 +115,14 @@ export default class StoryScene extends Phaser.Scene {
 
     // 既存のリスナーを削除してから新しいリスナーを追加
     this.spaceKey.removeAllListeners()
-    this.spaceKey.on('down', () => this.onSpacePressed())
+    this.spaceKey.on('down', () => this.onAdvance())
+
+    // 左クリックでも進められるようにする
+    this.input.on('pointerdown', (pointer: Phaser.Input.Pointer) => {
+      if (pointer.leftButtonDown()) {
+        this.onAdvance()
+      }
+    })
 
     // シーン終了時のクリーンアップ
     this.events.once('shutdown', this.cleanup, this)
@@ -335,8 +342,11 @@ export default class StoryScene extends Phaser.Scene {
     })
   }
 
-  private onSpacePressed() {
-    console.log('[StoryScene] Space pressed, ui.visible:', this.ui.visible, 'waitingForSpace:', this.waitingForSpace)
+  /**
+   * ストーリーを進める（Spaceキーまたは左クリック）
+   */
+  private onAdvance() {
+    console.log('[StoryScene] Advance triggered, ui.visible:', this.ui.visible, 'waitingForSpace:', this.waitingForSpace)
     if (this.ui.visible) {
       // DialogUIのnextを呼ぶ（タイプ中なら即表示、終わったら次へ）
       console.log('[StoryScene] Calling ui.next()')
