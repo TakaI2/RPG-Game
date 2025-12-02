@@ -69,6 +69,11 @@ export default class LoadingScene extends Phaser.Scene {
     // タイトル画面用アセット
     this.load.image('title', 'assets/images/title.png')
 
+    // ボタン画像
+    this.load.image('btn_play', 'assets/images/Play_button.png')
+    this.load.image('btn_resume', 'assets/images/Resume_Button.png')
+    this.load.image('btn_backtotitle', 'assets/images/BacktoTitle_Button.png')
+
     // ゲームBGM（マップ用）
     this.load.audio('spiral', 'assets/story/bgm/spiral.ogg')
     this.load.audio('redmoon', 'assets/story/bgm/redmoon.ogg')

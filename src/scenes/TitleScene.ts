@@ -2,9 +2,7 @@ import Phaser from 'phaser';
 
 export default class TitleScene extends Phaser.Scene {
   private background!: Phaser.GameObjects.Image;
-  private playButton!: Phaser.GameObjects.Container;
-  private playButtonBg!: Phaser.GameObjects.Rectangle;
-  private playButtonText!: Phaser.GameObjects.Text;
+  private playButton!: Phaser.GameObjects.Image;
 
   constructor() {
     super({ key: 'TitleScene' });
@@ -34,65 +32,33 @@ export default class TitleScene extends Phaser.Scene {
   }
 
   private createPlayButton(): void {
-    // ボタンの位置とサイズ
+    // ボタンの位置
     const buttonX = 960;
     const buttonY = 800;
-    const buttonWidth = 300;
-    const buttonHeight = 80;
 
-    // コンテナの作成
-    this.playButton = this.add.container(buttonX, buttonY);
+    // 画像ボタンの作成
+    this.playButton = this.add.image(buttonX, buttonY, 'btn_play');
+    this.playButton.setScale(2); // 適切なサイズに調整
 
-    // ボタン背景（半透明の白）
-    this.playButtonBg = this.add.rectangle(
-      0,
-      0,
-      buttonWidth,
-      buttonHeight,
-      0xffffff,
-      0.8
-    );
-
-    // ボタンテキスト
-    this.playButtonText = this.add.text(0, 0, 'PLAY', {
-      fontSize: '48px',
-      color: '#000000',
-      fontStyle: 'bold',
-    });
-    this.playButtonText.setOrigin(0.5, 0.5);
-
-    // コンテナに追加
-    this.playButton.add([this.playButtonBg, this.playButtonText]);
-
-    // インタラクティブ設定（ヒットエリアを明示的に設定）
-    this.playButtonBg.setInteractive(
-      new Phaser.Geom.Rectangle(
-        -buttonWidth / 2,
-        -buttonHeight / 2,
-        buttonWidth,
-        buttonHeight
-      ),
-      Phaser.Geom.Rectangle.Contains
-    );
+    // インタラクティブ設定
+    this.playButton.setInteractive({ useHandCursor: true });
 
     // ホバーエフェクト
-    this.playButtonBg.on('pointerover', () => {
-      this.playButton.setScale(1.1);
-      this.playButtonBg.setAlpha(1.0);
+    this.playButton.on('pointerover', () => {
+      this.playButton.setScale(2.2);
     });
 
-    this.playButtonBg.on('pointerout', () => {
-      this.playButton.setScale(1.0);
-      this.playButtonBg.setAlpha(0.8);
+    this.playButton.on('pointerout', () => {
+      this.playButton.setScale(2);
     });
 
     // クリックエフェクト
-    this.playButtonBg.on('pointerdown', () => {
-      this.playButton.setScale(0.95);
+    this.playButton.on('pointerdown', () => {
+      this.playButton.setScale(1.9);
     });
 
-    this.playButtonBg.on('pointerup', () => {
-      this.playButton.setScale(1.1);
+    this.playButton.on('pointerup', () => {
+      this.playButton.setScale(2.2);
       this.startGame();
     });
   }
