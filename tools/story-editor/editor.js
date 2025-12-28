@@ -6,6 +6,10 @@
 // アセットのベースパス（相対パス）
 const ASSET_BASE = '../../public/assets/story';
 
+// ゲーム画面サイズ（config.tsと同じ）
+const GAME_W = 1920;
+const GAME_H = 1080;
+
 // エディタの状態
 const state = {
   storyId: 'new_story',
@@ -115,6 +119,11 @@ function initEventListeners() {
       deleteCommand(state.selectedIndex);
     }
   });
+
+  // ウィンドウリサイズ時にプレビューを再描画
+  window.addEventListener('resize', () => {
+    updatePreview();
+  });
 }
 
 // 立ち絵のドラッグ処理
@@ -122,7 +131,7 @@ function initPortraitDrag() {
   const portrait = elements.previewPortrait;
   const container = document.getElementById('preview-container');
   let isDragging = false;
-  let startX, startY, startLeft, startTop;
+  let startMouseX, startMouseY, startGameX, startGameY;
 
   portrait.addEventListener('mousedown', (e) => {
     if (state.selectedIndex < 0) return;
@@ -131,13 +140,12 @@ function initPortraitDrag() {
 
     isDragging = true;
     portrait.classList.add('dragging');
-    startX = e.clientX;
-    startY = e.clientY;
+    startMouseX = e.clientX;
+    startMouseY = e.clientY;
 
-    const rect = portrait.getBoundingClientRect();
-    const containerRect = container.getBoundingClientRect();
-    startLeft = rect.left - containerRect.left + rect.width / 2;
-    startTop = rect.top - containerRect.top + rect.height / 2;
+    // 現在のゲーム座標を保存
+    startGameX = cmd.portraitX ?? (GAME_W / 2);
+    startGameY = cmd.portraitY ?? (GAME_H / 2);
 
     elements.positionIndicator.style.display = 'block';
     e.preventDefault();
@@ -147,15 +155,16 @@ function initPortraitDrag() {
     if (!isDragging) return;
 
     const containerRect = container.getBoundingClientRect();
-    const dx = e.clientX - startX;
-    const dy = e.clientY - startY;
+    const mouseDx = e.clientX - startMouseX;
+    const mouseDy = e.clientY - startMouseY;
 
-    // プレビュー座標からゲーム座標に変換（1920x1080基準）
-    const scaleX = 1920 / containerRect.width;
-    const scaleY = 1080 / containerRect.height;
+    // マウス移動量をゲーム座標に変換
+    const previewScale = containerRect.width / GAME_W;
+    const gameDx = mouseDx / previewScale;
+    const gameDy = mouseDy / previewScale;
 
-    const newX = Math.round((startLeft + dx) * scaleX);
-    const newY = Math.round((startTop + dy) * scaleY);
+    const newX = Math.round(startGameX + gameDx);
+    const newY = Math.round(startGameY + gameDy);
 
     // 現在のコマンドを更新
     const cmd = state.script[state.selectedIndex];
@@ -411,7 +420,8 @@ function getCommandPreview(cmd) {
 // プレビュー更新
 function updatePreview() {
   if (state.selectedIndex < 0 || state.selectedIndex >= state.script.length) {
-    elements.previewBg.style.backgroundImage = '';
+    elements.previewBg.style.display = 'none';
+    elements.previewBg.src = '';
     elements.previewPortrait.style.display = 'none';
     elements.previewName.textContent = '';
     elements.previewText.textContent = '';
@@ -420,14 +430,14 @@ function updatePreview() {
   }
 
   // 現在位置までの状態を累積
-  let currentBg = '';
+  let currentBgCmd = null;
   let currentPortrait = null;
   let currentSay = null;
 
   for (let i = 0; i <= state.selectedIndex; i++) {
     const cmd = state.script[i];
     if (cmd.op === 'bg') {
-      currentBg = cmd.name;
+      currentBgCmd = cmd;
     }
     if (cmd.op === 'say') {
       currentSay = cmd;
@@ -439,11 +449,13 @@ function updatePreview() {
     }
   }
 
-  // 背景
-  if (currentBg) {
-    elements.previewBg.style.backgroundImage = `url('${ASSET_BASE}/bg/${currentBg}')`;
+  // 背景（ゲームと同じ座標系で配置）
+  if (currentBgCmd && currentBgCmd.name) {
+    updatePreviewBg(currentBgCmd);
+    elements.previewBg.style.display = 'block';
   } else {
-    elements.previewBg.style.backgroundImage = '';
+    elements.previewBg.style.display = 'none';
+    elements.previewBg.src = '';
   }
 
   // 立ち絵
@@ -467,23 +479,66 @@ function updatePreview() {
   updatePreviewIndex();
 }
 
+/**
+ * 背景画像のプレビュー更新
+ * ゲームと同じ座標系（左上原点、ピクセル座標）で配置
+ */
+function updatePreviewBg(cmd) {
+  const container = document.getElementById('preview-container');
+  const containerRect = container.getBoundingClientRect();
+
+  // プレビューコンテナのサイズからスケール係数を計算
+  const previewScale = containerRect.width / GAME_W;
+
+  elements.previewBg.src = `${ASSET_BASE}/bg/${cmd.name}`;
+
+  // ゲーム座標を取得（デフォルトは0,0 = 左上原点）
+  const gameX = cmd.x ?? 0;
+  const gameY = cmd.y ?? 0;
+  const scaleX = cmd.scaleX ?? 1.0;
+  const scaleY = cmd.scaleY ?? 1.0;
+
+  // プレビュー座標に変換
+  const previewX = gameX * previewScale;
+  const previewY = gameY * previewScale;
+  const previewScaleX = scaleX * previewScale;
+  const previewScaleY = scaleY * previewScale;
+
+  // スタイルを設定（ゲームと同じく左上原点で配置）
+  elements.previewBg.style.left = `${previewX}px`;
+  elements.previewBg.style.top = `${previewY}px`;
+  elements.previewBg.style.transform = `scale(${previewScaleX}, ${previewScaleY})`;
+  elements.previewBg.style.transformOrigin = 'top left';
+}
+
+/**
+ * 立ち絵のプレビュー更新
+ * ゲームと同じ座標系（中心原点）で配置
+ */
 function updatePreviewPortrait(cmd) {
   const container = document.getElementById('preview-container');
   const containerRect = container.getBoundingClientRect();
 
+  // プレビューコンテナのサイズからスケール係数を計算
+  const previewScale = containerRect.width / GAME_W;
+
   elements.previewPortrait.src = `${ASSET_BASE}/portraits/${cmd.portrait}`;
 
-  // ゲーム座標からプレビュー座標に変換
-  const gameX = cmd.portraitX ?? 960;
-  const gameY = cmd.portraitY ?? 540;
+  // ゲーム座標を取得（デフォルトは画面中央）
+  const gameX = cmd.portraitX ?? (GAME_W / 2);
+  const gameY = cmd.portraitY ?? (GAME_H / 2);
   const scale = cmd.portraitScale ?? 1.0;
 
-  const previewX = (gameX / 1920) * 100;
-  const previewY = (gameY / 1080) * 100;
+  // プレビュー座標に変換
+  const previewX = gameX * previewScale;
+  const previewY = gameY * previewScale;
+  const previewScaleValue = scale * previewScale;
 
-  elements.previewPortrait.style.left = `${previewX}%`;
-  elements.previewPortrait.style.top = `${previewY}%`;
-  elements.previewPortrait.style.transform = `translate(-50%, -50%) scale(${scale})`;
+  // スタイルを設定（ゲームと同じく中心原点で配置）
+  elements.previewPortrait.style.left = `${previewX}px`;
+  elements.previewPortrait.style.top = `${previewY}px`;
+  elements.previewPortrait.style.transform = `translate(-50%, -50%) scale(${previewScaleValue})`;
+  elements.previewPortrait.style.transformOrigin = 'center center';
 }
 
 function updatePreviewIndex() {

@@ -11,7 +11,10 @@
     {
       "op": "bg",
       "name": "bad1.png",
-      "fade": 500
+      "fade": 500,
+      "scaleX": 1,
+      "scaleY": 1,
+      "y": -300
     },
     {
       "op": "say",
@@ -36,7 +39,10 @@
       "lines": [
         "あなたが...噂の勇者か。",
         "話を聞いてほしい。"
-      ]
+      ],
+      "portraitX": 920,
+      "portraitY": 1053,
+      "portraitScale": 0.6
     },
     {
       "op": "say",
@@ -45,7 +51,10 @@
       "lines": [
         "魔女の力は日に日に強くなっている。",
         "このままでは、世界は完全に闇に飲まれてしまう。"
-      ]
+      ],
+      "portraitX": 920,
+      "portraitY": 1053,
+      "portraitScale": 0.6
     },
     {
       "op": "say",
@@ -54,7 +63,10 @@
       "lines": [
         "どうか、魔女を倒し、",
         "この世界に光を取り戻してほしい。"
-      ]
+      ],
+      "portraitX": 920,
+      "portraitY": 1053,
+      "portraitScale": 0.6
     },
     {
       "op": "bg",
@@ -77,7 +89,9 @@
       "lines": [
         "この世界は私のもの。",
         "誰にも渡さないわ。"
-      ]
+      ],
+      "portraitX": 920,
+      "portraitY": 940
     },
     {
       "op": "say",
@@ -86,7 +100,9 @@
       "lines": [
         "来るがいいわ、勇者。",
         "絶望の中で朽ち果てるがいい！"
-      ]
+      ],
+      "portraitX": 920,
+      "portraitY": 940
     },
     {
       "op": "bg",
