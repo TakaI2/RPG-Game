@@ -761,7 +761,7 @@ export default class MainScene extends Phaser.Scene {
     const en = this.physics.add.sprite(x, y, 'solder') as EnemyWithAI
     en.state = 'patrol'
     en.speed = 180
-    en.hp = 3
+    en.hp = 30
     en.patrolPoints = [new Phaser.Math.Vector2(x, y), new Phaser.Math.Vector2(x + 10 * 32, y)]
     en.patrolIndex = 0
     en.play('blob-idle-down')
@@ -918,8 +918,8 @@ export default class MainScene extends Phaser.Scene {
           en.setData('hitCool', true)
           this.time.delayedCall(120, () => en.clearTint())
           this.time.delayedCall(250, () => en.setData('hitCool', false))
-          if (en.hp <= 0 && !en.getData('dying')) {
-            this.triggerEnemyDeath(en)
+          if (en.hp <= 0) {
+            if (!en.getData('dead')) this.triggerEnemyDeath(en)
           } else if (en.hp <= 10 && !en.getData('dying')) {
             en.setData('dying', true)
             en.setVelocity(0, 0)
@@ -989,8 +989,8 @@ export default class MainScene extends Phaser.Scene {
         this.time.delayedCall(120, () => en.clearTint())
         this.time.delayedCall(250, () => en.setData('hitCool', false))
 
-        if (en.hp <= 0 && !en.getData('dying')) {
-          this.triggerEnemyDeath(en)
+        if (en.hp <= 0) {
+          if (!en.getData('dead')) this.triggerEnemyDeath(en)
         } else if (en.hp <= 10 && !en.getData('dying')) {
           en.setData('dying', true)
           en.setVelocity(0, 0)

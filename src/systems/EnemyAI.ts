@@ -85,7 +85,7 @@ export function makeArcher(scene: Phaser.Scene, x: number, y: number): Archer {
   archer.enemyType = 'archer'
   archer.state = 'patrol'
   archer.speed = 160
-  archer.hp = 4
+  archer.hp = 25
   archer.patrolPoints = [new Phaser.Math.Vector2(x, y), new Phaser.Math.Vector2(x + 8 * 32, y)]
   archer.patrolIndex = 0
   archer.sight = 360
@@ -102,7 +102,7 @@ export function makeMage(scene: Phaser.Scene, x: number, y: number): Mage {
   mage.enemyType = 'mage'
   mage.state = 'patrol'
   mage.speed = 140
-  mage.hp = 3
+  mage.hp = 20
   mage.patrolPoints = [new Phaser.Math.Vector2(x, y), new Phaser.Math.Vector2(x + 6 * 32, y)]
   mage.patrolIndex = 0
   mage.sight = 400
@@ -122,7 +122,7 @@ export function makeBrute(scene: Phaser.Scene, x: number, y: number): Brute {
   brute.state = 'patrol'
   brute.speed = 120
   brute.dashSpeed = 480
-  brute.hp = 8
+  brute.hp = 40
   brute.patrolPoints = [new Phaser.Math.Vector2(x, y), new Phaser.Math.Vector2(x + 5 * 32, y)]
   brute.patrolIndex = 0
   brute.sight = 280
