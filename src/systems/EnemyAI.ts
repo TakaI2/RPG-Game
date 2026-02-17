@@ -70,7 +70,7 @@ export type Brute = Phaser.Types.Physics.Arcade.SpriteWithDynamicBody & {
 export type AnyEnemy = EnemyWithAI | Archer | Mage | Brute
 
 export function makeEnemy(scene: Phaser.Scene, x: number, y: number): EnemyWithAI {
-  const en = scene.physics.add.sprite(x, y, 'enemy16').setScale(2) as EnemyWithAI
+  const en = scene.physics.add.sprite(x, y, 'solder').setScale(2) as EnemyWithAI
   en.state = 'patrol'
   en.speed = 180
   en.hp = 3
@@ -81,7 +81,7 @@ export function makeEnemy(scene: Phaser.Scene, x: number, y: number): EnemyWithA
 
 // Archer（弓兵）を生成
 export function makeArcher(scene: Phaser.Scene, x: number, y: number): Archer {
-  const archer = scene.physics.add.sprite(x, y, 'archer') as Archer
+  const archer = scene.physics.add.sprite(x, y, 'vamp1') as Archer
   archer.enemyType = 'archer'
   archer.state = 'patrol'
   archer.speed = 160
@@ -98,7 +98,7 @@ export function makeArcher(scene: Phaser.Scene, x: number, y: number): Archer {
 
 // Mage（メイジ）を生成
 export function makeMage(scene: Phaser.Scene, x: number, y: number): Mage {
-  const mage = scene.physics.add.sprite(x, y, 'mage') as Mage
+  const mage = scene.physics.add.sprite(x, y, 'succubus') as Mage
   mage.enemyType = 'mage'
   mage.state = 'patrol'
   mage.speed = 140
@@ -117,7 +117,7 @@ export function makeMage(scene: Phaser.Scene, x: number, y: number): Mage {
 
 // Brute（突進戦士）を生成
 export function makeBrute(scene: Phaser.Scene, x: number, y: number): Brute {
-  const brute = scene.physics.add.sprite(x, y, 'brute') as Brute
+  const brute = scene.physics.add.sprite(x, y, 'mage') as Brute
   brute.enemyType = 'brute'
   brute.state = 'patrol'
   brute.speed = 120
@@ -138,6 +138,7 @@ export function makeBrute(scene: Phaser.Scene, x: number, y: number): Brute {
 
 export function updateEnemyAI(scene: Phaser.Scene, en: EnemyWithAI, player: Phaser.Physics.Arcade.Sprite) {
   if (!en.active) return
+  if (en.getData('dying') || en.getData('dead')) return
   const dist = Phaser.Math.Distance.Between(en.x, en.y, player.x, player.y)
   const vision = 220, attackR = 44
 
@@ -185,6 +186,7 @@ export function updateEnemyAI(scene: Phaser.Scene, en: EnemyWithAI, player: Phas
 // Archerの更新
 export function updateArcherAI(scene: Phaser.Scene, archer: Archer, player: Phaser.Physics.Arcade.Sprite) {
   if (!archer.active) return
+  if (archer.getData('dying') || archer.getData('dead')) return
 
   const dist = Phaser.Math.Distance.Between(archer.x, archer.y, player.x, player.y)
   const now = scene.time.now
@@ -256,6 +258,7 @@ export function updateArcherAI(scene: Phaser.Scene, archer: Archer, player: Phas
 // Mageの更新
 export function updateMageAI(scene: Phaser.Scene, mage: Mage, player: Phaser.Physics.Arcade.Sprite) {
   if (!mage.active) return
+  if (mage.getData('dying') || mage.getData('dead')) return
 
   const dist = Phaser.Math.Distance.Between(mage.x, mage.y, player.x, player.y)
   const now = scene.time.now
@@ -335,6 +338,7 @@ export function updateMageAI(scene: Phaser.Scene, mage: Mage, player: Phaser.Phy
 // Bruteの更新
 export function updateBruteAI(scene: Phaser.Scene, brute: Brute, player: Phaser.Physics.Arcade.Sprite) {
   if (!brute.active) return
+  if (brute.getData('dying') || brute.getData('dead')) return
 
   const dist = Phaser.Math.Distance.Between(brute.x, brute.y, player.x, player.y)
   const now = scene.time.now

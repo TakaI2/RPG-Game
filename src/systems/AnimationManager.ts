@@ -83,80 +83,69 @@ export function createPlayerAnimations(scene: Phaser.Scene, key: string) {
 
 /**
  * 敵のアニメーションを定義
+ * スプライトシート: 1024×256, 64×64フレーム, 16列×4行（プレイヤーと同レイアウト）
+ * 列グループ: 0-3=アイドル, 4-7=歩行, 8-11=攻撃, 12-15=ダメージ系
+ * ダメージ行: Row0=ひんし(ループ), Row1=死亡(1回)
  * @param scene Phaser Scene
- * @param key スプライトシートのキー
+ * @param animPrefix アニメーションキーのプレフィックス（例: 'blob'）
+ * @param textureKey スプライトシートのテクスチャキー（例: 'solder'）
  */
-export function createEnemyAnimations(scene: Phaser.Scene, key: string) {
-  // 歩行アニメーション（4方向）
-  if (!scene.anims.exists(`${key}-walk-down`)) {
+export function createEnemyAnimations(scene: Phaser.Scene, animPrefix: string, textureKey: string) {
+  const dirs: { name: string; row: number }[] = [
+    { name: 'up',    row: 0 },
+    { name: 'left',  row: 1 },
+    { name: 'down',  row: 2 },
+    { name: 'right', row: 3 },
+  ]
+
+  for (const { name, row } of dirs) {
+    // アイドルアニメーション（列 0-3）
+    if (!scene.anims.exists(`${animPrefix}-idle-${name}`)) {
+      scene.anims.create({
+        key: `${animPrefix}-idle-${name}`,
+        frames: getPlayerFrames(0, row).map(f => ({ key: textureKey, frame: f })),
+        frameRate: 5,
+        repeat: -1
+      })
+    }
+
+    // 歩行アニメーション（列 4-7）
+    if (!scene.anims.exists(`${animPrefix}-walk-${name}`)) {
+      scene.anims.create({
+        key: `${animPrefix}-walk-${name}`,
+        frames: getPlayerFrames(4, row).map(f => ({ key: textureKey, frame: f })),
+        frameRate: 8,
+        repeat: -1
+      })
+    }
+
+    // 攻撃アニメーション（列 8-11）
+    if (!scene.anims.exists(`${animPrefix}-atk-${name}`)) {
+      scene.anims.create({
+        key: `${animPrefix}-atk-${name}`,
+        frames: getPlayerFrames(8, row).map(f => ({ key: textureKey, frame: f })),
+        frameRate: 10,
+        repeat: 0
+      })
+    }
+  }
+
+  // ひんしアニメーション（列 12-15, Row0, ループ）
+  if (!scene.anims.exists(`${animPrefix}-dying`)) {
     scene.anims.create({
-      key: `${key}-walk-down`,
-      frames: getRowFrames(0).map(f => ({ key, frame: f })),
-      frameRate: 8,
+      key: `${animPrefix}-dying`,
+      frames: getPlayerFrames(12, 0).map(f => ({ key: textureKey, frame: f })),
+      frameRate: 6,
       repeat: -1
     })
   }
 
-  if (!scene.anims.exists(`${key}-walk-left`)) {
+  // 死亡アニメーション（列 12-15, Row1, 1回再生）
+  if (!scene.anims.exists(`${animPrefix}-dead`)) {
     scene.anims.create({
-      key: `${key}-walk-left`,
-      frames: getRowFrames(1).map(f => ({ key, frame: f })),
+      key: `${animPrefix}-dead`,
+      frames: getPlayerFrames(12, 1).map(f => ({ key: textureKey, frame: f })),
       frameRate: 8,
-      repeat: -1
-    })
-  }
-
-  if (!scene.anims.exists(`${key}-walk-right`)) {
-    scene.anims.create({
-      key: `${key}-walk-right`,
-      frames: getRowFrames(2).map(f => ({ key, frame: f })),
-      frameRate: 8,
-      repeat: -1
-    })
-  }
-
-  if (!scene.anims.exists(`${key}-walk-up`)) {
-    scene.anims.create({
-      key: `${key}-walk-up`,
-      frames: getRowFrames(3).map(f => ({ key, frame: f })),
-      frameRate: 8,
-      repeat: -1
-    })
-  }
-
-  // 攻撃アニメーション（4方向）
-  if (!scene.anims.exists(`${key}-atk-down`)) {
-    scene.anims.create({
-      key: `${key}-atk-down`,
-      frames: getRowFrames(4).map(f => ({ key, frame: f })),
-      frameRate: 10,
-      repeat: 0
-    })
-  }
-
-  if (!scene.anims.exists(`${key}-atk-left`)) {
-    scene.anims.create({
-      key: `${key}-atk-left`,
-      frames: getRowFrames(5).map(f => ({ key, frame: f })),
-      frameRate: 10,
-      repeat: 0
-    })
-  }
-
-  if (!scene.anims.exists(`${key}-atk-right`)) {
-    scene.anims.create({
-      key: `${key}-atk-right`,
-      frames: getRowFrames(6).map(f => ({ key, frame: f })),
-      frameRate: 10,
-      repeat: 0
-    })
-  }
-
-  if (!scene.anims.exists(`${key}-atk-up`)) {
-    scene.anims.create({
-      key: `${key}-atk-up`,
-      frames: getRowFrames(7).map(f => ({ key, frame: f })),
-      frameRate: 10,
       repeat: 0
     })
   }

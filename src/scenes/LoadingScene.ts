@@ -35,11 +35,11 @@ export default class LoadingScene extends Phaser.Scene {
     // プレイヤースプライトシート（64×64、チョロマキー処理のため raw で読み込む）
     this.load.image('hero_raw', 'assets/images/hero.png')
 
-    // 敵スプライトシート（64×64）
-    this.load.spritesheet('blob', 'assets/images/enemy_blob.png', { frameWidth: 64, frameHeight: 64 })
-    this.load.spritesheet('archer', 'assets/images/enemy_archer.png', { frameWidth: 64, frameHeight: 64 })
-    this.load.spritesheet('brute', 'assets/images/enemy_brute.png', { frameWidth: 64, frameHeight: 64 })
-    this.load.spritesheet('mage', 'assets/images/enemy_mage.png', { frameWidth: 64, frameHeight: 64 })
+    // 敵スプライトシート（チョロマキー処理のため raw で読み込む）
+    this.load.image('solder_raw', 'assets/images/solder.png')
+    this.load.image('vamp1_raw', 'assets/images/vamp1.png')
+    this.load.image('succubus_raw', 'assets/images/succubus.png')
+    this.load.image('mage_raw', 'assets/images/mage.png')
 
     // 飛び道具
     this.load.image('arrow', 'assets/images/arrow.png')
@@ -162,7 +162,12 @@ export default class LoadingScene extends Phaser.Scene {
 
   create() {
     // hero_raw に RGB(0,254,0) チョロマキー処理を施し、スプライトシートとして登録
-    this.applyChromaKey('hero_raw', 'hero', 0, 254, 0, 64, 64)
+    this.applyChromaKey('hero_raw',     'hero',     0, 254, 0, 64, 64)
+    // 敵スプライトシートにも同様のチョロマキー処理
+    this.applyChromaKey('solder_raw',   'solder',   0, 254, 0, 64, 64)
+    this.applyChromaKey('vamp1_raw',    'vamp1',    0, 254, 0, 64, 64)
+    this.applyChromaKey('succubus_raw', 'succubus', 0, 254, 0, 64, 64)
+    this.applyChromaKey('mage_raw',     'mage',     0, 254, 0, 64, 64)
 
     // タイル用のテクスチャを生成
     // これらはMainSceneのpreloadで生成されていたものをここに移動

@@ -90,10 +90,10 @@ export default class MainScene extends Phaser.Scene {
   create() {
     // アニメーション定義
     createPlayerAnimations(this, 'hero')
-    createEnemyAnimations(this, 'blob')
-    createEnemyAnimations(this, 'archer')
-    createEnemyAnimations(this, 'mage')
-    createEnemyAnimations(this, 'brute')
+    createEnemyAnimations(this, 'blob',   'solder')
+    createEnemyAnimations(this, 'archer', 'vamp1')
+    createEnemyAnimations(this, 'mage',   'succubus')
+    createEnemyAnimations(this, 'brute',  'mage')
 
     // タイルマップを読み込み→壁と床を配置
     const mapData = this.cache.json.get('demo_map')
@@ -594,47 +594,57 @@ export default class MainScene extends Phaser.Scene {
     this.enemies.forEach(en => {
       if (!en.active) return
 
-      const prevVx = en.body.velocity.x
-      const prevVy = en.body.velocity.y
+      // ひんし・死亡中はアニメのみ更新してAIをスキップ
+      if (en.getData('dead')) return
+      if (en.getData('dying')) {
+        en.setVelocity(0, 0)
+        if (en.anims.currentAnim?.key !== 'blob-dying') en.play('blob-dying', true)
+        return
+      }
 
       updateEnemyAI(this, en, this.player)
 
-      // 敵の移動アニメ
       if (en.body.velocity.x !== 0 || en.body.velocity.y !== 0) {
         const dir = getDirectionFromVelocity(en.body.velocity.x, en.body.velocity.y)
+        en.setData('dir', dir)
         const targetAnim = `blob-walk-${dir}`
-        if (en.anims.currentAnim?.key !== targetAnim) {
-          en.play(targetAnim, true)
-        }
+        if (en.anims.currentAnim?.key !== targetAnim) en.play(targetAnim, true)
       } else {
-        if (en.anims.currentAnim) {
-          en.anims.pause()
-        }
+        const dir = en.getData('dir') || 'down'
+        const idleAnim = `blob-idle-${dir}`
+        if (en.anims.currentAnim?.key !== idleAnim) en.play(idleAnim, true)
       }
     })
 
     // Archerの更新
     this.archers.forEach(archer => {
       if (!archer.active) return
+
+      if (archer.getData('dead')) return
+      if (archer.getData('dying')) {
+        archer.setVelocity(0, 0)
+        if (archer.anims.currentAnim?.key !== 'archer-dying') archer.play('archer-dying', true)
+        return
+      }
+
       updateArcherAI(this, archer, this.player)
 
-      // アニメーション更新
       if (archer.body.velocity.x !== 0 || archer.body.velocity.y !== 0) {
         const dir = getDirectionFromVelocity(archer.body.velocity.x, archer.body.velocity.y)
+        archer.setData('dir', dir)
         const targetAnim = `archer-walk-${dir}`
-        if (archer.anims.currentAnim?.key !== targetAnim) {
-          archer.play(targetAnim, true)
-        }
+        if (archer.anims.currentAnim?.key !== targetAnim) archer.play(targetAnim, true)
       } else {
-        // 停止中は攻撃アニメの可能性があるのでチェック
         if (archer.state === 'aim' || archer.state === 'shoot') {
           const dir = this.getDirectionToPlayer(archer)
           const targetAnim = `archer-atk-${dir}`
-          if (archer.anims.currentAnim?.key !== targetAnim) {
-            archer.play(targetAnim, false)
+          if (archer.anims.currentAnim?.key !== targetAnim) archer.play(targetAnim, false)
+        } else {
+          const dir = archer.getData('dir') || 'down'
+          const idleAnim = `archer-idle-${dir}`
+          if (archer.anims.currentAnim?.key !== idleAnim && !archer.anims.currentAnim?.key.includes('atk')) {
+            archer.play(idleAnim, true)
           }
-        } else if (archer.anims.currentAnim && !archer.anims.currentAnim.key.includes('atk')) {
-          archer.anims.pause()
         }
       }
     })
@@ -642,25 +652,32 @@ export default class MainScene extends Phaser.Scene {
     // Mageの更新
     this.mages.forEach(mage => {
       if (!mage.active) return
+
+      if (mage.getData('dead')) return
+      if (mage.getData('dying')) {
+        mage.setVelocity(0, 0)
+        if (mage.anims.currentAnim?.key !== 'mage-dying') mage.play('mage-dying', true)
+        return
+      }
+
       updateMageAI(this, mage, this.player)
 
-      // アニメーション更新
       if (mage.body.velocity.x !== 0 || mage.body.velocity.y !== 0) {
         const dir = getDirectionFromVelocity(mage.body.velocity.x, mage.body.velocity.y)
+        mage.setData('dir', dir)
         const targetAnim = `mage-walk-${dir}`
-        if (mage.anims.currentAnim?.key !== targetAnim) {
-          mage.play(targetAnim, true)
-        }
+        if (mage.anims.currentAnim?.key !== targetAnim) mage.play(targetAnim, true)
       } else {
-        // 停止中は詠唱アニメの可能性
         if (mage.state === 'aim' || mage.state === 'cast' || mage.state === 'shoot') {
           const dir = this.getDirectionToPlayer(mage)
           const targetAnim = `mage-atk-${dir}`
-          if (mage.anims.currentAnim?.key !== targetAnim) {
-            mage.play(targetAnim, false)
+          if (mage.anims.currentAnim?.key !== targetAnim) mage.play(targetAnim, false)
+        } else {
+          const dir = mage.getData('dir') || 'down'
+          const idleAnim = `mage-idle-${dir}`
+          if (mage.anims.currentAnim?.key !== idleAnim && !mage.anims.currentAnim?.key.includes('atk')) {
+            mage.play(idleAnim, true)
           }
-        } else if (mage.anims.currentAnim && !mage.anims.currentAnim.key.includes('atk')) {
-          mage.anims.pause()
         }
       }
     })
@@ -668,24 +685,30 @@ export default class MainScene extends Phaser.Scene {
     // Bruteの更新
     this.brutes.forEach(brute => {
       if (!brute.active) return
+
+      if (brute.getData('dead')) return
+      if (brute.getData('dying')) {
+        brute.setVelocity(0, 0)
+        if (brute.anims.currentAnim?.key !== 'brute-dying') brute.play('brute-dying', true)
+        return
+      }
+
       updateBruteAI(this, brute, this.player)
 
-      // アニメーション更新
       if (brute.state === 'dash') {
         const dir = getDirectionFromVelocity(brute.body.velocity.x, brute.body.velocity.y)
         const targetAnim = `brute-atk-${dir}`
-        if (brute.anims.currentAnim?.key !== targetAnim) {
-          brute.play(targetAnim, true)
-        }
+        if (brute.anims.currentAnim?.key !== targetAnim) brute.play(targetAnim, true)
       } else if (brute.body.velocity.x !== 0 || brute.body.velocity.y !== 0) {
         const dir = getDirectionFromVelocity(brute.body.velocity.x, brute.body.velocity.y)
+        brute.setData('dir', dir)
         const targetAnim = `brute-walk-${dir}`
-        if (brute.anims.currentAnim?.key !== targetAnim) {
-          brute.play(targetAnim, true)
-        }
+        if (brute.anims.currentAnim?.key !== targetAnim) brute.play(targetAnim, true)
       } else {
-        if (brute.anims.currentAnim && !brute.anims.currentAnim.key.includes('atk')) {
-          brute.anims.pause()
+        const dir = brute.getData('dir') || 'down'
+        const idleAnim = `brute-idle-${dir}`
+        if (brute.anims.currentAnim?.key !== idleAnim && !brute.anims.currentAnim?.key.includes('atk')) {
+          brute.play(idleAnim, true)
         }
       }
     })
@@ -735,31 +758,31 @@ export default class MainScene extends Phaser.Scene {
   }
 
   private makeAnimatedEnemy(x: number, y: number): EnemyWithAI {
-    const en = this.physics.add.sprite(x, y, 'blob') as EnemyWithAI
+    const en = this.physics.add.sprite(x, y, 'solder') as EnemyWithAI
     en.state = 'patrol'
     en.speed = 180
     en.hp = 3
     en.patrolPoints = [new Phaser.Math.Vector2(x, y), new Phaser.Math.Vector2(x + 10 * 32, y)]
     en.patrolIndex = 0
-    en.play('blob-walk-down') // 初期アニメ
+    en.play('blob-idle-down')
     return en
   }
 
   private makeAnimatedArcher(x: number, y: number): Archer {
     const archer = makeArcher(this, x, y)
-    archer.play('archer-walk-down')
+    archer.play('archer-idle-down')
     return archer
   }
 
   private makeAnimatedMage(x: number, y: number): Mage {
     const mage = makeMage(this, x, y)
-    mage.play('mage-walk-down')
+    mage.play('mage-idle-down')
     return mage
   }
 
   private makeAnimatedBrute(x: number, y: number): Brute {
     const brute = makeBrute(this, x, y)
-    brute.play('brute-walk-down')
+    brute.play('brute-idle-down')
     return brute
   }
 
@@ -889,14 +912,17 @@ export default class MainScene extends Phaser.Scene {
       this.colliders.push(collider)
       // 攻撃判定を設定
       const hitCollider = this.physics.add.overlap(this.hitbox, en, () => {
-        if (!en.getData('hitCool')) {
+        if (!en.getData('hitCool') && !en.getData('dead')) {
           en.hp -= 1
           en.setTint(0xffffaa)
           en.setData('hitCool', true)
           this.time.delayedCall(120, () => en.clearTint())
           this.time.delayedCall(250, () => en.setData('hitCool', false))
-          if (en.hp <= 0) {
-            en.disableBody(true, true)
+          if (en.hp <= 0 && !en.getData('dying')) {
+            this.triggerEnemyDeath(en)
+          } else if (en.hp <= 10 && !en.getData('dying')) {
+            en.setData('dying', true)
+            en.setVelocity(0, 0)
           }
         }
       })
@@ -927,19 +953,47 @@ export default class MainScene extends Phaser.Scene {
   }
 
   /**
+   * 敵の死亡処理：死亡アニメを1回再生してから消える
+   */
+  private triggerEnemyDeath(en: Phaser.Types.Physics.Arcade.SpriteWithDynamicBody) {
+    en.setData('dead', true)
+    en.setData('dying', false)
+    en.setVelocity(0, 0)
+    en.clearTint()
+
+    // 現在のアニメプレフィックスを特定して死亡アニメを再生
+    const key = en.texture.key
+    const prefixMap: Record<string, string> = {
+      solder: 'blob',
+      vamp1: 'archer',
+      succubus: 'mage',
+      mage: 'brute',
+    }
+    const prefix = prefixMap[key] ?? 'blob'
+    en.play(`${prefix}-dead`)
+    en.once(Phaser.Animations.Events.ANIMATION_COMPLETE, () => {
+      en.disableBody(true, true)
+    })
+  }
+
+  /**
    * 敵との攻撃判定を設定
    * @param en 敵スプライト
    */
   private setupEnemyHit(en: Phaser.Types.Physics.Arcade.SpriteWithDynamicBody & { hp: number }) {
     const hitCollider = this.physics.add.overlap(this.hitbox, en, () => {
-      if (!en.getData('hitCool')) {
+      if (!en.getData('hitCool') && !en.getData('dead')) {
         en.hp -= 1
         en.setTint(0xffffaa)
         en.setData('hitCool', true)
         this.time.delayedCall(120, () => en.clearTint())
         this.time.delayedCall(250, () => en.setData('hitCool', false))
-        if (en.hp <= 0) {
-          en.disableBody(true, true)
+
+        if (en.hp <= 0 && !en.getData('dying')) {
+          this.triggerEnemyDeath(en)
+        } else if (en.hp <= 10 && !en.getData('dying')) {
+          en.setData('dying', true)
+          en.setVelocity(0, 0)
         }
       }
     })
