@@ -52,6 +52,8 @@ export default class MainScene extends Phaser.Scene {
   private ui!: DialogUI
   private playerDirection: string = 'down' // プレイヤーの現在の向き
   private isAttacking: boolean = false // 攻撃中フラグ
+  private isSpecialAttacking: boolean = false // 特殊攻撃中フラグ
+  private isRightMouseHeld: boolean = false // 右クリックホールド中フラグ
   private projectiles!: Phaser.Physics.Arcade.Group
   private hpText!: Phaser.GameObjects.Text // HP表示テキスト
   private isGameOver: boolean = false // ゲームオーバーフラグ
@@ -107,7 +109,7 @@ export default class MainScene extends Phaser.Scene {
     ;(this.player as any).hp = 100
     this.player.setCollideWorldBounds(true)
     this.player.setDepth(10) // プレイヤーを前面に表示
-    this.player.play('hero-walk-down') // 初期アニメ
+    this.player.play('hero-idle-down') // 初期アニメ
 
     // 飛び道具グループ初期化
     this.projectiles = this.physics.add.group()
@@ -152,12 +154,17 @@ export default class MainScene extends Phaser.Scene {
     // 敵とイベントトリガーを初期化
     this.initializeEnemiesAndTriggers(mapData)
 
-    // 攻撃アニメ完了時のイベント
+    // アニメ完了時のイベント
     this.player.on(Phaser.Animations.Events.ANIMATION_COMPLETE, (anim: Phaser.Animations.Animation) => {
       if (anim.key.startsWith('hero-atk-')) {
         this.isAttacking = false
-        // 攻撃終了後、現在の方向の歩行アニメに戻る
-        this.player.play(`hero-walk-${this.playerDirection}`)
+        if (this.isRightMouseHeld) {
+          // 右クリックを押し続けていたら特殊攻撃に移行
+          this.isSpecialAttacking = true
+          this.player.play(`hero-special-${this.playerDirection}`, true)
+        } else {
+          this.player.play(`hero-idle-${this.playerDirection}`)
+        }
       }
     })
 
@@ -307,10 +314,22 @@ export default class MainScene extends Phaser.Scene {
    * - 右クリック: 攻撃
    */
   private setupMouseMovement() {
-    // 右クリックで攻撃
+    // 右クリック押下：通常攻撃 + ホールド開始
     this.input.on('pointerdown', (pointer: Phaser.Input.Pointer) => {
       if (pointer.rightButtonDown()) {
+        this.isRightMouseHeld = true
         this.performAttack()
+      }
+    })
+
+    // 右クリック解放：特殊攻撃を停止してアイドルに戻る
+    this.input.on('pointerup', (pointer: Phaser.Input.Pointer) => {
+      if (pointer.rightButtonReleased()) {
+        this.isRightMouseHeld = false
+        if (this.isSpecialAttacking) {
+          this.isSpecialAttacking = false
+          this.player.play(`hero-idle-${this.playerDirection}`)
+        }
       }
     })
 
@@ -405,13 +424,16 @@ export default class MainScene extends Phaser.Scene {
 
     if (this.ui.visible) {
       this.player.setVelocity(0)
-      if (this.player.anims.currentAnim && !this.isAttacking) {
+      if (!this.isAttacking && !this.isSpecialAttacking) {
         this.player.anims.pause()
       }
       return
     } else {
-      if (this.player.anims.currentAnim && !this.isAttacking) {
-        this.player.anims.resume()
+      if (!this.isAttacking && !this.isSpecialAttacking) {
+        const idleAnim = `hero-idle-${this.playerDirection}`
+        if (this.player.anims.isPaused && this.player.anims.currentAnim?.key === idleAnim) {
+          this.player.anims.resume()
+        }
       }
     }
 
@@ -516,8 +538,8 @@ export default class MainScene extends Phaser.Scene {
       }
     }
 
-    // 攻撃中は移動不可
-    if (this.isAttacking) {
+    // 攻撃中・特殊攻撃中は移動不可
+    if (this.isAttacking || this.isSpecialAttacking) {
       this.player.setVelocity(0)
       return
     }
@@ -560,9 +582,11 @@ export default class MainScene extends Phaser.Scene {
       }
     } else {
       this.player.setVelocity(0, 0)
-      // 停止時はアニメを一時停止
-      if (this.player.anims.currentAnim && !this.player.anims.currentAnim.key.startsWith('hero-atk-')) {
-        this.player.anims.pause()
+      // 停止時はアイドルアニメを再生（攻撃中は切り替えない）
+      const idleAnim = `hero-idle-${this.playerDirection}`
+      const currentKey = this.player.anims.currentAnim?.key
+      if (currentKey !== idleAnim && !this.isAttacking && !this.isSpecialAttacking) {
+        this.player.play(idleAnim, true)
       }
     }
 

@@ -32,8 +32,8 @@ export default class LoadingScene extends Phaser.Scene {
     // MainScene用アセットのプリロード
     // ========================================
 
-    // プレイヤースプライトシート（64×64）
-    this.load.spritesheet('hero', 'assets/images/player_hero.png', { frameWidth: 64, frameHeight: 64 })
+    // プレイヤースプライトシート（64×64、チョロマキー処理のため raw で読み込む）
+    this.load.image('hero_raw', 'assets/images/hero.png')
 
     // 敵スプライトシート（64×64）
     this.load.spritesheet('blob', 'assets/images/enemy_blob.png', { frameWidth: 64, frameHeight: 64 })
@@ -161,6 +161,9 @@ export default class LoadingScene extends Phaser.Scene {
   }
 
   create() {
+    // hero_raw に RGB(0,254,0) チョロマキー処理を施し、スプライトシートとして登録
+    this.applyChromaKey('hero_raw', 'hero', 0, 254, 0, 64, 64)
+
     // タイル用のテクスチャを生成
     // これらはMainSceneのpreloadで生成されていたものをここに移動
 
@@ -179,5 +182,44 @@ export default class LoadingScene extends Phaser.Scene {
     g7.fillStyle(0xffffff, 1).fillRect(0, 0, 200, 200).generateTexture('portrait', 200, 200).clear()
 
     console.log('[LoadingScene] Textures generated')
+  }
+
+  /**
+   * 指定した色を透明にしてスプライトシートとして登録する（チョロマキー処理）
+   * @param rawKey ロード済み画像キー
+   * @param destKey 登録先スプライトシートキー
+   * @param r 透過色 R
+   * @param g 透過色 G
+   * @param b 透過色 B
+   * @param frameWidth フレーム幅
+   * @param frameHeight フレーム高さ
+   */
+  private applyChromaKey(
+    rawKey: string,
+    destKey: string,
+    r: number,
+    g: number,
+    b: number,
+    frameWidth: number,
+    frameHeight: number
+  ) {
+    const rawTex = this.textures.get(rawKey)
+    const src = rawTex.source[0]
+    const canvas = document.createElement('canvas')
+    canvas.width = src.width
+    canvas.height = src.height
+    const ctx = canvas.getContext('2d')!
+    ctx.drawImage(src.image as HTMLImageElement, 0, 0)
+    const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height)
+    const data = imageData.data
+    for (let i = 0; i < data.length; i += 4) {
+      if (data[i] === r && data[i + 1] === g && data[i + 2] === b) {
+        data[i + 3] = 0
+      }
+    }
+    ctx.putImageData(imageData, 0, 0)
+    this.textures.addSpriteSheet(destKey, canvas as unknown as HTMLImageElement, { frameWidth, frameHeight })
+    this.textures.remove(rawKey)
+    console.log(`[LoadingScene] ChromaKey applied: ${rawKey} -> ${destKey}`)
   }
 }
