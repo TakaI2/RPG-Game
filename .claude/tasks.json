@@ -5,8 +5,8 @@
     "startDate": "2025-10-18",
     "currentBranch": "feature/title-screen-and-pause-menu"
   },
-  "latestUpdate": "2025-11-16",
-  "status": "タイトル画面・ポーズメニュー機能のバグ修正中",
+  "latestUpdate": "2026-02-22",
+  "status": "ゲームフロー一元管理システム実装完了・BGM/2回目プレイバグ修正済み。新キャラアセット統合・プレイヤー/エネミー改修案の実装待ち",
   "completedFeatures": [
     "タイトル画面実装",
     "ポーズメニュー実装",
@@ -14,7 +14,8 @@
     "タッチ操作対応（仮想ジョイスティック・攻撃ボタン）",
     "ボスバトルシステム",
     "ストーリーシステム",
-    "ゲーム状態管理システム"
+    "ゲーム状態管理システム",
+    "ゲームフロー一元管理システム（gameflow.json + GameFlowManager）"
   ],
   "resolvedIssues": [
     {
@@ -40,19 +41,31 @@
       "description": "ボタンの表示位置と当たり判定がずれて押せない",
       "solution": "scrollFactorを廃止し、show()時にカメラ位置に合わせて動的配置に変更",
       "resolvedDate": "2025-11-16"
-    }
-  ],
-  "currentIssues": [
+    },
     {
       "issue": "タイトル画面の表示問題",
-      "description": "ゲームクリア/オーバー後、タイトル画面に遷移するが背景とボタンが表示されない",
-      "impact": "ゲーム終了後、タイトルに戻れない（画面は真っ黒だがUIは存在）",
-      "triedSolutions": [
-        "StoryScene.endStory()のcleanup処理をshutdownイベントに委譲",
-        "TitleScene.create()をシンプル化し、シーン・カメラを明示的にアクティブ化"
-      ],
-      "status": "継続調査中",
-      "nextAction": "次回セッションで詳細ログを確認して原因特定"
+      "description": "ゲームクリア/オーバー後、タイトル画面に遷移するが背景とボタンが表示されない（画面真っ黒）",
+      "rootCause": "Phaserのシーン描画順の問題。MainSceneがpause()で一時停止中のまま残り、TitleSceneより前面（index 2 > index 1）に黒く描画されていた",
+      "solution": "StoryScene.endStory()でTitleScene遷移前にscene.isPaused('MainScene')を確認し、pausedならscene.stop('MainScene')で完全停止。TitleScene.create()にもカメラリセット（stopFollow/setScroll/removeBounds/resetFX）を追加",
+      "resolvedDate": "2026-02-18"
+    }
+  ],
+  "currentIssues": [],
+  "recentWork_2026_02_22": [
+    {
+      "task": "ゲームフロー一元管理システム実装",
+      "description": "gameflow.json・GameFlowTypes.ts・GameFlowManager.tsを新規作成。マップ別イベントトリガー・死亡/クリアシナリオ・onEnterをJSONで一元管理。ThenAction（stay/exit/goto_map）でストーリー後の遷移を制御",
+      "status": "completed"
+    },
+    {
+      "task": "BGMマップ再生バグ修正",
+      "description": "BGMManagerが'story-end'（ハイフン）を待っていたが、StorySceneが発火するのは'story:end'（コロン）だった。イベント名を統一してマップBGMが再生されるよう修正",
+      "status": "completed"
+    },
+    {
+      "task": "2回目プレイ時マップ読み込みバグ修正",
+      "description": "Phaserシーン再起動時にコンストラクタが再呼び出しされないため、this.wallsに前回プレイのシャットダウン済みStaticGroupが残存。switchMap()でclear()呼び出し時にクラッシュしマップが表示されなかった。walls型をoptionalに変更しcreate()でリセット",
+      "status": "completed"
     }
   ],
   "mainDocuments": [

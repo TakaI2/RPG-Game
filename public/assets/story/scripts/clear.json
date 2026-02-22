@@ -94,8 +94,7 @@
       ]
     },
     {
-      "op": "end",
-      "returnTo": "title"
+      "op": "end"
     }
   ]
 }

@@ -6588,26 +6588,5 @@
       "x": 43,
       "y": 45
     }
-  ],
-  "eventTriggers": [
-    {
-      "x": 50,
-      "y": 45,
-      "type": "story",
-      "storyId": "priest_event",
-      "once": true,
-      "marker": true
-    },
-    {
-      "x": 55,
-      "y": 45,
-      "type": "teleport",
-      "targetMap": "boss_map",
-      "targetX": 25,
-      "targetY": 8,
-      "once": false,
-      "marker": true,
-      "markerColor": "green"
-    }
   ]
 }

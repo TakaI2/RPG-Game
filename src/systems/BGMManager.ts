@@ -36,7 +36,7 @@ export class BGMManager {
     });
 
     // ストーリー終了時にマップBGMを再開
-    events.on('story-end', () => {
+    events.on('story:end', () => {
       this.onStoryEnd();
     });
   }
@@ -101,6 +101,6 @@ export class BGMManager {
     // イベントリスナーを削除
     events.off('map-loaded');
     events.off('story-start');
-    events.off('story-end');
+    events.off('story:end');
   }
 }

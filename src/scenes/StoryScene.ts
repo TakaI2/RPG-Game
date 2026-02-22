@@ -4,6 +4,7 @@ import { StoryRunner } from '../systems/StoryRunner'
 import { AudioBus } from '../systems/AudioBus'
 import { events } from '../systems/Events'
 import { GAME_W, GAME_H } from '../config'
+import type { ThenAction } from '../types/GameFlowTypes'
 
 /**
  * ストーリーパート専用シーン（M2: 完全版）
@@ -17,6 +18,7 @@ export default class StoryScene extends Phaser.Scene {
   private audio!: AudioBus
   private spaceKey!: Phaser.Input.Keyboard.Key
   private scriptId!: string
+  private thenAction!: ThenAction
   private waitingForSpace = false
 
   // 背景・立ち絵
@@ -30,9 +32,10 @@ export default class StoryScene extends Phaser.Scene {
     super('StoryScene')
   }
 
-  init(data: { id: string }) {
+  init(data: { id: string; then?: ThenAction }) {
     this.scriptId = data?.id || 'intro'
-    console.log(`[StoryScene] init with id: ${this.scriptId}`, 'data:', data)
+    this.thenAction = data?.then ?? { action: 'stay' }
+    console.log(`[StoryScene] init with id: ${this.scriptId}`, 'then:', this.thenAction)
 
     if (!data || !data.id) {
       console.warn('[StoryScene] No id provided, using default: intro')
@@ -60,8 +63,8 @@ export default class StoryScene extends Phaser.Scene {
 
     if (!scriptData) {
       console.error(`[StoryScene] Script data not found: story_${this.scriptId}`)
-      // フォールバック: ゲームに戻る
-      events.emit('story:end', { id: this.scriptId })
+      // フォールバック: story:end を発火して MainScene に制御を戻す
+      events.emit('story:end', { id: this.scriptId, then: this.thenAction })
       this.scene.stop()
       return
     }
@@ -105,8 +108,8 @@ export default class StoryScene extends Phaser.Scene {
       onBg: async (payload) => {
         await this.showBg(payload)
       },
-      onEnd: (returnTo) => {
-        this.endStory(returnTo)
+      onEnd: (_returnTo) => {
+        this.endStory()
       }
     })
 
@@ -328,7 +331,6 @@ export default class StoryScene extends Phaser.Scene {
         loop: true,
         callback: () => {
           if (!this.ui.visible) {
-            // DialogUIが閉じた = 会話終了
             console.log('[StoryScene] DialogUI closed, resolving showSay promise')
             if (this.checkInterval) {
               this.checkInterval.remove()
@@ -348,11 +350,9 @@ export default class StoryScene extends Phaser.Scene {
   private onAdvance() {
     console.log('[StoryScene] Advance triggered, ui.visible:', this.ui.visible, 'waitingForSpace:', this.waitingForSpace)
     if (this.ui.visible) {
-      // DialogUIのnextを呼ぶ（タイプ中なら即表示、終わったら次へ）
       console.log('[StoryScene] Calling ui.next()')
       this.ui.next()
     } else if (!this.waitingForSpace) {
-      // 次のステップへ
       console.log('[StoryScene] Calling runner.step()')
       this.runner.step()
     } else {
@@ -360,32 +360,18 @@ export default class StoryScene extends Phaser.Scene {
     }
   }
 
-  private endStory(returnTo: string) {
-    console.log(`[StoryScene] endStory, returnTo: ${returnTo}`)
+  /**
+   * ストーリー終了処理
+   * story:end イベントを発火して MainScene に制御を渡し、自身を停止する
+   */
+  private endStory() {
+    console.log(`[StoryScene] endStory, id: ${this.scriptId}, then:`, this.thenAction)
 
-    // ストーリー終了イベントを発火
-    events.emit('story-end', { nextScene: returnTo })
-    console.log('[StoryScene] story-end event emitted, nextScene:', returnTo)
+    // story:end イベントを発火（MainScene の executeThen が受け取る）
+    events.emit('story:end', { id: this.scriptId, then: this.thenAction })
+    console.log('[StoryScene] story:end event emitted')
 
-    // clear/gameoverの場合はタイトルに、それ以外は指定されたシーンに遷移
-    let targetScene: string | null = null
-
-    if (returnTo === 'title' || this.scriptId === 'clear' || this.scriptId === 'gameover') {
-      console.log('[StoryScene] Transitioning to TitleScene')
-      targetScene = 'TitleScene'
-    } else if (returnTo && returnTo !== 'none') {
-      // シーンキーのマッピング（game -> MainScene）
-      targetScene = returnTo === 'game' ? 'MainScene' : returnTo
-      console.log(`[StoryScene] Transitioning to scene: ${targetScene}`)
-    }
-
-    if (targetScene) {
-      console.log('[StoryScene] Starting scene:', targetScene)
-      // scene.start()が自動的にStorySceneをシャットダウンし、shutdownイベントでcleanup()が呼ばれる
-      this.scene.start(targetScene)
-    } else {
-      console.warn('[StoryScene] No scene to start! returnTo:', returnTo)
-      this.scene.stop()
-    }
+    // 自身を停止（shutdownイベントでcleanupが呼ばれる）
+    this.scene.stop()
   }
 }

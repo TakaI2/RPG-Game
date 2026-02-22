@@ -15,6 +15,12 @@ export default class TitleScene extends Phaser.Scene {
     this.scene.setActive(true);
     this.scene.setVisible(true);
 
+    // 前シーンのカメラ状態をリセット（追従・スクロール・フェード効果を除去）
+    this.cameras.main.stopFollow();
+    this.cameras.main.setScroll(0, 0);
+    this.cameras.main.removeBounds();
+    this.cameras.main.resetFX();
+
     // カメラの初期化
     this.cameras.main.setBackgroundColor('#000000');
     this.cameras.main.setAlpha(1);
@@ -64,10 +70,7 @@ export default class TitleScene extends Phaser.Scene {
   }
 
   private startGame(): void {
-    // オープニングストーリーを再生してからゲーム開始
-    this.scene.start('StoryScene', {
-      scriptKey: 'intro',
-      nextScene: 'MainScene',
-    });
+    // MainScene が gameflow.json の start.story を処理する
+    this.scene.start('MainScene');
   }
 }

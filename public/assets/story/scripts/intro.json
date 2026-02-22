@@ -134,8 +134,7 @@
       ]
     },
     {
-      "op": "end",
-      "returnTo": "MainScene"
+      "op": "end"
     }
   ]
 }

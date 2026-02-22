@@ -1,12 +1,26 @@
 import Phaser from 'phaser';
 
 export class GameStateManager {
+  private static firedTriggers: Set<string> = new Set()
+
+  static isTriggerFired(key: string): boolean {
+    return this.firedTriggers.has(key)
+  }
+
+  static markTriggerFired(key: string): void {
+    this.firedTriggers.add(key)
+  }
+
   /**
    * ゲーム状態を完全にリセットする
    * タイトル画面に戻る際に呼び出される
    */
   static reset(scene: Phaser.Scene): void {
     console.log('[GameStateManager] Resetting game state...');
+
+    // 発火済みトリガーをクリア
+    this.firedTriggers.clear()
+    console.log('[GameStateManager] firedTriggers cleared')
 
     // MainSceneの参照を取得
     const mainScene = scene.scene.get('MainScene') as any;

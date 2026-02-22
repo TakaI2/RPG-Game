@@ -4,7 +4,6 @@ import DialogUI from '../systems/Dialog'
 import {
   updateEnemyAI,
   EnemyWithAI,
-  makeEnemy,
   Archer,
   Mage,
   Brute,
@@ -14,7 +13,6 @@ import {
   updateArcherAI,
   updateMageAI,
   updateBruteAI,
-  AnyEnemy
 } from '../systems/EnemyAI'
 import { buildMapFromJSON } from '../systems/Tilemap'
 import {
@@ -23,9 +21,9 @@ import {
   getDirectionFromVelocity
 } from '../systems/AnimationManager'
 import { NPCManager } from '../systems/NPCManager'
-import { updateHomingOrbs, Projectile } from '../systems/Projectile'
+import { updateHomingOrbs } from '../systems/Projectile'
 import { events } from '../systems/Events'
-import { EventTriggerManager, EventTrigger, TriggerResult } from '../systems/EventTriggerManager'
+import { EventTriggerManager } from '../systems/EventTriggerManager'
 import { Boss } from '../types/BossTypes'
 import { makeBoss, updateBossAI } from '../systems/BossAI'
 import { AudioBus } from '../systems/AudioBus'
@@ -37,6 +35,8 @@ import { AttackButton } from '../ui/AttackButton'
 import { BGMManager } from '../systems/BGMManager'
 import { PauseMenu } from '../ui/PauseMenu'
 import { GameStateManager } from '../systems/GameStateManager'
+import { GameFlowManager } from '../systems/GameFlowManager'
+import type { ThenAction } from '../types/GameFlowTypes'
 
 export default class MainScene extends Phaser.Scene {
   private cursors!: Phaser.Types.Input.Keyboard.CursorKeys
@@ -47,22 +47,22 @@ export default class MainScene extends Phaser.Scene {
   private archers: Archer[] = []
   private mages: Mage[] = []
   private brutes: Brute[] = []
-  private walls!: Phaser.Physics.Arcade.StaticGroup
+  private walls?: Phaser.Physics.Arcade.StaticGroup
   private hitbox!: Phaser.GameObjects.Rectangle & { body: Phaser.Physics.Arcade.Body }
   private ui!: DialogUI
-  private playerDirection: string = 'down' // プレイヤーの現在の向き
-  private isAttacking: boolean = false // 攻撃中フラグ
-  private isSpecialAttacking: boolean = false // 特殊攻撃中フラグ
-  private isRightMouseHeld: boolean = false // 右クリックホールド中フラグ
+  private playerDirection: string = 'down'
+  private isAttacking: boolean = false
+  private isSpecialAttacking: boolean = false
+  private isRightMouseHeld: boolean = false
   private projectiles!: Phaser.Physics.Arcade.Group
-  private hpText!: Phaser.GameObjects.Text // HP表示テキスト
-  private isGameOver: boolean = false // ゲームオーバーフラグ
-  private gameOverText?: Phaser.GameObjects.Text // ゲームオーバーテキスト
-  private isGameCleared: boolean = false // ゲームクリアフラグ
-  private eventTriggerManager?: EventTriggerManager // イベントトリガー管理
-  private currentMapId: string = 'demo_map' // 現在のマップID
-  private currentMapData: Record<string, unknown> | null = null // 現在のマップデータ
-  private colliders: Phaser.Physics.Arcade.Collider[] = [] // 衝突判定の配列
+  private hpText!: Phaser.GameObjects.Text
+  private isGameOver: boolean = false
+  private gameOverText?: Phaser.GameObjects.Text
+  private isGameCleared: boolean = false
+  private eventTriggerManager?: EventTriggerManager
+  private currentMapId: string = ''
+  private currentMapData: Record<string, unknown> | null = null
+  private colliders: Phaser.Physics.Arcade.Collider[] = []
 
   // ボス関連
   private boss: Boss | null = null
@@ -73,21 +73,38 @@ export default class MainScene extends Phaser.Scene {
 
   // マウス/タッチ操作UI
   private attackButton: AttackButton | null = null
-  private isMouseMoving: boolean = false // マウスによる移動中フラグ
-  private mouseWorldX: number = 0 // マウスのワールドX座標
-  private mouseWorldY: number = 0 // マウスのワールドY座標
+  private isMouseMoving: boolean = false
+  private mouseWorldX: number = 0
+  private mouseWorldY: number = 0
 
   // タイトル画面・ポーズメニュー関連
   private bgmManager?: BGMManager
   private pauseMenu?: PauseMenu
   private escKey?: Phaser.Input.Keyboard.Key
 
+  // ゲームフロー管理
+  private gameFlowManager!: GameFlowManager
+  private introLaunched: boolean = false
+
   constructor() { super('MainScene') }
 
-  // preloadはLoadingSceneで実行済み
-  // 全アセットは既にキャッシュに格納されている
-
   create() {
+    // シーン再起動時のステイル状態リセット（コンストラクタは再呼び出しされないため必須）
+    this.enemies = []
+    this.archers = []
+    this.mages = []
+    this.brutes = []
+    this.colliders = []
+    this.boss = null
+    this.bossHpUI = null
+    this.eventTriggerManager = undefined
+    this.walls = undefined
+    this.isGameOver = false
+    this.isGameCleared = false
+    this.currentMapId = ''
+    this.currentMapData = null
+    this.introLaunched = false
+
     // アニメーション定義
     createPlayerAnimations(this, 'hero')
     createEnemyAnimations(this, 'blob',   'solder')
@@ -95,21 +112,13 @@ export default class MainScene extends Phaser.Scene {
     createEnemyAnimations(this, 'mage',   'succubus')
     createEnemyAnimations(this, 'brute',  'mage')
 
-    // タイルマップを読み込み→壁と床を配置
-    const mapData = this.cache.json.get('demo_map')
-    const { worldW, worldH, walls } = buildMapFromJSON(this, mapData)
-    this.walls = walls
-
-    this.cameras.main.setBounds(0, 0, worldW, worldH)
-    this.physics.world.setBounds(0, 0, worldW, worldH)
-
-    // プレイヤー（64x64スプライト）
+    // プレイヤー（初期位置はダミー、switchMap後に正式に配置される）
     this.player = this.physics.add.sprite(40 * TILE, 40 * TILE, 'hero')
     ;(this.player as any).speed = 260
     ;(this.player as any).hp = 100
     this.player.setCollideWorldBounds(true)
-    this.player.setDepth(10) // プレイヤーを前面に表示
-    this.player.play('hero-idle-down') // 初期アニメ
+    this.player.setDepth(10)
+    this.player.play('hero-idle-down')
 
     // 飛び道具グループ初期化
     this.projectiles = this.physics.add.group()
@@ -122,13 +131,10 @@ export default class MainScene extends Phaser.Scene {
     // DialogUI初期化
     this.ui = new DialogUI(this)
 
-    // NPCマネージャー初期化
+    // NPCマネージャー初期化（マップロード時にNPCを読み込む）
     this.npcManager = new NPCManager(this, this.ui)
-    this.npcManager.loadNPCs('npc_config', this.currentMapId)
-    const npcColliders = this.npcManager.setupCollisions(this.player)
-    this.colliders.push(...npcColliders)
 
-    // HP表示を先に作成（DialogUIより前）
+    // HP表示を先に作成
     this.createHPDisplay()
 
     // ログダウンロードボタンを作成
@@ -137,11 +143,8 @@ export default class MainScene extends Phaser.Scene {
     // 仮想ジョイスティックと攻撃ボタンを作成
     this.createVirtualControls()
 
-    // プレイヤーと壁の衝突判定を設定
-    const playerWallCollider = this.physics.add.collider(this.player, this.walls)
-    this.colliders.push(playerWallCollider)
-
     this.cameras.main.startFollow(this.player, true, 0.12, 0.12)
+    this.cameras.main.setBackgroundColor('#000000')
 
     this.cursors = this.input.keyboard!.createCursorKeys()
     this.spaceKey = this.input.keyboard!.addKey(Phaser.Input.Keyboard.KeyCodes.SPACE)
@@ -151,15 +154,11 @@ export default class MainScene extends Phaser.Scene {
     this.physics.add.existing(this.hitbox)
     ;(this.hitbox.body as Phaser.Physics.Arcade.Body).setEnable(false)
 
-    // 敵とイベントトリガーを初期化
-    this.initializeEnemiesAndTriggers(mapData)
-
     // アニメ完了時のイベント
     this.player.on(Phaser.Animations.Events.ANIMATION_COMPLETE, (anim: Phaser.Animations.Animation) => {
       if (anim.key.startsWith('hero-atk-')) {
         this.isAttacking = false
         if (this.isRightMouseHeld) {
-          // 右クリックを押し続けていたら特殊攻撃に移行
           this.isSpecialAttacking = true
           this.player.play(`hero-special-${this.playerDirection}`, true)
         } else {
@@ -171,8 +170,8 @@ export default class MainScene extends Phaser.Scene {
     // 攻撃判定とアニメの同期
     this.player.on(Phaser.Animations.Events.ANIMATION_UPDATE, (anim: Phaser.Animations.Animation, frame: Phaser.Animations.AnimationFrame) => {
       if (anim.key.startsWith('hero-atk-')) {
-        const f = frame.index % 4 // 0..3
-        const active = (f === 1 || f === 2) // 真ん中の2フレームのみ有効
+        const f = frame.index % 4
+        const active = (f === 1 || f === 2)
         ;(this.hitbox.body as Phaser.Physics.Arcade.Body).setEnable(active)
       }
     })
@@ -183,12 +182,10 @@ export default class MainScene extends Phaser.Scene {
         return
       }
 
-      // NPCとの対話を試みる
       if (this.npcManager.tryInteract(this.player, 80)) {
         return
       }
 
-      // NPCが近くにいない場合は攻撃
       this.doAttack()
     })
 
@@ -199,8 +196,8 @@ export default class MainScene extends Phaser.Scene {
     // PauseMenuの初期化
     this.pauseMenu = new PauseMenu(this)
     this.pauseMenu.setBackToTitleCallback(() => {
-      // ゲーム状態をリセットしてタイトルに戻る
       GameStateManager.reset(this)
+      this.scene.stop()
       this.scene.start('TitleScene')
     })
     console.log('[MainScene] PauseMenu initialized')
@@ -209,12 +206,12 @@ export default class MainScene extends Phaser.Scene {
     this.escKey = this.input.keyboard?.addKey(Phaser.Input.Keyboard.KeyCodes.ESC)
     console.log('[MainScene] ESC key registered')
 
-    // マップロード完了イベントを発火（初回マップロード）
-    events.emit('map-loaded', this.currentMapId)
-    console.log('[MainScene] Initial map loaded event emitted:', this.currentMapId)
+    // GameFlowManager初期化
+    this.gameFlowManager = new GameFlowManager(this)
 
     // シャットダウン時のクリーンアップ
     this.events.once('shutdown', () => {
+      GameStateManager.reset(this)
       if (this.bgmManager) {
         this.bgmManager.destroy()
       }
@@ -226,7 +223,6 @@ export default class MainScene extends Phaser.Scene {
   }
 
   private createHPDisplay() {
-    // HP表示テキストを作成（カメラに固定）- 初期テキストを設定
     const initialText = 'HP: 100/100'
     this.hpText = this.add.text(20, 20, initialText, {
       fontSize: '32px',
@@ -244,19 +240,16 @@ export default class MainScene extends Phaser.Scene {
       }
     })
 
-    // 固定表示の設定
     this.hpText.setScrollFactor(0, 0)
     this.hpText.setOrigin(0, 0)
     this.hpText.setDepth(10000)
 
-    // デバッグログ（初期化確認用）
     console.log('HP Display created at position:', this.hpText.x, this.hpText.y)
 
     this.updateHPDisplay()
   }
 
   private createLogDownloadButton() {
-    // ログダウンロードボタンを作成（画面右上、カメラに固定）
     const buttonText = this.add.text(GAME_W - 200, 20, '[LOG DL]', {
       fontSize: '24px',
       color: '#00ff00',
@@ -273,7 +266,6 @@ export default class MainScene extends Phaser.Scene {
     buttonText.setDepth(10000)
     buttonText.setInteractive({ useHandCursor: true })
 
-    // ホバー時の色変更
     buttonText.on('pointerover', () => {
       buttonText.setColor('#ffff00')
     })
@@ -282,7 +274,6 @@ export default class MainScene extends Phaser.Scene {
       buttonText.setColor('#00ff00')
     })
 
-    // クリック時にログをダウンロード
     buttonText.on('pointerdown', () => {
       console.log('[MainScene] Log download button clicked')
       logger.downloadLogs()
@@ -296,25 +287,17 @@ export default class MainScene extends Phaser.Scene {
   }
 
   private createVirtualControls() {
-    // 攻撃ボタン（画面右下）
     this.attackButton = new AttackButton(this, GAME_W - 150, GAME_H - 150)
     this.attackButton.setOnAttack(() => {
       this.performAttack()
     })
 
-    // マウス移動機能のセットアップ
     this.setupMouseMovement()
 
     console.log('[MainScene] Virtual controls created')
   }
 
-  /**
-   * マウス移動機能をセットアップ
-   * - 左クリック押下中: マウス位置の方向に移動
-   * - 右クリック: 攻撃
-   */
   private setupMouseMovement() {
-    // 右クリック押下：通常攻撃 + ホールド開始
     this.input.on('pointerdown', (pointer: Phaser.Input.Pointer) => {
       if (pointer.rightButtonDown()) {
         this.isRightMouseHeld = true
@@ -322,7 +305,6 @@ export default class MainScene extends Phaser.Scene {
       }
     })
 
-    // 右クリック解放：特殊攻撃を停止してアイドルに戻る
     this.input.on('pointerup', (pointer: Phaser.Input.Pointer) => {
       if (pointer.rightButtonReleased()) {
         this.isRightMouseHeld = false
@@ -333,10 +315,8 @@ export default class MainScene extends Phaser.Scene {
       }
     })
 
-    // 左クリック押下開始
     this.input.on('pointerdown', (pointer: Phaser.Input.Pointer) => {
       if (pointer.leftButtonDown()) {
-        // 攻撃ボタンの範囲外かチェック
         if (!this.isPointerOnAttackButton(pointer)) {
           this.isMouseMoving = true
           this.updateMouseWorldPosition(pointer)
@@ -344,44 +324,33 @@ export default class MainScene extends Phaser.Scene {
       }
     })
 
-    // マウス移動中（ドラッグ中も含む）
     this.input.on('pointermove', (pointer: Phaser.Input.Pointer) => {
       if (this.isMouseMoving && pointer.leftButtonDown()) {
         this.updateMouseWorldPosition(pointer)
       }
     })
 
-    // 左クリック解除
     this.input.on('pointerup', (pointer: Phaser.Input.Pointer) => {
       if (!pointer.leftButtonDown()) {
         this.isMouseMoving = false
       }
     })
 
-    // 右クリックのデフォルト動作を無効化
     this.input.mouse?.disableContextMenu()
 
     console.log('[MainScene] Mouse movement controls setup complete')
   }
 
-  /**
-   * マウスのワールド座標を更新
-   */
   private updateMouseWorldPosition(pointer: Phaser.Input.Pointer) {
-    // スクリーン座標からワールド座標に変換
     const worldPoint = this.cameras.main.getWorldPoint(pointer.x, pointer.y)
     this.mouseWorldX = worldPoint.x
     this.mouseWorldY = worldPoint.y
   }
 
-  /**
-   * ポインターが攻撃ボタンの上にあるかチェック
-   */
   private isPointerOnAttackButton(pointer: Phaser.Input.Pointer): boolean {
-    // 攻撃ボタンの位置（画面右下、半径50）
     const buttonX = GAME_W - 150
     const buttonY = GAME_H - 150
-    const buttonRadius = 60 // 少し余裕を持たせる
+    const buttonRadius = 60
 
     const dx = pointer.x - buttonX
     const dy = pointer.y - buttonY
@@ -389,6 +358,18 @@ export default class MainScene extends Phaser.Scene {
   }
 
   update(time: number, delta: number) {
+    // 初回 update でイントロを起動（scene が RUNNING 状態であることを保証）
+    if (!this.introLaunched) {
+      this.introLaunched = true
+      const start = this.gameFlowManager.getStartConfig()
+      if (start.story) {
+        this.launchStory(start.story, start.then)
+      } else {
+        this.executeThen(start.then)
+      }
+      return
+    }
+
     // Escキーでポーズメニューの表示/非表示を切り替え
     if (this.escKey && Phaser.Input.Keyboard.JustDown(this.escKey)) {
       if (this.pauseMenu) {
@@ -403,14 +384,12 @@ export default class MainScene extends Phaser.Scene {
     // ポーズメニュー表示中は処理を停止
     if (this.pauseMenu && this.pauseMenu.isShowing()) {
       this.player.setVelocity(0)
-      this.isMouseMoving = false // マウス移動も停止
-      // タッチ操作UIを非表示
+      this.isMouseMoving = false
       if (this.attackButton) {
         this.attackButton.setVisible(false)
       }
       return
     } else {
-      // ポーズメニューが非表示の時はタッチ操作UIを表示
       if (this.attackButton) {
         this.attackButton.setVisible(true)
       }
@@ -451,7 +430,6 @@ export default class MainScene extends Phaser.Scene {
         delta
       )
 
-      // ボスHP表示を更新
       if (this.bossHpUI) {
         this.bossHpUI.update(this.boss.hp, this.boss.maxHp, this.boss.phase)
       }
@@ -460,47 +438,37 @@ export default class MainScene extends Phaser.Scene {
     // 誘導魔法弾の更新
     updateHomingOrbs(this)
 
-    // 飛び道具とプレイヤーの衝突判定（動的に処理）
-    this.physics.world.colliders.getActive().forEach((collider) => {
+    // 飛び道具とプレイヤーの衝突判定
+    this.physics.world.colliders.getActive().forEach((_collider) => {
       // 既存のコライダーを維持
     })
 
-    // すべての画像オブジェクトをチェックして飛び道具との衝突を検出
     this.children.list.forEach((obj) => {
       if (obj instanceof Phaser.Physics.Arcade.Image) {
         const img = obj as Phaser.Physics.Arcade.Image
         if ((img.texture.key === 'arrow' || img.texture.key === 'orb') && img.active) {
-          // プレイヤーとの衝突チェック
           if (this.physics.overlap(img, this.player)) {
             if (!this.player.getData('hitCool') && !this.isGameOver) {
               const damage = (img as any).damage || 1
               const oldHP = (this.player as any).hp
-              console.log('===== NEW CODE VERSION 2.0 RUNNING =====')
-              console.log('Before damage:', oldHP, 'Damage:', damage)
-
-              // HPを減らす（0未満にならないように）
               const newHP = Math.max(0, oldHP - damage)
               ;(this.player as any).hp = newHP
 
-              console.log('After damage:', newHP)
               console.log(`Player hit by ${img.texture.key}! HP: ${oldHP} -> ${newHP}`)
 
-              this.updateHPDisplay() // HP表示を更新
+              this.updateHPDisplay()
               this.player.setTint(0xffaaaa)
               this.player.setData('hitCool', true)
               this.time.delayedCall(120, () => this.player.clearTint())
               this.time.delayedCall(500, () => this.player.setData('hitCool', false))
               img.destroy()
 
-              // HPが0になったらゲームオーバー
               if (newHP <= 0) {
-                console.log('===== TRIGGERING GAME OVER =====')
                 this.triggerGameOver()
               }
             }
           }
 
-          // 壁との衝突チェック
           if (this.walls && this.walls.active) {
             this.physics.overlap(img, this.walls, () => {
               img.destroy()
@@ -521,18 +489,9 @@ export default class MainScene extends Phaser.Scene {
       if (result) {
         if (result.type === 'story' && result.storyId) {
           console.log(`[MainScene] Story event triggered: ${result.storyId}`)
-          // ゲームを一時停止してストーリーシーンを起動
-          this.scene.launch('StoryScene', { id: result.storyId })
-          this.scene.pause()
-
-          // ストーリー終了時にゲームを再開
-          events.once('story:end', () => {
-            console.log('[MainScene] Event story ended, resuming game')
-            this.scene.resume()
-          })
+          this.launchStory(result.storyId, result.then ?? { action: 'stay' })
         } else if (result.type === 'teleport' && result.targetMap) {
           console.log(`[MainScene] Teleport triggered: ${result.targetMap} (${result.targetX}, ${result.targetY})`)
-          // マップを切り替え
           this.switchMap(result.targetMap, result.targetX || 0, result.targetY || 0)
         }
       }
@@ -546,19 +505,15 @@ export default class MainScene extends Phaser.Scene {
 
     const speed: number = (this.player as any).speed
 
-    // キーボード入力
     let vx = (this.cursors.left?.isDown ? -1 : this.cursors.right?.isDown ? 1 : 0)
     let vy = (this.cursors.up?.isDown ? -1 : this.cursors.down?.isDown ? 1 : 0)
 
-    // マウス移動入力（キーボード入力がない場合のみ）
     if (vx === 0 && vy === 0 && this.isMouseMoving) {
-      // プレイヤーからマウス位置への方向ベクトルを計算
       const dx = this.mouseWorldX - this.player.x
       const dy = this.mouseWorldY - this.player.y
       const distance = Math.sqrt(dx * dx + dy * dy)
 
-      // 一定距離以上離れている場合のみ移動（到着判定）
-      const arrivalThreshold = 20 // 20ピクセル以内で到着とみなす
+      const arrivalThreshold = 20
       if (distance > arrivalThreshold) {
         vx = dx / distance
         vy = dy / distance
@@ -571,18 +526,15 @@ export default class MainScene extends Phaser.Scene {
       v.normalize().scale(speed)
       this.player.setVelocity(v.x, v.y)
 
-      // 移動方向を取得
       const direction = getDirectionFromVelocity(v.x, v.y)
       this.playerDirection = direction
 
-      // 移動アニメを再生
       const targetAnim = `hero-walk-${direction}`
       if (this.player.anims.currentAnim?.key !== targetAnim) {
         this.player.play(targetAnim, true)
       }
     } else {
       this.player.setVelocity(0, 0)
-      // 停止時はアイドルアニメを再生（攻撃中は切り替えない）
       const idleAnim = `hero-idle-${this.playerDirection}`
       const currentKey = this.player.anims.currentAnim?.key
       if (currentKey !== idleAnim && !this.isAttacking && !this.isSpecialAttacking) {
@@ -594,7 +546,6 @@ export default class MainScene extends Phaser.Scene {
     this.enemies.forEach(en => {
       if (!en.active) return
 
-      // ひんし・死亡中はアニメのみ更新してAIをスキップ
       if (en.getData('dead')) return
       if (en.getData('dying')) {
         en.setVelocity(0, 0)
@@ -715,39 +666,64 @@ export default class MainScene extends Phaser.Scene {
   }
 
   /**
+   * ストーリーを起動してゲームを一時停止する
+   */
+  private launchStory(storyId: string, then: ThenAction) {
+    console.log(`[MainScene] launchStory: ${storyId}`, then)
+    this.scene.launch('StoryScene', { id: storyId, then })
+    this.scene.pause()
+
+    events.once('story:end', (data: { id: string; then: ThenAction }) => {
+      console.log('[MainScene] story:end received, then:', data.then)
+      this.executeThen(data.then)
+    })
+  }
+
+  /**
+   * ThenAction に従ってフロー制御を実行する
+   */
+  private executeThen(then: ThenAction) {
+    console.log('[MainScene] executeThen:', then)
+    switch (then.action) {
+      case 'stay':
+        this.scene.resume()
+        break
+      case 'exit':
+        this.scene.stop()
+        this.scene.start('TitleScene')
+        break
+      case 'goto_map':
+        this.scene.resume()
+        this.switchMap(then.mapId, then.x, then.y)
+        break
+    }
+  }
+
+  /**
    * ゲームクリア処理（ボス撃破時などに呼び出す）
    */
   private triggerGameClear() {
     console.log('triggerGameClear called!')
 
     if (this.isGameCleared) {
-      return // 既にクリア済み
+      return
     }
 
     this.isGameCleared = true
-
-    // プレイヤーを停止
     this.player.setVelocity(0)
 
-    // フェードアウト完了時の処理
+    const config = this.gameFlowManager.getMapConfig(this.currentMapId)
+    const bossDefeat = config?.onBossDefeat ?? { story: 'clear', then: { action: 'exit' } as ThenAction }
+
     this.cameras.main.once(Phaser.Cameras.Scene2D.Events.FADE_OUT_COMPLETE, () => {
       console.log('[MainScene] Fade out complete, launching clear story')
-
-      // ストーリーシーンを起動
-      this.scene.launch('StoryScene', { id: 'clear' })
-      this.scene.pause()
-
-      // ストーリー終了後の処理
-      events.once('story:end', (data: { id: string }) => {
-        if (data.id === 'clear') {
-          console.log('[MainScene] Clear story ended')
-          // ゲームをリスタート
-          this.scene.restart()
-        }
-      })
+      if (bossDefeat.story) {
+        this.launchStory(bossDefeat.story, bossDefeat.then)
+      } else {
+        this.executeThen(bossDefeat.then)
+      }
     })
 
-    // クリア演出（フェードアウト）
     this.cameras.main.fadeOut(800, 0, 0, 0)
   }
 
@@ -787,28 +763,22 @@ export default class MainScene extends Phaser.Scene {
   }
 
   private doAttack() {
-    if (this.isAttacking) return // 攻撃中は攻撃不可
+    if (this.isAttacking) return
 
     this.isAttacking = true
 
-    // 攻撃アニメを再生
     this.player.play(`hero-atk-${this.playerDirection}`)
 
-    // ヒットボックスを配置
     const dir = this.getFacingVector()
     const off = 40
     this.hitbox.x = this.player.x + dir.x * off
     this.hitbox.y = this.player.y + dir.y * off
 
-    // アニメ完了後にヒットボックスを無効化
     this.time.delayedCall(300, () => {
       ;(this.hitbox.body as Phaser.Physics.Arcade.Body).setEnable(false)
     })
   }
 
-  /**
-   * 攻撃ボタン用のラッパーメソッド
-   */
   private performAttack() {
     this.doAttack()
   }
@@ -828,9 +798,8 @@ export default class MainScene extends Phaser.Scene {
     }
 
     const currentHP = (this.player as any).hp || 0
-    const maxHP = 100 // 最大HP
+    const maxHP = 100
 
-    // パーセンテージバー表示（20個の█で100%を表現）
     const barLength = 20
     const filledCount = Math.floor((currentHP / maxHP) * barLength)
     const filledBars = '█'.repeat(Math.max(0, filledCount))
@@ -838,15 +807,13 @@ export default class MainScene extends Phaser.Scene {
 
     const newText = `HP: ${currentHP}/${maxHP} [${filledBars}${emptyBars}]`
     this.hpText.setText(newText)
-    // console.log('HP Display updated:', newText) // デバッグ用（通常はコメントアウト）
 
-    // HPに応じて色を変更
     if (currentHP <= 20) {
-      this.hpText.setColor('#ff0000') // 赤（危険）
+      this.hpText.setColor('#ff0000')
     } else if (currentHP <= 40) {
-      this.hpText.setColor('#ffaa00') // オレンジ（警告）
+      this.hpText.setColor('#ffaa00')
     } else {
-      this.hpText.setColor('#ffffff') // 白（正常）
+      this.hpText.setColor('#ffffff')
     }
   }
 
@@ -854,47 +821,36 @@ export default class MainScene extends Phaser.Scene {
     console.log('triggerGameOver called! isGameOver:', this.isGameOver)
 
     if (this.isGameOver) {
-      console.log('Already game over, returning')
-      return // 既にゲームオーバーの場合は何もしない
+      return
     }
 
     this.isGameOver = true
     console.log('=== GAME OVER ===')
 
-    // プレイヤーを停止
     this.player.setVelocity(0)
 
-    // フェードアウト完了時の処理
+    const config = this.gameFlowManager.getMapConfig(this.currentMapId)
+    const defeat = config?.onPlayerDefeat ?? { story: 'gameover', then: { action: 'exit' } as ThenAction }
+
     this.cameras.main.once(Phaser.Cameras.Scene2D.Events.FADE_OUT_COMPLETE, () => {
       console.log('[MainScene] Fade out complete, launching gameover story')
-
-      // ストーリーシーンを起動
-      this.scene.launch('StoryScene', { id: 'gameover' })
-      this.scene.pause()
-
-      // ストーリー終了後の処理
-      events.once('story:end', (data: { id: string }) => {
-        if (data.id === 'gameover') {
-          console.log('[MainScene] GameOver story ended')
-          // ゲームをリスタート
-          this.scene.restart()
-        }
-      })
+      if (defeat.story) {
+        this.launchStory(defeat.story, defeat.then)
+      } else {
+        this.executeThen(defeat.then)
+      }
     })
 
-    // ゲームオーバー演出（フェードアウト）
     this.cameras.main.fadeOut(800, 0, 0, 0)
   }
 
   /**
    * 敵とイベントトリガーを初期化
-   * @param mapData マップデータ
    */
-  private initializeEnemiesAndTriggers(mapData: any) {
-    // 敵をスポーン
-    const enemySpawns = mapData.enemySpawns as Array<{ x: number; y: number }> || []
+  private initializeEnemiesAndTriggers(mapData: Record<string, unknown>) {
+    const enemySpawns = (mapData.enemySpawns as Array<{ x: number; y: number }>) || []
     enemySpawns.forEach((spawn) => {
-      const enemyType = Math.floor(Math.random() * 4) // 0-3でランダムに敵タイプを選択
+      const enemyType = Math.floor(Math.random() * 4)
       if (enemyType === 0) {
         this.enemies.push(this.makeAnimatedEnemy(spawn.x * TILE, spawn.y * TILE))
       } else if (enemyType === 1) {
@@ -908,9 +864,8 @@ export default class MainScene extends Phaser.Scene {
 
     // 敵と壁の衝突判定を設定
     this.enemies.forEach(en => {
-      const collider = this.physics.add.collider(en, this.walls)
+      const collider = this.physics.add.collider(en, this.walls!)
       this.colliders.push(collider)
-      // 攻撃判定を設定
       const hitCollider = this.physics.add.overlap(this.hitbox, en, () => {
         if (!en.getData('hitCool') && !en.getData('dead')) {
           en.hp -= 1
@@ -929,31 +884,31 @@ export default class MainScene extends Phaser.Scene {
       this.colliders.push(hitCollider)
     })
     this.archers.forEach(ar => {
-      const collider = this.physics.add.collider(ar, this.walls)
+      const collider = this.physics.add.collider(ar, this.walls!)
       this.colliders.push(collider)
-      this.setupEnemyHit(ar) // 攻撃判定を設定
+      this.setupEnemyHit(ar)
     })
     this.mages.forEach(mg => {
-      const collider = this.physics.add.collider(mg, this.walls)
+      const collider = this.physics.add.collider(mg, this.walls!)
       this.colliders.push(collider)
-      this.setupEnemyHit(mg) // 攻撃判定を設定
+      this.setupEnemyHit(mg)
     })
     this.brutes.forEach(br => {
-      const collider = this.physics.add.collider(br, this.walls)
+      const collider = this.physics.add.collider(br, this.walls!)
       this.colliders.push(collider)
-      this.setupEnemyHit(br) // 攻撃判定を設定
+      this.setupEnemyHit(br)
     })
 
-    // イベントトリガーを初期化
-    const eventTriggers = mapData.eventTriggers as EventTrigger[] || []
+    // イベントトリガーを gameflow.json から取得して初期化
+    const eventTriggers = this.gameFlowManager.getEventTriggers(this.currentMapId)
     if (eventTriggers.length > 0) {
-      this.eventTriggerManager = new EventTriggerManager(this, eventTriggers, TILE)
-      console.log(`[MainScene] Initialized ${eventTriggers.length} event triggers`)
+      this.eventTriggerManager = new EventTriggerManager(this, eventTriggers, TILE, this.currentMapId)
+      console.log(`[MainScene] Initialized ${eventTriggers.length} event triggers for ${this.currentMapId}`)
     }
   }
 
   /**
-   * 敵の死亡処理：死亡アニメを1回再生してから消える
+   * 敵の死亡処理
    */
   private triggerEnemyDeath(en: Phaser.Types.Physics.Arcade.SpriteWithDynamicBody) {
     en.setData('dead', true)
@@ -961,7 +916,6 @@ export default class MainScene extends Phaser.Scene {
     en.setVelocity(0, 0)
     en.clearTint()
 
-    // 現在のアニメプレフィックスを特定して死亡アニメを再生
     const key = en.texture.key
     const prefixMap: Record<string, string> = {
       solder: 'blob',
@@ -978,7 +932,6 @@ export default class MainScene extends Phaser.Scene {
 
   /**
    * 敵との攻撃判定を設定
-   * @param en 敵スプライト
    */
   private setupEnemyHit(en: Phaser.Types.Physics.Arcade.SpriteWithDynamicBody & { hp: number }) {
     const hitCollider = this.physics.add.overlap(this.hitbox, en, () => {
@@ -999,7 +952,6 @@ export default class MainScene extends Phaser.Scene {
     })
     this.colliders.push(hitCollider)
 
-    // Bruteの突進攻撃による接触ダメージ
     if ((en as any).enemyType === 'brute') {
       const bruteCollider = this.physics.add.overlap(this.player, en, () => {
         const brute = en as Brute
@@ -1008,13 +960,12 @@ export default class MainScene extends Phaser.Scene {
           ;(this.player as any).hp = Math.max(0, oldHP - 2)
           const newHP = (this.player as any).hp
           console.log(`Player hit by Brute dash! HP: ${oldHP} -> ${newHP}`)
-          this.updateHPDisplay() // HP表示を更新
+          this.updateHPDisplay()
           this.player.setTint(0xffaaaa)
           this.player.setData('hitCool', true)
           this.time.delayedCall(120, () => this.player.clearTint())
           this.time.delayedCall(1000, () => this.player.setData('hitCool', false))
 
-          // HPが0になったらゲームオーバー
           if (newHP <= 0) {
             this.triggerGameOver()
           }
@@ -1026,14 +977,11 @@ export default class MainScene extends Phaser.Scene {
 
   /**
    * マップを切り替える
-   * @param mapId 移動先のマップID
-   * @param targetX 移動先のタイルX座標
-   * @param targetY 移動先のタイルY座標
    */
   private switchMap(mapId: string, targetX: number, targetY: number) {
     console.log(`[MainScene] Switching to map: ${mapId} at (${targetX}, ${targetY})`)
 
-    // 最初にすべての衝突判定を破棄（オブジェクトを破棄する前に）
+    // すべての衝突判定を破棄
     this.colliders.forEach(collider => {
       if (collider && collider.active) {
         collider.destroy()
@@ -1042,32 +990,16 @@ export default class MainScene extends Phaser.Scene {
     this.colliders = []
 
     // 既存の敵を破棄
-    this.enemies.forEach(enemy => {
-      if (enemy) {
-        enemy.destroy()
-      }
-    })
+    this.enemies.forEach(enemy => { if (enemy) enemy.destroy() })
     this.enemies = []
 
-    this.archers.forEach(archer => {
-      if (archer) {
-        archer.destroy()
-      }
-    })
+    this.archers.forEach(archer => { if (archer) archer.destroy() })
     this.archers = []
 
-    this.mages.forEach(mage => {
-      if (mage) {
-        mage.destroy()
-      }
-    })
+    this.mages.forEach(mage => { if (mage) mage.destroy() })
     this.mages = []
 
-    this.brutes.forEach(brute => {
-      if (brute) {
-        brute.destroy()
-      }
-    })
+    this.brutes.forEach(brute => { if (brute) brute.destroy() })
     this.brutes = []
 
     // ボスとUIを破棄
@@ -1087,11 +1019,9 @@ export default class MainScene extends Phaser.Scene {
     }
 
     // 既存のマップオブジェクト（床と壁）を破棄
-    // 床のタイルスプライトを削除
     const tileSprites = this.children.list.filter(obj => obj.type === 'TileSprite')
     tileSprites.forEach(sprite => sprite.destroy())
 
-    // 壁を破棄
     if (this.walls) {
       this.walls.clear(true, true)
       this.walls.destroy()
@@ -1108,12 +1038,16 @@ export default class MainScene extends Phaser.Scene {
       this.npcManager.destroy()
     }
 
+    // ゲームオーバー・クリアフラグをリセット（新マップ遷移時）
+    this.isGameOver = false
+    this.isGameCleared = false
+
     // 新しいマップをロード
     this.loadMap(mapId)
 
     // プレイヤーを移動先に配置
     this.player.setPosition(targetX * TILE, targetY * TILE)
-    this.player.setDepth(10) // プレイヤーを前面に表示
+    this.player.setDepth(10)
 
     // カメラを追従させる
     this.cameras.main.startFollow(this.player, true, 0.12, 0.12)
@@ -1125,13 +1059,11 @@ export default class MainScene extends Phaser.Scene {
 
   /**
    * マップをロードして構築
-   * @param mapId マップID
    */
   private loadMap(mapId: string) {
     console.log(`[MainScene] Loading map: ${mapId}`)
 
-    // マップデータを取得
-    const mapData = this.cache.json.get(mapId)
+    const mapData = this.cache.json.get(mapId) as Record<string, unknown> | undefined
     if (!mapData) {
       console.error(`Map data not found: ${mapId}`)
       return
@@ -1149,11 +1081,12 @@ export default class MainScene extends Phaser.Scene {
     this.physics.world.setBounds(0, 0, result.worldW, result.worldH)
 
     // プレイヤーと壁の衝突を設定
-    const playerWallCollider = this.physics.add.collider(this.player, this.walls)
+    const playerWallCollider = this.physics.add.collider(this.player, this.walls!)
     this.colliders.push(playerWallCollider)
 
-    // ボス生成（boss_mapの場合のみ）
-    if (mapId === 'boss_map') {
+    // ボス生成（gameflow.json の hasBoss フラグで判定）
+    const mapConfig = this.gameFlowManager.getMapConfig(mapId)
+    if (mapConfig?.hasBoss) {
       this.spawnBoss()
     }
 
@@ -1165,6 +1098,11 @@ export default class MainScene extends Phaser.Scene {
     const npcColliders = this.npcManager.setupCollisions(this.player)
     this.colliders.push(...npcColliders)
 
+    // onEnter ストーリーがあれば再生
+    if (mapConfig?.onEnter) {
+      this.launchStory(mapConfig.onEnter, { action: 'stay' })
+    }
+
     console.log(`[MainScene] Map loaded: ${mapId}`)
   }
 
@@ -1174,19 +1112,15 @@ export default class MainScene extends Phaser.Scene {
   private spawnBoss() {
     console.log('[MainScene] Spawning boss...')
 
-    // ボス生成（マップ中央に配置）
     const bossX = 25 * TILE
     const bossY = 25 * TILE
     this.boss = makeBoss(this, bossX, bossY, 'volg_boss')
 
-    // ボスと壁の衝突判定
-    const bossWallCollider = this.physics.add.collider(this.boss, this.walls)
+    const bossWallCollider = this.physics.add.collider(this.boss, this.walls!)
     this.colliders.push(bossWallCollider)
 
-    // ボスとプレイヤーの被ダメージ処理
     this.setupBossHit()
 
-    // ボスHP UI表示
     this.bossHpUI = new BossHpUI(this, this.boss.name)
     this.bossHpUI.show()
     this.bossHpUI.update(this.boss.hp, this.boss.maxHp, this.boss.phase)
@@ -1200,19 +1134,16 @@ export default class MainScene extends Phaser.Scene {
   private setupBossHit() {
     if (!this.boss) return
 
-    // プレイヤー→ボスへの攻撃判定
     const playerAttackCollider = this.physics.add.overlap(this.hitbox, this.boss, () => {
       if (!this.boss || !this.boss.active) return
 
       if (!this.boss.getData('hitCool')) {
-        // ダメージ処理
         const oldHP = this.boss.hp
         this.boss.hp -= 1
         console.log(`[MainScene] Boss damaged! HP: ${oldHP} -> ${this.boss.hp} (Phase: ${this.boss.phase})`)
         this.boss.setTint(0xffffaa)
         this.boss.setData('hitCool', true)
 
-        // SE再生
         if (this.boss.config.se.damage) {
           this.audioBus.playSe(this.boss.config.se.damage, { volume: 0.7 })
         }
@@ -1224,7 +1155,6 @@ export default class MainScene extends Phaser.Scene {
           if (this.boss) this.boss.setData('hitCool', false)
         })
 
-        // HP0で撃破
         if (this.boss.hp <= 0) {
           this.defeatBoss()
         }
@@ -1232,7 +1162,6 @@ export default class MainScene extends Phaser.Scene {
     })
     this.colliders.push(playerAttackCollider)
 
-    // ボス→プレイヤーへの接触ダメージ（突進中）
     const bossContactCollider = this.physics.add.overlap(this.player, this.boss, () => {
       if (!this.boss || !this.boss.active) return
 
@@ -1249,7 +1178,6 @@ export default class MainScene extends Phaser.Scene {
         this.time.delayedCall(120, () => this.player.clearTint())
         this.time.delayedCall(500, () => this.player.setData('hitCool', false))
 
-        // HPが0になったらゲームオーバー
         if ((this.player as any).hp <= 0) {
           this.triggerGameOver()
         }
@@ -1268,22 +1196,18 @@ export default class MainScene extends Phaser.Scene {
 
     this.boss.state = 'defeated'
 
-    // 撃破SE再生
     if (this.boss.config.se.defeat) {
       this.audioBus.playSe(this.boss.config.se.defeat, { volume: 0.8 })
     }
 
-    // 撃破セリフ
     if (this.boss.config.speeches.defeat) {
       this.bossSpeechBubble.show(this.boss, this.boss.config.speeches.defeat, 2000)
     }
 
-    // ボスHP UI非表示
     if (this.bossHpUI) {
       this.bossHpUI.hide()
     }
 
-    // フェードアウト演出
     this.tweens.add({
       targets: this.boss,
       alpha: 0,
@@ -1293,7 +1217,6 @@ export default class MainScene extends Phaser.Scene {
         if (this.boss) {
           this.boss.disableBody(true, true)
         }
-        // ゲームクリア
         this.triggerGameClear()
       }
     })

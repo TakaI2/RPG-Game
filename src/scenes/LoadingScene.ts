@@ -49,6 +49,9 @@ export default class LoadingScene extends Phaser.Scene {
     this.load.image('npc_villager', 'assets/images/npc_villager.png')
     this.load.image('npc_merchant', 'assets/images/npc_merchant.png')
 
+    // ゲームフロー設定JSON
+    this.load.json('gameflow', 'assets/gameflow.json')
+
     // マップJSON
     this.load.json('demo_map', 'assets/maps/demo_map.json')
     this.load.json('boss_map', 'assets/maps/boss_map.json')
