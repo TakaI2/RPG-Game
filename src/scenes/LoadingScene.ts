@@ -1,5 +1,6 @@
 import Phaser from 'phaser'
 import { GAME_W, GAME_H, TILE } from '../config'
+import type { GameFlowConfig } from '../types/GameFlowTypes'
 
 /**
  * ローディング画面
@@ -49,8 +50,14 @@ export default class LoadingScene extends Phaser.Scene {
     this.load.image('npc_villager', 'assets/images/npc_villager.png')
     this.load.image('npc_merchant', 'assets/images/npc_merchant.png')
 
-    // ゲームフロー設定JSON
+    // ゲームフロー設定JSON（最初にロードして、完了後に BGM を動的追加）
     this.load.json('gameflow', 'assets/gameflow.json')
+    this.load.once('filecomplete-json-gameflow', () => {
+      const config = this.cache.json.get('gameflow') as GameFlowConfig
+      config.assets?.bgm?.forEach(({ key, url }) => {
+        this.load.audio(key, url)
+      })
+    })
 
     // マップJSON
     this.load.json('demo_map', 'assets/maps/demo_map.json')
@@ -76,10 +83,6 @@ export default class LoadingScene extends Phaser.Scene {
     this.load.image('btn_play', 'assets/images/Play_button.png')
     this.load.image('btn_resume', 'assets/images/Resume_Button.png')
     this.load.image('btn_backtotitle', 'assets/images/BacktoTitle_Button.png')
-
-    // ゲームBGM（マップ用）
-    this.load.audio('spiral', 'assets/story/bgm/spiral.ogg')
-    this.load.audio('redmoon', 'assets/story/bgm/redmoon.ogg')
 
     // エラーハンドリング：画像が見つからない場合でもゲームを続行
     this.load.on('loaderror', (fileObj: Phaser.Loader.File) => {

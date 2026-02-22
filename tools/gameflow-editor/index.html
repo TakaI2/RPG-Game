@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Gameflow Editor - RPG Game</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div id="app">
+    <!-- Header -->
+    <header class="header">
+      <h1>Gameflow Editor</h1>
+      <div class="header-actions">
+        <button id="btn-open" title="JSONを読み込み">Open JSON</button>
+        <button id="btn-save" title="JSONを保存">Save JSON</button>
+        <input type="file" id="file-input" accept=".json" hidden>
+        <div class="separator"></div>
+        <button id="btn-add-map" class="btn-node-map">+ Map</button>
+        <button id="btn-add-story" class="btn-node-story">+ Story</button>
+        <button id="btn-add-bgm" class="btn-node-bgm">+ BGM</button>
+        <button id="btn-add-exit" class="btn-node-exit">+ Exit</button>
+      </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="main-content">
+      <!-- Canvas Area -->
+      <div id="canvas-container">
+        <div id="canvas-transform">
+          <svg id="edges-svg"></svg>
+          <div id="nodes-layer"></div>
+        </div>
+      </div>
+
+      <!-- Properties Panel -->
+      <aside class="properties-panel">
+        <div class="panel-header">
+          <span>Properties</span>
+        </div>
+        <div id="properties-content" class="properties-content">
+          <p class="placeholder">ノードを選択してください</p>
+        </div>
+      </aside>
+    </main>
+
+    <!-- Status Bar -->
+    <footer class="status-bar">
+      <span id="status-zoom">zoom 100%</span>
+      <span class="status-sep">|</span>
+      <span id="status-nodes">nodes: 0</span>
+      <span class="status-sep">|</span>
+      <span id="status-edges">edges: 0</span>
+      <span class="status-sep">|</span>
+      <span id="status-hint">Space+Drag or Middle-Drag: pan  /  Scroll: zoom  /  Delete: remove selected</span>
+    </footer>
+  </div>
+
+  <script src="editor.js"></script>
+</body>
+</html>

@@ -78,13 +78,9 @@ export default class StoryScene extends Phaser.Scene {
   private initializeStory(scriptData: { script: { op: string; [key: string]: unknown }[] }) {
     console.log('[StoryScene] initializeStory')
 
-    // ストーリー開始イベントを発火（BGM停止用）
+    // ストーリー開始イベントを発火（BGMはBGMManagerが適切に停止する）
     events.emit('story-start')
     console.log('[StoryScene] story-start event emitted')
-
-    // 全てのBGMを強制停止（MainSceneのBGMを確実に停止）
-    this.sound.stopAll()
-    console.log('[StoryScene] All sounds stopped')
 
     // 黒背景
     this.cameras.main.setBackgroundColor('#000000')

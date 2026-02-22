@@ -189,8 +189,11 @@ export default class MainScene extends Phaser.Scene {
       this.doAttack()
     })
 
+    // GameFlowManager初期化（BGMManager より先に初期化する）
+    this.gameFlowManager = new GameFlowManager(this)
+
     // BGMManagerの初期化
-    this.bgmManager = new BGMManager(this, this.audioBus)
+    this.bgmManager = new BGMManager(this, this.audioBus, this.gameFlowManager)
     console.log('[MainScene] BGMManager initialized')
 
     // PauseMenuの初期化
@@ -205,9 +208,6 @@ export default class MainScene extends Phaser.Scene {
     // Escキーの登録
     this.escKey = this.input.keyboard?.addKey(Phaser.Input.Keyboard.KeyCodes.ESC)
     console.log('[MainScene] ESC key registered')
-
-    // GameFlowManager初期化
-    this.gameFlowManager = new GameFlowManager(this)
 
     // シャットダウン時のクリーンアップ
     this.events.once('shutdown', () => {

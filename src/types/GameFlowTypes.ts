@@ -1,3 +1,12 @@
+export type GameFlowBgmAsset = {
+  key: string
+  url: string
+}
+
+export type GameFlowAssets = {
+  bgm: GameFlowBgmAsset[]
+}
+
 export type ThenAction =
   | { action: 'stay' }
   | { action: 'exit' }
@@ -23,6 +32,7 @@ export type GameFlowEventTrigger = {
 }
 
 export type MapFlowConfig = {
+  bgm?: string
   onEnter: string | null
   hasBoss: boolean
   onPlayerDefeat: StoryThenConfig
@@ -31,6 +41,7 @@ export type MapFlowConfig = {
 }
 
 export type GameFlowConfig = {
+  assets?: GameFlowAssets
   start: StoryThenConfig
   maps: Record<string, MapFlowConfig>
 }

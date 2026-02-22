@@ -1,48 +1,41 @@
 import Phaser from 'phaser';
+import { AudioBus } from './AudioBus';
+import { GameFlowManager } from './GameFlowManager';
 import { events } from './Events';
 
 export class BGMManager {
   private scene: Phaser.Scene;
-  private audioBus: any; // AudioBusの型
+  private audioBus: AudioBus;
+  private flowManager: GameFlowManager;
   private currentMapId: string | null = null;
   private currentBgmKey: string | null = null;
   private isStoryActive: boolean = false;
 
-  // マップIDとBGMキーのマッピング
-  private readonly MAP_BGM: Record<string, string> = {
-    demo_map: 'spiral',
-    boss_map: 'redmoon',
+  // events.off() で自分のリスナーだけを削除できるよう参照を保持
+  private readonly boundOnMapLoaded = (mapId: string) => {
+    this.currentMapId = mapId;
+    if (!this.isStoryActive) {
+      this.playMapBGM(mapId);
+    }
   };
+  private readonly boundOnStoryStart = () => { this.onStoryStart(); };
+  private readonly boundOnStoryEnd   = () => { this.onStoryEnd(); };
 
-  constructor(scene: Phaser.Scene, audioBus: any) {
+  constructor(scene: Phaser.Scene, audioBus: AudioBus, flowManager: GameFlowManager) {
     this.scene = scene;
     this.audioBus = audioBus;
+    this.flowManager = flowManager;
     this.setupEventListeners();
   }
 
   private setupEventListeners(): void {
-    // マップロード時のBGM再生
-    events.on('map-loaded', (mapId: string) => {
-      this.currentMapId = mapId;
-      // ストーリー中でなければBGMを再生
-      if (!this.isStoryActive) {
-        this.playMapBGM(mapId);
-      }
-    });
-
-    // ストーリー開始時にマップBGMを停止
-    events.on('story-start', () => {
-      this.onStoryStart();
-    });
-
-    // ストーリー終了時にマップBGMを再開
-    events.on('story:end', () => {
-      this.onStoryEnd();
-    });
+    events.on('map-loaded',  this.boundOnMapLoaded);
+    events.on('story-start', this.boundOnStoryStart);
+    events.on('story:end',   this.boundOnStoryEnd);
   }
 
   playMapBGM(mapId: string): void {
-    const bgmKey = this.MAP_BGM[mapId];
+    const bgmKey = this.flowManager.getMapConfig(mapId)?.bgm;
 
     if (!bgmKey) {
       console.warn(`[BGMManager] No BGM defined for map: ${mapId}`);
@@ -54,26 +47,20 @@ export class BGMManager {
       return;
     }
 
-    // AudioBusが利用可能か確認
-    if (!this.audioBus) {
-      console.warn('[BGMManager] AudioBus is not available');
-      return;
-    }
-
-    // 古いBGMがあればフェードアウトして停止
+    // 古いBGMがあればフェードアウトして停止してから新BGMへ
     if (this.currentBgmKey) {
       this.audioBus.stopBgm({ fade: 1000 });
     }
 
-    // 新しいBGMをフェードインして再生
-    this.audioBus.playBgm(bgmKey, { loop: true, fade: 1000 });
+    // マップBGMはフェードなしで即時再生（tween不要で確実に音が出る）
+    this.audioBus.playBgm(bgmKey, { loop: true, fade: 0 });
     this.currentBgmKey = bgmKey;
 
     console.log(`[BGMManager] Playing BGM: ${bgmKey} for map: ${mapId}`);
   }
 
   stopMapBGM(): void {
-    if (this.currentBgmKey && this.audioBus) {
+    if (this.currentBgmKey) {
       this.audioBus.stopBgm({ fade: 1000 });
       this.currentBgmKey = null;
     }
@@ -81,9 +68,10 @@ export class BGMManager {
 
   onStoryStart(): void {
     this.isStoryActive = true;
-    // マップBGMを停止
-    if (this.currentBgmKey && this.audioBus) {
+    // マップBGMを停止し、currentBgmKey をリセット（Bug1 修正）
+    if (this.currentBgmKey) {
       this.audioBus.stopBgm({ fade: 500 });
+      this.currentBgmKey = null;
     }
     console.log('[BGMManager] Story started, map BGM stopped');
   }
@@ -98,9 +86,9 @@ export class BGMManager {
   }
 
   destroy(): void {
-    // イベントリスナーを削除
-    events.off('map-loaded');
-    events.off('story-start');
-    events.off('story:end');
+    // 自分のリスナーだけを削除（他のリスナーは残す）
+    events.off('map-loaded',  this.boundOnMapLoaded);
+    events.off('story-start', this.boundOnStoryStart);
+    events.off('story:end',   this.boundOnStoryEnd);
   }
 }

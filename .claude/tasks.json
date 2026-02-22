@@ -5,8 +5,8 @@
     "startDate": "2025-10-18",
     "currentBranch": "feature/title-screen-and-pause-menu"
   },
-  "latestUpdate": "2026-02-22",
-  "status": "ゲームフロー一元管理システム実装完了・BGM/2回目プレイバグ修正済み。新キャラアセット統合・プレイヤー/エネミー改修案の実装待ち",
+  "latestUpdate": "2026-02-23",
+  "status": "Gameflowエディタ（Blueprint風ノードエディタ）実装完了。BGMマップ再生バグ3件修正済み（stopAll削除・fade:0即時再生・destroy()リスナー特定削除）。テスト未実施。",
   "completedFeatures": [
     "タイトル画面実装",
     "ポーズメニュー実装",
@@ -15,7 +15,8 @@
     "ボスバトルシステム",
     "ストーリーシステム",
     "ゲーム状態管理システム",
-    "ゲームフロー一元管理システム（gameflow.json + GameFlowManager）"
+    "ゲームフロー一元管理システム（gameflow.json + GameFlowManager）",
+    "Gameflowエディタ（tools/gameflow-editor/ - Blueprint風ノードエディタ）"
   ],
   "resolvedIssues": [
     {
@@ -50,7 +51,24 @@
       "resolvedDate": "2026-02-18"
     }
   ],
-  "currentIssues": [],
+  "currentIssues": [
+    {
+      "issue": "BGMマップ再生バグ修正のテスト未実施",
+      "description": "StoryScene.stopAll()削除・BGMManager.fade:0・destroy()リスナー修正を実装済みだが、動作確認が次回セッション待ち"
+    }
+  ],
+  "recentWork_2026_02_23": [
+    {
+      "task": "Gameflowエディタ実装",
+      "description": "tools/gameflow-editor/ にBlueprint風ノードエディタを新規作成。index.html/style.css/editor.js (Vanilla JS, Catppuccin Mocha)。gameflow.jsonのOpen/Save、ノードドラッグ・ポート接続・プロパティパネル・パン/ズーム対応",
+      "status": "completed"
+    },
+    {
+      "task": "BGMマップ再生バグ修正（3件）",
+      "description": "①StoryScene.initializeStory()のthis.sound.stopAll()を削除（マップBGMを強制停止していた）②BGMManager.playMapBGMをfade:0に変更（volume:0+tween方式はシーンpause中に機能しない）③BGMManager.destroy()をevents.off(event, callback)に変更（全リスナー削除バグ修正）",
+      "status": "completed_untested"
+    }
+  ],
   "recentWork_2026_02_22": [
     {
       "task": "ゲームフロー一元管理システム実装",

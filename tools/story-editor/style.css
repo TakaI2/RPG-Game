@@ -234,6 +234,9 @@ body {
   /* ゲームと同じく左上原点（x, y座標はJSで設定） */
   transform-origin: top left;
   display: none; /* デフォルトは非表示 */
+  /* 滑らかなスケーリング（ジャギ軽減） */
+  image-rendering: smooth;
+  image-rendering: -webkit-optimize-contrast;
 }
 
 .preview-portrait {
@@ -241,6 +244,9 @@ body {
   cursor: move;
   /* スケールはJSで設定（ゲームと同じ座標系） */
   display: none; /* デフォルトは非表示 */
+  /* 滑らかなスケーリング（ジャギ軽減） */
+  image-rendering: smooth;
+  image-rendering: -webkit-optimize-contrast;
 }
 
 .preview-portrait:hover {

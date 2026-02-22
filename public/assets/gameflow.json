@@ -1,10 +1,17 @@
 {
+  "assets": {
+    "bgm": [
+      { "key": "spiral",  "url": "assets/story/bgm/spiral.ogg" },
+      { "key": "redmoon", "url": "assets/story/bgm/redmoon.ogg" }
+    ]
+  },
   "start": {
     "story": "intro",
     "then": { "action": "goto_map", "mapId": "demo_map", "x": 10, "y": 10 }
   },
   "maps": {
     "demo_map": {
+      "bgm": "spiral",
       "onEnter": null,
       "hasBoss": false,
       "onPlayerDefeat": { "story": "gameover", "then": { "action": "exit" } },
@@ -32,6 +39,7 @@
       ]
     },
     "boss_map": {
+      "bgm": "redmoon",
       "onEnter": null,
       "hasBoss": true,
       "onPlayerDefeat": { "story": "gameover", "then": { "action": "exit" } },
