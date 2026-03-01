@@ -10,10 +10,14 @@ import {
   makeArcher,
   makeMage,
   makeBrute,
+  makeEnemy,
   updateArcherAI,
   updateMageAI,
   updateBruteAI,
+  EnemyDialogs,
+  EnemyOverrides,
 } from '../systems/EnemyAI'
+import { EnemySpeech } from '../systems/EnemySpeech'
 import { buildMapFromJSON } from '../systems/Tilemap'
 import {
   createPlayerAnimations,
@@ -111,6 +115,15 @@ export default class MainScene extends Phaser.Scene {
     createEnemyAnimations(this, 'archer', 'vamp1')
     createEnemyAnimations(this, 'mage',   'succubus')
     createEnemyAnimations(this, 'brute',  'mage')
+    // enemy-defsで指定されたspriteKeyごとにアニメーションセットを追加生成
+    {
+      const defsForAnims = (this.cache.json.get('enemy-defs') as { spriteKey?: string }[]) || []
+      for (const d of defsForAnims) {
+        if (d.spriteKey && this.textures.exists(d.spriteKey)) {
+          createEnemyAnimations(this, d.spriteKey, d.spriteKey)
+        }
+      }
+    }
 
     // プレイヤー（初期位置はダミー、switchMap後に正式に配置される）
     this.player = this.physics.add.sprite(40 * TILE, 40 * TILE, 'hero')
@@ -218,6 +231,10 @@ export default class MainScene extends Phaser.Scene {
       if (this.pauseMenu) {
         this.pauseMenu.destroy()
       }
+      this.enemies.forEach(en => en.speech?.destroy())
+      this.archers.forEach(ar => ar.speech?.destroy())
+      this.mages.forEach(mg => mg.speech?.destroy())
+      this.brutes.forEach(br => br.speech?.destroy())
       console.log('[MainScene] Cleanup complete')
     })
   }
@@ -549,20 +566,21 @@ export default class MainScene extends Phaser.Scene {
       if (en.getData('dead')) return
       if (en.getData('dying')) {
         en.setVelocity(0, 0)
-        if (en.anims.currentAnim?.key !== 'blob-dying') en.play('blob-dying', true)
+        if (en.anims.currentAnim?.key !== `${en.animKey}-dying`) en.play(`${en.animKey}-dying`, true)
         return
       }
 
       updateEnemyAI(this, en, this.player)
+      en.speech?.update(en)
 
       if (en.body.velocity.x !== 0 || en.body.velocity.y !== 0) {
         const dir = getDirectionFromVelocity(en.body.velocity.x, en.body.velocity.y)
         en.setData('dir', dir)
-        const targetAnim = `blob-walk-${dir}`
+        const targetAnim = `${en.animKey}-walk-${dir}`
         if (en.anims.currentAnim?.key !== targetAnim) en.play(targetAnim, true)
       } else {
         const dir = en.getData('dir') || 'down'
-        const idleAnim = `blob-idle-${dir}`
+        const idleAnim = `${en.animKey}-idle-${dir}`
         if (en.anims.currentAnim?.key !== idleAnim) en.play(idleAnim, true)
       }
     })
@@ -574,25 +592,26 @@ export default class MainScene extends Phaser.Scene {
       if (archer.getData('dead')) return
       if (archer.getData('dying')) {
         archer.setVelocity(0, 0)
-        if (archer.anims.currentAnim?.key !== 'archer-dying') archer.play('archer-dying', true)
+        if (archer.anims.currentAnim?.key !== `${archer.animKey}-dying`) archer.play(`${archer.animKey}-dying`, true)
         return
       }
 
       updateArcherAI(this, archer, this.player)
+      archer.speech?.update(archer)
 
       if (archer.body.velocity.x !== 0 || archer.body.velocity.y !== 0) {
         const dir = getDirectionFromVelocity(archer.body.velocity.x, archer.body.velocity.y)
         archer.setData('dir', dir)
-        const targetAnim = `archer-walk-${dir}`
+        const targetAnim = `${archer.animKey}-walk-${dir}`
         if (archer.anims.currentAnim?.key !== targetAnim) archer.play(targetAnim, true)
       } else {
         if (archer.state === 'aim' || archer.state === 'shoot') {
           const dir = this.getDirectionToPlayer(archer)
-          const targetAnim = `archer-atk-${dir}`
+          const targetAnim = `${archer.animKey}-atk-${dir}`
           if (archer.anims.currentAnim?.key !== targetAnim) archer.play(targetAnim, false)
         } else {
           const dir = archer.getData('dir') || 'down'
-          const idleAnim = `archer-idle-${dir}`
+          const idleAnim = `${archer.animKey}-idle-${dir}`
           if (archer.anims.currentAnim?.key !== idleAnim && !archer.anims.currentAnim?.key.includes('atk')) {
             archer.play(idleAnim, true)
           }
@@ -607,25 +626,26 @@ export default class MainScene extends Phaser.Scene {
       if (mage.getData('dead')) return
       if (mage.getData('dying')) {
         mage.setVelocity(0, 0)
-        if (mage.anims.currentAnim?.key !== 'mage-dying') mage.play('mage-dying', true)
+        if (mage.anims.currentAnim?.key !== `${mage.animKey}-dying`) mage.play(`${mage.animKey}-dying`, true)
         return
       }
 
       updateMageAI(this, mage, this.player)
+      mage.speech?.update(mage)
 
       if (mage.body.velocity.x !== 0 || mage.body.velocity.y !== 0) {
         const dir = getDirectionFromVelocity(mage.body.velocity.x, mage.body.velocity.y)
         mage.setData('dir', dir)
-        const targetAnim = `mage-walk-${dir}`
+        const targetAnim = `${mage.animKey}-walk-${dir}`
         if (mage.anims.currentAnim?.key !== targetAnim) mage.play(targetAnim, true)
       } else {
         if (mage.state === 'aim' || mage.state === 'cast' || mage.state === 'shoot') {
           const dir = this.getDirectionToPlayer(mage)
-          const targetAnim = `mage-atk-${dir}`
+          const targetAnim = `${mage.animKey}-atk-${dir}`
           if (mage.anims.currentAnim?.key !== targetAnim) mage.play(targetAnim, false)
         } else {
           const dir = mage.getData('dir') || 'down'
-          const idleAnim = `mage-idle-${dir}`
+          const idleAnim = `${mage.animKey}-idle-${dir}`
           if (mage.anims.currentAnim?.key !== idleAnim && !mage.anims.currentAnim?.key.includes('atk')) {
             mage.play(idleAnim, true)
           }
@@ -640,24 +660,25 @@ export default class MainScene extends Phaser.Scene {
       if (brute.getData('dead')) return
       if (brute.getData('dying')) {
         brute.setVelocity(0, 0)
-        if (brute.anims.currentAnim?.key !== 'brute-dying') brute.play('brute-dying', true)
+        if (brute.anims.currentAnim?.key !== `${brute.animKey}-dying`) brute.play(`${brute.animKey}-dying`, true)
         return
       }
 
       updateBruteAI(this, brute, this.player)
+      brute.speech?.update(brute)
 
       if (brute.state === 'dash') {
         const dir = getDirectionFromVelocity(brute.body.velocity.x, brute.body.velocity.y)
-        const targetAnim = `brute-atk-${dir}`
+        const targetAnim = `${brute.animKey}-atk-${dir}`
         if (brute.anims.currentAnim?.key !== targetAnim) brute.play(targetAnim, true)
       } else if (brute.body.velocity.x !== 0 || brute.body.velocity.y !== 0) {
         const dir = getDirectionFromVelocity(brute.body.velocity.x, brute.body.velocity.y)
         brute.setData('dir', dir)
-        const targetAnim = `brute-walk-${dir}`
+        const targetAnim = `${brute.animKey}-walk-${dir}`
         if (brute.anims.currentAnim?.key !== targetAnim) brute.play(targetAnim, true)
       } else {
         const dir = brute.getData('dir') || 'down'
-        const idleAnim = `brute-idle-${dir}`
+        const idleAnim = `${brute.animKey}-idle-${dir}`
         if (brute.anims.currentAnim?.key !== idleAnim && !brute.anims.currentAnim?.key.includes('atk')) {
           brute.play(idleAnim, true)
         }
@@ -733,32 +754,42 @@ export default class MainScene extends Phaser.Scene {
     return getDirectionFromVelocity(dx, dy)
   }
 
-  private makeAnimatedEnemy(x: number, y: number): EnemyWithAI {
-    const en = this.physics.add.sprite(x, y, 'solder') as EnemyWithAI
-    en.state = 'patrol'
-    en.speed = 180
-    en.hp = 30
-    en.patrolPoints = [new Phaser.Math.Vector2(x, y), new Phaser.Math.Vector2(x + 10 * 32, y)]
-    en.patrolIndex = 0
-    en.play('blob-idle-down')
+  private makeAnimatedEnemy(x: number, y: number, overrides?: EnemyOverrides): EnemyWithAI {
+    const en = makeEnemy(this, x, y, overrides)
+    en.setScale(2)
+    en.lastSpeechTime = 0
+    en.lastSpeechState = ''
+    en.play(`${en.animKey}-idle-down`)
+    if (overrides?.dialogs) {
+      en.speech = new EnemySpeech(this)
+    }
     return en
   }
 
-  private makeAnimatedArcher(x: number, y: number): Archer {
-    const archer = makeArcher(this, x, y)
-    archer.play('archer-idle-down')
+  private makeAnimatedArcher(x: number, y: number, overrides?: EnemyOverrides): Archer {
+    const archer = makeArcher(this, x, y, overrides)
+    archer.play(`${archer.animKey}-idle-down`)
+    if (overrides?.dialogs) {
+      archer.speech = new EnemySpeech(this)
+    }
     return archer
   }
 
-  private makeAnimatedMage(x: number, y: number): Mage {
-    const mage = makeMage(this, x, y)
-    mage.play('mage-idle-down')
+  private makeAnimatedMage(x: number, y: number, overrides?: EnemyOverrides): Mage {
+    const mage = makeMage(this, x, y, overrides)
+    mage.play(`${mage.animKey}-idle-down`)
+    if (overrides?.dialogs) {
+      mage.speech = new EnemySpeech(this)
+    }
     return mage
   }
 
-  private makeAnimatedBrute(x: number, y: number): Brute {
-    const brute = makeBrute(this, x, y)
-    brute.play('brute-idle-down')
+  private makeAnimatedBrute(x: number, y: number, overrides?: EnemyOverrides): Brute {
+    const brute = makeBrute(this, x, y, overrides)
+    brute.play(`${brute.animKey}-idle-down`)
+    if (overrides?.dialogs) {
+      brute.speech = new EnemySpeech(this)
+    }
     return brute
   }
 
@@ -848,17 +879,45 @@ export default class MainScene extends Phaser.Scene {
    * 敵とイベントトリガーを初期化
    */
   private initializeEnemiesAndTriggers(mapData: Record<string, unknown>) {
-    const enemySpawns = (mapData.enemySpawns as Array<{ x: number; y: number }>) || []
+    type EnemySpawn = { x: number; y: number; enemyDefId?: string }
+    type EnemyDef = {
+      id: string
+      enemyType: string
+      spriteKey: string
+      animPrefix: string
+      stats: Record<string, number>
+      dialogs?: EnemyDialogs
+    }
+
+    const defs = (this.cache.json.get('enemy-defs') as EnemyDef[]) || []
+    const enemySpawns = (mapData.enemySpawns as EnemySpawn[]) || []
+
+    // enemyType → デフォルトanimKeyのマッピング
+    const defaultAnimKey: Record<string, string> = {
+      blob: 'blob', archer: 'archer', mage: 'mage', brute: 'brute'
+    }
+
     enemySpawns.forEach((spawn) => {
-      const enemyType = Math.floor(Math.random() * 4)
-      if (enemyType === 0) {
-        this.enemies.push(this.makeAnimatedEnemy(spawn.x * TILE, spawn.y * TILE))
-      } else if (enemyType === 1) {
-        this.archers.push(this.makeAnimatedArcher(spawn.x * TILE, spawn.y * TILE))
-      } else if (enemyType === 2) {
-        this.mages.push(this.makeAnimatedMage(spawn.x * TILE, spawn.y * TILE))
+      const def = spawn.enemyDefId ? defs.find(d => d.id === spawn.enemyDefId) : undefined
+      // spriteKeyが存在しテクスチャが読み込まれていればそれをanimKeyとして使用
+      const animKey = def?.spriteKey && this.textures.exists(def.spriteKey)
+        ? def.spriteKey
+        : (def?.enemyType ? (defaultAnimKey[def.enemyType] ?? def.enemyType) : undefined)
+      const overrides: EnemyOverrides | undefined = def
+        ? { ...def.stats, dialogs: def.dialogs, ...(animKey ? { animKey } : {}) }
+        : undefined
+      const resolvedType = def?.enemyType ?? (['blob', 'archer', 'mage', 'brute'] as const)[Math.floor(Math.random() * 4)]
+
+      const px = spawn.x * TILE
+      const py = spawn.y * TILE
+      if (resolvedType === 'blob') {
+        this.enemies.push(this.makeAnimatedEnemy(px, py, overrides))
+      } else if (resolvedType === 'archer') {
+        this.archers.push(this.makeAnimatedArcher(px, py, overrides))
+      } else if (resolvedType === 'mage') {
+        this.mages.push(this.makeAnimatedMage(px, py, overrides))
       } else {
-        this.brutes.push(this.makeAnimatedBrute(spawn.x * TILE, spawn.y * TILE))
+        this.brutes.push(this.makeAnimatedBrute(px, py, overrides))
       }
     })
 
@@ -990,16 +1049,16 @@ export default class MainScene extends Phaser.Scene {
     this.colliders = []
 
     // 既存の敵を破棄
-    this.enemies.forEach(enemy => { if (enemy) enemy.destroy() })
+    this.enemies.forEach(enemy => { if (enemy) { enemy.speech?.destroy(); enemy.destroy() } })
     this.enemies = []
 
-    this.archers.forEach(archer => { if (archer) archer.destroy() })
+    this.archers.forEach(archer => { if (archer) { archer.speech?.destroy(); archer.destroy() } })
     this.archers = []
 
-    this.mages.forEach(mage => { if (mage) mage.destroy() })
+    this.mages.forEach(mage => { if (mage) { mage.speech?.destroy(); mage.destroy() } })
     this.mages = []
 
-    this.brutes.forEach(brute => { if (brute) brute.destroy() })
+    this.brutes.forEach(brute => { if (brute) { brute.speech?.destroy(); brute.destroy() } })
     this.brutes = []
 
     // ボスとUIを破棄

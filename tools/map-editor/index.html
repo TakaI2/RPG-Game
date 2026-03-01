@@ -1,0 +1,666 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RPG Map Editor</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Segoe UI', 'Meiryo', sans-serif;
+            background: #1e1e2e;
+            color: #cdd6f4;
+            padding: 20px;
+        }
+
+        h1 { margin-bottom: 20px; color: #cba6f7; }
+
+        .controls {
+            background: #181825;
+            padding: 16px;
+            border-radius: 8px;
+            margin-bottom: 16px;
+            border: 1px solid #45475a;
+        }
+
+        .control-group { margin-bottom: 12px; }
+
+        .control-group label {
+            display: inline-block;
+            width: 140px;
+            margin-right: 8px;
+            color: #a6adc8;
+            font-size: 0.875rem;
+        }
+
+        .control-group input, .control-group select {
+            padding: 5px 10px;
+            border: 1px solid #45475a;
+            background: #313244;
+            color: #cdd6f4;
+            border-radius: 4px;
+        }
+
+        .control-group button {
+            padding: 7px 14px;
+            margin-right: 8px;
+            background: #45475a;
+            color: #cdd6f4;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.85rem;
+            transition: background 0.2s;
+        }
+
+        .control-group button:hover { background: #585b70; }
+
+        .control-group button.primary {
+            background: #1e3a5f;
+            color: #89b4fa;
+            border: 1px solid #89b4fa;
+        }
+
+        .control-group button.primary:hover { background: #2a5080; }
+
+        .tile-palette {
+            background: #181825;
+            padding: 16px;
+            border-radius: 8px;
+            margin-bottom: 16px;
+            border: 1px solid #45475a;
+        }
+
+        .tile-palette h2 { margin-bottom: 12px; font-size: 1rem; color: #a6adc8; }
+
+        .tile-options { display: flex; gap: 10px; flex-wrap: wrap; }
+
+        .tile-option {
+            width: 64px; height: 64px;
+            border: 3px solid transparent;
+            cursor: pointer; border-radius: 6px;
+            transition: all 0.15s;
+            display: flex; align-items: center; justify-content: center;
+            font-weight: bold; font-size: 0.9rem;
+        }
+
+        .tile-option:hover { transform: scale(1.08); }
+        .tile-option.selected { border-color: #89b4fa; box-shadow: 0 0 10px #89b4fa88; }
+        .tile-option.floor { background: #143d2a; color: #a6e3a1; }
+        .tile-option.wall  { background: #3a3a4a; color: #cdd6f4; border-color: #45475a; }
+        .tile-option.spawn-tile { background: #3a1f35; color: #f5c2e7; border-color: #45475a; }
+
+        .canvas-container {
+            background: #181825;
+            padding: 16px;
+            border-radius: 8px;
+            overflow: auto;
+            max-height: 70vh;
+            border: 1px solid #45475a;
+        }
+
+        canvas {
+            border: 2px solid #45475a;
+            display: block;
+            image-rendering: pixelated;
+            cursor: crosshair;
+        }
+
+        .info {
+            margin-top: 10px;
+            color: #6c7086;
+            font-size: 0.8rem;
+        }
+
+        /* --- 敵選択モーダル --- */
+        #enemyModal {
+            display: none;
+            position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.6);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        #enemyModal.show { display: flex; }
+
+        .modal-box {
+            background: #1e1e2e;
+            border: 1px solid #45475a;
+            border-radius: 12px;
+            width: 560px;
+            max-height: 80vh;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .modal-header {
+            padding: 12px 16px;
+            background: #313244;
+            border-bottom: 1px solid #45475a;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .modal-header h3 { font-size: 1rem; color: #cba6f7; }
+
+        .modal-header button {
+            background: transparent;
+            border: none;
+            color: #a6adc8;
+            cursor: pointer;
+            font-size: 1.2rem;
+            padding: 2px 6px;
+            border-radius: 4px;
+        }
+
+        .modal-header button:hover { background: #45475a; color: #cdd6f4; }
+
+        .modal-body {
+            flex: 1;
+            overflow-y: auto;
+            padding: 14px;
+        }
+
+        .modal-footer {
+            padding: 10px 16px;
+            background: #181825;
+            border-top: 1px solid #313244;
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            font-size: 0.8rem;
+            color: #6c7086;
+        }
+
+        .modal-footer button {
+            padding: 6px 14px;
+            background: #2d1f4a;
+            color: #cba6f7;
+            border: 1px solid #cba6f7;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.85rem;
+        }
+
+        .modal-footer button:hover { background: #3d2a60; }
+
+        .enemy-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+        }
+
+        .enemy-card {
+            background: #181825;
+            border: 2px solid #45475a;
+            border-radius: 8px;
+            padding: 10px;
+            cursor: pointer;
+            text-align: center;
+            transition: border-color 0.15s, background 0.15s;
+        }
+
+        .enemy-card:hover { background: #313244; border-color: #585b70; }
+        .enemy-card.selected { border-color: #89b4fa; background: #1e3a5f22; }
+
+        .enemy-card canvas {
+            border: none;
+            border-radius: 4px;
+            background: #11111b;
+            margin-bottom: 6px;
+        }
+
+        .enemy-card .ec-name {
+            font-size: 0.82rem;
+            color: #cdd6f4;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .enemy-card .ec-type {
+            font-size: 0.72rem;
+            color: #6c7086;
+        }
+
+        .random-card {
+            background: #181825;
+            border: 2px dashed #45475a;
+            border-radius: 8px;
+            padding: 10px;
+            cursor: pointer;
+            text-align: center;
+            transition: border-color 0.15s, background 0.15s;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100px;
+        }
+
+        .random-card:hover { background: #313244; border-color: #585b70; }
+        .random-card.selected { border-color: #a6e3a1; }
+        .random-card .rc-icon { font-size: 2rem; color: #a6adc8; margin-bottom: 6px; }
+        .random-card .rc-label { font-size: 0.82rem; color: #a6adc8; }
+
+        .btn-confirm {
+            padding: 7px 18px;
+            background: #1e3a5f;
+            color: #89b4fa;
+            border: 1px solid #89b4fa;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            margin-left: auto;
+        }
+
+        .btn-confirm:hover { background: #2a5080; }
+
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: #181825; }
+        ::-webkit-scrollbar-thumb { background: #45475a; border-radius: 3px; }
+        ::-webkit-scrollbar-thumb:hover { background: #585b70; }
+    </style>
+</head>
+<body>
+    <h1>RPG Map Editor</h1>
+
+    <div class="controls">
+        <div class="control-group">
+            <label>マップ幅 (cols):</label>
+            <input type="number" id="cols" value="80" min="10" max="200">
+        </div>
+        <div class="control-group">
+            <label>マップ高さ (rows):</label>
+            <input type="number" id="rows" value="80" min="10" max="200">
+        </div>
+        <div class="control-group">
+            <label>タイルサイズ:</label>
+            <input type="number" id="tileSize" value="64" min="16" max="128" disabled>
+            <span style="color:#6c7086; font-size:0.8rem; margin-left:6px;">px (固定)</span>
+        </div>
+        <div class="control-group">
+            <button class="primary" onclick="createNewMap()">新規マップ作成</button>
+            <button onclick="clearMap()">マップをクリア</button>
+        </div>
+        <div class="control-group">
+            <button class="primary" onclick="exportMap()">JSONエクスポート</button>
+            <button onclick="document.getElementById('fileInput').click()">JSONインポート</button>
+            <input type="file" id="fileInput" accept=".json" style="display:none" onchange="importMap(event)">
+        </div>
+    </div>
+
+    <div class="tile-palette">
+        <h2>タイルパレット</h2>
+        <div class="tile-options">
+            <div class="tile-option floor selected" data-tile="0" title="床 (0)">床</div>
+            <div class="tile-option wall" data-tile="1" title="壁 (1)">壁</div>
+            <div class="tile-option spawn-tile" data-tile="spawn" title="敵スポーン（左クリックで配置→キャラ選択）">敵</div>
+        </div>
+    </div>
+
+    <div class="canvas-container">
+        <canvas id="mapCanvas"></canvas>
+        <div class="info">
+            左クリック: タイル配置（敵タイル選択時はキャラ選択モーダルが開きます） |
+            右クリック: 削除 |
+            ドラッグ: 連続配置 |
+            マウス位置: <span id="mousePos">-</span>
+        </div>
+    </div>
+
+    <!-- 敵選択モーダル -->
+    <div id="enemyModal">
+        <div class="modal-box">
+            <div class="modal-header">
+                <h3>敵キャラを選択</h3>
+                <button onclick="closeEnemyModal()">✕</button>
+            </div>
+            <div class="modal-body">
+                <div class="enemy-grid" id="enemyGrid"></div>
+            </div>
+            <div class="modal-footer">
+                <button onclick="openEnemyEditor()">+ 新規作成 (Enemy Editor)</button>
+                <button class="btn-confirm" onclick="confirmEnemySelection()">決定</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+    const TILE_SIZE = 64
+    const SHEET_COLS = 16
+    const FRAME_SIZE = 64
+    const STORAGE_KEY = 'rpg-enemy-defs'
+
+    let canvas, ctx
+    let cols = 80, rows = 80
+    let mapData = []
+    let enemySpawns = []   // { x, y, enemyDefId?: string }
+    let selectedTile = 0
+    let isDrawing = false
+
+    // モーダル用
+    let pendingSpawnPos = null   // { x, y } – モーダルを開いた際の仮位置
+    let selectedEnemyDefId = null  // null = ランダム
+    let enemyDefs = []
+    let spriteCache = {}  // spriteKey → HTMLImageElement
+
+    // ---- Init ----
+    window.onload = () => {
+        canvas = document.getElementById('mapCanvas')
+        ctx = canvas.getContext('2d')
+
+        document.querySelectorAll('.tile-option').forEach(opt => {
+            opt.addEventListener('click', () => {
+                document.querySelectorAll('.tile-option').forEach(o => o.classList.remove('selected'))
+                opt.classList.add('selected')
+                const v = opt.getAttribute('data-tile')
+                selectedTile = v === 'spawn' ? 'spawn' : parseInt(v)
+            })
+        })
+
+        canvas.addEventListener('mousedown', handleMouseDown)
+        canvas.addEventListener('mousemove', handleMouseMove)
+        canvas.addEventListener('mouseup', handleMouseUp)
+        canvas.addEventListener('mouseleave', handleMouseUp)
+        canvas.addEventListener('contextmenu', e => e.preventDefault())
+
+        loadEnemyDefs()
+        createNewMap()
+    }
+
+    // ---- Enemy Defs ----
+    function loadEnemyDefs() {
+        try {
+            const raw = localStorage.getItem(STORAGE_KEY)
+            enemyDefs = raw ? JSON.parse(raw) : []
+        } catch {
+            enemyDefs = []
+        }
+    }
+
+    // ---- Map Ops ----
+    function createNewMap() {
+        cols = parseInt(document.getElementById('cols').value)
+        rows = parseInt(document.getElementById('rows').value)
+        mapData = Array(rows).fill(null).map(() => Array(cols).fill(0))
+        enemySpawns = []
+        canvas.width = cols * TILE_SIZE
+        canvas.height = rows * TILE_SIZE
+        drawMap()
+    }
+
+    function clearMap() {
+        if (!confirm('マップをクリアしますか？')) return
+        mapData = Array(rows).fill(null).map(() => Array(cols).fill(0))
+        enemySpawns = []
+        drawMap()
+    }
+
+    // ---- Draw ----
+    function drawMap() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height)
+        for (let y = 0; y < rows; y++)
+            for (let x = 0; x < cols; x++)
+                drawTile(x, y, mapData[y][x])
+        enemySpawns.forEach(s => drawSpawn(s))
+        drawGrid()
+    }
+
+    function drawTile(x, y, type) {
+        const px = x * TILE_SIZE, py = y * TILE_SIZE
+        if (type === 0) {
+            ctx.fillStyle = '#143d2a'
+            ctx.fillRect(px, py, TILE_SIZE, TILE_SIZE)
+        } else if (type === 1) {
+            ctx.fillStyle = '#3a3a4a'
+            ctx.fillRect(px, py, TILE_SIZE, TILE_SIZE)
+            ctx.strokeStyle = '#2a2a36'
+            ctx.lineWidth = 2
+            ctx.strokeRect(px + 1, py + 1, TILE_SIZE - 2, TILE_SIZE - 2)
+        }
+    }
+
+    function drawSpawn(spawn) {
+        const px = spawn.x * TILE_SIZE
+        const py = spawn.y * TILE_SIZE
+        const cx = px + TILE_SIZE / 2
+        const cy = py + TILE_SIZE / 2
+
+        // def があればスプライト表示を試みる
+        const def = spawn.enemyDefId ? enemyDefs.find(d => d.id === spawn.enemyDefId) : null
+        if (def && def.spriteKey) {
+            const chromaCanvas = getChromaCanvas(def.spriteKey)
+            if (chromaCanvas) {
+                // idle down frame 0: row=2, col=0
+                const frameIndex = 2 * SHEET_COLS + 0
+                const srcX = (frameIndex % SHEET_COLS) * FRAME_SIZE
+                const srcY = Math.floor(frameIndex / SHEET_COLS) * FRAME_SIZE
+                ctx.imageSmoothingEnabled = false
+                ctx.drawImage(chromaCanvas, srcX, srcY, FRAME_SIZE, FRAME_SIZE, px, py, TILE_SIZE, TILE_SIZE)
+                // ラベル
+                ctx.fillStyle = '#f5c2e788'
+                ctx.fillRect(px, py + TILE_SIZE - 16, TILE_SIZE, 16)
+                ctx.fillStyle = '#1e1e2e'
+                ctx.font = 'bold 10px sans-serif'
+                ctx.textAlign = 'center'
+                ctx.textBaseline = 'middle'
+                ctx.fillText(def.name || def.id, cx, py + TILE_SIZE - 8)
+                return
+            }
+        }
+
+        // デフォルト: 赤丸
+        ctx.fillStyle = '#f38ba8'
+        ctx.beginPath()
+        ctx.arc(cx, cy, TILE_SIZE / 3, 0, Math.PI * 2)
+        ctx.fill()
+        ctx.fillStyle = '#ffffff'
+        ctx.font = 'bold 16px sans-serif'
+        ctx.textAlign = 'center'
+        ctx.textBaseline = 'middle'
+        ctx.fillText('敵', cx, cy)
+        if (spawn.enemyDefId) {
+            ctx.font = 'bold 10px sans-serif'
+            ctx.fillStyle = '#f9e2af'
+            ctx.fillText(spawn.enemyDefId, cx, cy + 18)
+        }
+    }
+
+    function drawGrid() {
+        ctx.strokeStyle = '#ffffff08'
+        ctx.lineWidth = 1
+        for (let x = 0; x <= cols; x++) {
+            ctx.beginPath(); ctx.moveTo(x * TILE_SIZE, 0); ctx.lineTo(x * TILE_SIZE, canvas.height); ctx.stroke()
+        }
+        for (let y = 0; y <= rows; y++) {
+            ctx.beginPath(); ctx.moveTo(0, y * TILE_SIZE); ctx.lineTo(canvas.width, y * TILE_SIZE); ctx.stroke()
+        }
+    }
+
+    // ---- Sprite Image Cache ----
+    function getChromaCanvas(spriteKey) {
+        if (spriteCache[spriteKey] !== undefined) return spriteCache[spriteKey]
+        // 非同期なので null をキャッシュしてロード完了後に再描画
+        spriteCache[spriteKey] = null
+        const img = new Image()
+        img.onload = () => {
+            spriteCache[spriteKey] = img
+            drawMap()  // 再描画
+        }
+        img.onerror = () => { spriteCache[spriteKey] = null }
+        img.src = `../../public/assets/images/${spriteKey}.png`
+        return null
+    }
+
+    // ---- Mouse Events ----
+    function handleMouseDown(e) {
+        isDrawing = true
+        placeTile(e)
+    }
+    function handleMouseMove(e) {
+        const rect = canvas.getBoundingClientRect()
+        const x = Math.floor((e.clientX - rect.left) / TILE_SIZE)
+        const y = Math.floor((e.clientY - rect.top) / TILE_SIZE)
+        document.getElementById('mousePos').textContent = `(${x}, ${y})`
+        if (isDrawing) placeTile(e)
+    }
+    function handleMouseUp() { isDrawing = false }
+
+    function placeTile(e) {
+        const rect = canvas.getBoundingClientRect()
+        const x = Math.floor((e.clientX - rect.left) / TILE_SIZE)
+        const y = Math.floor((e.clientY - rect.top) / TILE_SIZE)
+        if (x < 0 || x >= cols || y < 0 || y >= rows) return
+
+        if (e.button === 2) {
+            // 右クリック: 削除
+            mapData[y][x] = 0
+            enemySpawns = enemySpawns.filter(s => !(s.x === x && s.y === y))
+            drawMap()
+        } else if (selectedTile === 'spawn') {
+            // 左クリック: スポーン → モーダルを開く
+            const exists = enemySpawns.some(s => s.x === x && s.y === y)
+            if (!exists) {
+                isDrawing = false
+                openEnemyModal(x, y)
+            }
+        } else {
+            mapData[y][x] = selectedTile
+            drawMap()
+        }
+    }
+
+    // ---- Enemy Modal ----
+    function openEnemyModal(x, y) {
+        loadEnemyDefs()
+        pendingSpawnPos = { x, y }
+        selectedEnemyDefId = null
+
+        const grid = document.getElementById('enemyGrid')
+        grid.innerHTML = ''
+
+        // ランダムカード
+        const randCard = document.createElement('div')
+        randCard.className = 'random-card selected'
+        randCard.dataset.defId = ''
+        randCard.innerHTML = `<div class="rc-icon">🎲</div><div class="rc-label">ランダム（指定なし）</div>`
+        randCard.addEventListener('click', () => {
+            document.querySelectorAll('.enemy-card, .random-card').forEach(c => c.classList.remove('selected'))
+            randCard.classList.add('selected')
+            selectedEnemyDefId = null
+        })
+        grid.appendChild(randCard)
+
+        // 各キャラカード
+        enemyDefs.forEach(def => {
+            const card = document.createElement('div')
+            card.className = 'enemy-card'
+            card.dataset.defId = def.id
+
+            const miniCanvas = document.createElement('canvas')
+            miniCanvas.width = 64; miniCanvas.height = 64
+            drawMiniSprite(miniCanvas, def.spriteKey)
+
+            const nameEl = document.createElement('div')
+            nameEl.className = 'ec-name'
+            nameEl.textContent = def.name || def.id
+
+            const typeEl = document.createElement('div')
+            typeEl.className = 'ec-type'
+            typeEl.textContent = def.enemyType
+
+            card.appendChild(miniCanvas)
+            card.appendChild(nameEl)
+            card.appendChild(typeEl)
+            card.addEventListener('click', () => {
+                document.querySelectorAll('.enemy-card, .random-card').forEach(c => c.classList.remove('selected'))
+                card.classList.add('selected')
+                selectedEnemyDefId = def.id
+            })
+            grid.appendChild(card)
+        })
+
+        document.getElementById('enemyModal').classList.add('show')
+    }
+
+    function closeEnemyModal() {
+        document.getElementById('enemyModal').classList.remove('show')
+        pendingSpawnPos = null
+    }
+
+    function confirmEnemySelection() {
+        if (!pendingSpawnPos) { closeEnemyModal(); return }
+        const { x, y } = pendingSpawnPos
+        const spawn = { x, y }
+        if (selectedEnemyDefId) spawn.enemyDefId = selectedEnemyDefId
+        enemySpawns.push(spawn)
+        closeEnemyModal()
+        drawMap()
+    }
+
+    function openEnemyEditor() {
+        window.open('../enemy-editor/', '_blank')
+    }
+
+    // ---- Mini Sprite ----
+    function drawMiniSprite(canvas, spriteKey) {
+        if (!spriteKey) return
+        const img = new Image()
+        img.onload = () => {
+            const frameIndex = 2 * SHEET_COLS + 0
+            const srcX = (frameIndex % SHEET_COLS) * FRAME_SIZE
+            const srcY = Math.floor(frameIndex / SHEET_COLS) * FRAME_SIZE
+            const c = canvas.getContext('2d')
+            c.clearRect(0, 0, canvas.width, canvas.height)
+            c.imageSmoothingEnabled = false
+            c.drawImage(img, srcX, srcY, FRAME_SIZE, FRAME_SIZE, 0, 0, canvas.width, canvas.height)
+        }
+        img.src = `../../public/assets/images/${spriteKey}.png`
+    }
+
+    // ---- Export / Import ----
+    function exportMap() {
+        const mapJSON = { cols, rows, tiles: mapData, enemySpawns }
+        const json = JSON.stringify(mapJSON, null, 2)
+        const blob = new Blob([json], { type: 'application/json' })
+        const url = URL.createObjectURL(blob)
+        const a = document.createElement('a')
+        a.href = url; a.download = 'map.json'; a.click()
+        URL.revokeObjectURL(url)
+        alert('マップをエクスポートしました！')
+    }
+
+    function importMap(event) {
+        const file = event.target.files[0]
+        if (!file) return
+        const reader = new FileReader()
+        reader.onload = e => {
+            try {
+                const j = JSON.parse(e.target.result)
+                cols = j.cols; rows = j.rows
+                mapData = j.tiles
+                enemySpawns = (j.enemySpawns || []).map(s => ({
+                    x: s.x, y: s.y,
+                    ...(s.enemyDefId ? { enemyDefId: s.enemyDefId } : {})
+                }))
+                document.getElementById('cols').value = cols
+                document.getElementById('rows').value = rows
+                canvas.width = cols * TILE_SIZE
+                canvas.height = rows * TILE_SIZE
+                loadEnemyDefs()
+                drawMap()
+                alert('マップをインポートしました！')
+            } catch (err) {
+                alert('インポートエラー: ' + err.message)
+            }
+        }
+        reader.readAsText(file)
+    }
+    </script>
+</body>
+</html>

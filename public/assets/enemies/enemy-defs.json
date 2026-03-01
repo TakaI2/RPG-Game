@@ -1,0 +1,84 @@
+[
+  {
+    "id": "enemy_1772311949392",
+    "name": "haruka",
+    "enemyType": "archer",
+    "spriteKey": "vamp2",
+    "animPrefix": "archer",
+    "stats": {
+      "hp": 25,
+      "speed": 165,
+      "sight": 360,
+      "cooldownTime": 2000,
+      "aimDuration": 300,
+      "castDuration": 400,
+      "dashSpeed": 480
+    },
+    "dialogs": {
+      "patrol": {
+        "lines": [
+          "血が欲しいな",
+          "また、人間を襲いに行こうかしら。"
+        ],
+        "intervalMs": 600
+      },
+      "aim": {
+        "lines": [
+          "逃げられる？"
+        ]
+      },
+      "cooldown": {
+        "lines": [
+          "まだまだ！"
+        ]
+      },
+      "return": {
+        "lines": [
+          "にげられたか・・・",
+          "ああもう・・・"
+        ]
+      }
+    }
+  },
+  {
+    "id": "enemy_1772312138257",
+    "name": "akane",
+    "enemyType": "mage",
+    "spriteKey": "vamp1",
+    "animPrefix": "mage",
+    "stats": {
+      "hp": 25,
+      "speed": 160,
+      "sight": 360,
+      "cooldownTime": 2000,
+      "aimDuration": 600,
+      "castDuration": 400,
+      "dashSpeed": 480
+    },
+    "dialogs": {
+      "patrol": {
+        "lines": [
+          "ハルカ姉様～♥",
+          "あま～い血がのみたい・・・"
+        ]
+      },
+      "aim": {
+        "lines": [
+          "ふふふ・・・",
+          "逃げられるかしら・・・♥"
+        ]
+      },
+      "cooldown": {
+        "lines": [
+          "これで終わりだとおもう？"
+        ]
+      },
+      "return": {
+        "lines": [
+          "あ～ん、にげちゃった。",
+          "逃げても無駄なのに・・・♥"
+        ]
+      }
+    }
+  }
+]

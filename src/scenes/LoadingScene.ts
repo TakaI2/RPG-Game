@@ -39,6 +39,7 @@ export default class LoadingScene extends Phaser.Scene {
     // 敵スプライトシート（チョロマキー処理のため raw で読み込む）
     this.load.image('solder_raw', 'assets/images/solder.png')
     this.load.image('vamp1_raw', 'assets/images/vamp1.png')
+    this.load.image('vamp2_raw', 'assets/images/vamp2.png')
     this.load.image('succubus_raw', 'assets/images/succubus.png')
     this.load.image('mage_raw', 'assets/images/mage.png')
 
@@ -68,6 +69,9 @@ export default class LoadingScene extends Phaser.Scene {
 
     // ボス設定JSON
     this.load.json('volg_boss', 'assets/bosses/volg_boss.json')
+
+    // 敵定義JSON
+    this.load.json('enemy-defs', 'assets/enemies/enemy-defs.json')
 
     // NPCダイアログファイル
     this.load.json('dialog_npc1', 'assets/dialog/npc1.json')
@@ -172,6 +176,7 @@ export default class LoadingScene extends Phaser.Scene {
     // 敵スプライトシートにも同様のチョロマキー処理
     this.applyChromaKey('solder_raw',   'solder',   0, 254, 0, 64, 64)
     this.applyChromaKey('vamp1_raw',    'vamp1',    0, 254, 0, 64, 64)
+    this.applyChromaKey('vamp2_raw',    'vamp2',    0, 254, 0, 64, 64)
     this.applyChromaKey('succubus_raw', 'succubus', 0, 254, 0, 64, 64)
     this.applyChromaKey('mage_raw',     'mage',     0, 254, 0, 64, 64)
 
