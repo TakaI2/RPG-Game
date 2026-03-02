@@ -1,20 +1,36 @@
 {
   "assets": {
     "bgm": [
-      { "key": "spiral",  "url": "assets/story/bgm/spiral.ogg" },
-      { "key": "redmoon", "url": "assets/story/bgm/redmoon.ogg" }
+      {
+        "key": "spiral",
+        "url": "assets/story/bgm/spiral.ogg"
+      },
+      {
+        "key": "redmoon",
+        "url": "assets/story/bgm/redmoon.ogg"
+      }
     ]
   },
   "start": {
     "story": "intro",
-    "then": { "action": "goto_map", "mapId": "demo_map", "x": 10, "y": 10 }
+    "then": {
+      "action": "goto_map",
+      "mapId": "demo_map",
+      "x": 10,
+      "y": 10
+    }
   },
   "maps": {
     "demo_map": {
       "bgm": "spiral",
       "onEnter": null,
-      "boss": null,
-      "onPlayerDefeat": { "story": "gameover", "then": { "action": "exit" } },
+      "hasBoss": false,
+      "onPlayerDefeat": {
+        "story": "gameover",
+        "then": {
+          "action": "exit"
+        }
+      },
       "eventTriggers": [
         {
           "x": 50,
@@ -23,23 +39,85 @@
           "storyId": "priest_event",
           "once": true,
           "marker": true,
-          "then": { "action": "stay" }
+          "then": {
+            "action": "stay"
+          }
         }
       ],
       "portals": [
-        { "targetMap": "boss_map", "targetX": 25, "targetY": 8 }
+        {
+          "targetMap": "boss_map",
+          "targetX": 25,
+          "targetY": 8
+        }
       ]
     },
     "boss_map": {
       "bgm": "redmoon",
       "onEnter": null,
-      "boss": { "configKey": "volg_boss", "x": 25, "y": 25 },
-      "onPlayerDefeat": { "story": "gameover", "then": { "action": "exit" } },
-      "onBossDefeat": { "story": "clear", "then": { "action": "exit" } },
+      "hasBoss": true,
+      "onPlayerDefeat": {
+        "story": "gameover",
+        "then": {
+          "action": "exit"
+        }
+      },
+      "onBossDefeat": {
+        "story": "clear",
+        "then": {
+          "action": "exit"
+        }
+      },
       "eventTriggers": [],
       "portals": [
-        { "targetMap": "demo_map", "targetX": 50, "targetY": 46 }
+        {
+          "targetMap": "demo_map",
+          "targetX": 50,
+          "targetY": 46
+        }
       ]
+    }
+  },
+  "_editorPositions": {
+    "bgm_spiral": {
+      "x": 80,
+      "y": 60
+    },
+    "bgm_redmoon": {
+      "x": 80,
+      "y": 140
+    },
+    "map_demo_map": {
+      "x": 349,
+      "y": 36
+    },
+    "map_boss_map": {
+      "x": 341,
+      "y": 323
+    },
+    "start": {
+      "x": 80,
+      "y": 300
+    },
+    "story_intro": {
+      "x": 640,
+      "y": 80
+    },
+    "story_gameover": {
+      "x": 640,
+      "y": 210
+    },
+    "exit": {
+      "x": 930,
+      "y": 300
+    },
+    "story_priest_event": {
+      "x": 640,
+      "y": 340
+    },
+    "story_clear": {
+      "x": 640,
+      "y": 470
     }
   }
 }

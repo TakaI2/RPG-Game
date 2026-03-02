@@ -42,6 +42,7 @@ export default class LoadingScene extends Phaser.Scene {
     this.load.image('vamp2_raw', 'assets/images/vamp2.png')
     this.load.image('succubus_raw', 'assets/images/succubus.png')
     this.load.image('mage_raw', 'assets/images/mage.png')
+    this.load.image('belladonna_raw', 'assets/images/Belladonna.png')
 
     // 飛び道具
     this.load.image('arrow', 'assets/images/arrow.png')
@@ -188,6 +189,7 @@ export default class LoadingScene extends Phaser.Scene {
     this.applyChromaKey('succubus_raw', 'succubus', 0, 254, 0, 64, 64)
     this.applyChromaKey('mage_raw',     'mage',     0, 254, 0, 64, 64)
     this.applyChromaKey('door_raw',     'door',     0, 254, 0, 64, 64)
+    this.applyChromaKey('belladonna_raw', 'belladonna', 0, 254, 0, 64, 64)
 
     // タイル用のテクスチャを生成
     // これらはMainSceneのpreloadで生成されていたものをここに移動

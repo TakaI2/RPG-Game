@@ -1,0 +1,149 @@
+{
+  "id": "belladonna",
+  "name": "魔女ベラドンナ",
+  "stats": {
+    "hp": 18,
+    "speed": 95,
+    "scale": 2,
+    "damage": 1
+  },
+  "sprite": {
+    "key": "belladonna"
+  },
+  "cutin": {
+    "image": "boss_face",
+    "position": "left"
+  },
+  "phases": [
+    {
+      "phase": 1,
+      "hpRange": [10, 18],
+      "attackCooldown": 1.2,
+      "patterns": ["orb_spread", "cursed_circle", "blink_dash"]
+    },
+    {
+      "phase": 2,
+      "hpRange": [0, 9],
+      "attackCooldown": 0.8,
+      "patterns": ["orb_spread", "cursed_circle", "blink_dash", "witch_calamity"]
+    }
+  ],
+  "attacks": [
+    {
+      "id": "orb_spread",
+      "name": "毒の散弾",
+      "type": "projectile_radial",
+      "config": {
+        "windupDuration": 700,
+        "windupEffect": "blink_red",
+        "projectileCount": 6,
+        "projectileType": "orb",
+        "projectileSpeed": 220,
+        "damage": 1,
+        "angleOffset": 30
+      },
+      "se": {
+        "windup": null,
+        "fire": "boss_belladonna_radial"
+      },
+      "speech": null
+    },
+    {
+      "id": "cursed_circle",
+      "name": "呪縛の輪",
+      "type": "projectile_circle",
+      "config": {
+        "projectileCount": 8,
+        "projectileType": "orb",
+        "radius": 100,
+        "waitDuration": 1200,
+        "projectileSpeed": 160,
+        "damage": 1,
+        "tint": "0x9900ff"
+      },
+      "se": {
+        "setup": "boss_belladonna_circle_setup",
+        "fire": "boss_belladonna_circle_fire"
+      },
+      "speech": {
+        "text": "逃げられると思って？",
+        "duration": 1200,
+        "color": "#cc88ff"
+      }
+    },
+    {
+      "id": "blink_dash",
+      "name": "瞬き移動",
+      "type": "teleport_dash",
+      "config": {
+        "fadeOutDuration": 300,
+        "fadeInDuration": 300,
+        "teleportDistance": 250,
+        "windupDuration": 300,
+        "dashSpeed": 350,
+        "dashDuration": 800,
+        "damage": 2
+      },
+      "se": {
+        "teleport": "boss_belladonna_teleport",
+        "dash": "boss_belladonna_dash"
+      },
+      "speech": null
+    },
+    {
+      "id": "witch_calamity",
+      "name": "魔女の災禍",
+      "type": "ultimate",
+      "config": {
+        "projectileCount": 16,
+        "projectileType": "orb",
+        "spiralAngleStep": 22,
+        "spiralRadiusStep": 12,
+        "spiralRadiusStart": 80,
+        "spawnInterval": 60,
+        "projectileSpeed": 180,
+        "damage": 2,
+        "tint": "0xaa00ff"
+      },
+      "se": {
+        "ultimate": "boss_belladonna_ultimate"
+      },
+      "cutin": {
+        "enabled": true,
+        "skillName": "魔女の災禍",
+        "duration": 2500
+      },
+      "speech": {
+        "text": "この世の呪いを、全部あんたにくれてやるよ！",
+        "duration": 1800,
+        "color": "#cc88ff"
+      },
+      "cameraEffects": {
+        "darken": {
+          "enabled": true,
+          "alpha": 0.6,
+          "duration": 300
+        },
+        "flash": {
+          "enabled": true,
+          "duration": 200,
+          "color": [170, 0, 255]
+        }
+      },
+      "bgmControl": {
+        "volumeDown": 0.3,
+        "duration": 1800
+      }
+    }
+  ],
+  "speeches": {
+    "intro": "邪魔者は消えてもらうよ。これも命運というものさ。",
+    "phase2": "ふふ、なかなかやるじゃないか。では本気を見せてあげよう。",
+    "lowHp": "小癪な...！この私がここまでやられるとは...",
+    "defeat": "バカな...ベラドンナが...負けるなんて...嘘だろ..."
+  },
+  "se": {
+    "damage": "boss_belladonna_damage",
+    "defeat": "boss_belladonna_defeat"
+  }
+}
