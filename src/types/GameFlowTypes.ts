@@ -34,10 +34,16 @@ export type PortalDestination = {
   targetY: number
 }
 
+export type BossMapConfig = {
+  configKey: string
+  x: number
+  y: number
+}
+
 export type MapFlowConfig = {
   bgm?: string
   onEnter: string | null
-  hasBoss: boolean
+  boss?: BossMapConfig | null
   onPlayerDefeat: StoryThenConfig
   onBossDefeat?: StoryThenConfig
   eventTriggers: GameFlowEventTrigger[]

@@ -51,12 +51,20 @@ export default class LoadingScene extends Phaser.Scene {
     this.load.image('npc_villager', 'assets/images/npc_villager.png')
     this.load.image('npc_merchant', 'assets/images/npc_merchant.png')
 
-    // ゲームフロー設定JSON（最初にロードして、完了後に BGM を動的追加）
+    // ゲームフロー設定JSON（最初にロードして、完了後に BGM・ボスJSONを動的追加）
     this.load.json('gameflow', 'assets/gameflow.json')
     this.load.once('filecomplete-json-gameflow', () => {
       const config = this.cache.json.get('gameflow') as GameFlowConfig
       config.assets?.bgm?.forEach(({ key, url }) => {
         this.load.audio(key, url)
+      })
+      // ボスJSON動的ロード（gameflow.json に定義された configKey を収集）
+      const bossKeys = new Set<string>()
+      Object.values(config.maps).forEach(mapConfig => {
+        if (mapConfig.boss?.configKey) bossKeys.add(mapConfig.boss.configKey)
+      })
+      bossKeys.forEach(key => {
+        this.load.json(key, `assets/bosses/${key}.json`)
       })
     })
 
@@ -66,9 +74,6 @@ export default class LoadingScene extends Phaser.Scene {
 
     // NPC設定JSON
     this.load.json('npc_config', 'assets/npcs/npcs.json')
-
-    // ボス設定JSON
-    this.load.json('volg_boss', 'assets/bosses/volg_boss.json')
 
     // 敵定義JSON
     this.load.json('enemy-defs', 'assets/enemies/enemy-defs.json')

@@ -13,7 +13,7 @@
     "demo_map": {
       "bgm": "spiral",
       "onEnter": null,
-      "hasBoss": false,
+      "boss": null,
       "onPlayerDefeat": { "story": "gameover", "then": { "action": "exit" } },
       "eventTriggers": [
         {
@@ -33,7 +33,7 @@
     "boss_map": {
       "bgm": "redmoon",
       "onEnter": null,
-      "hasBoss": true,
+      "boss": { "configKey": "volg_boss", "x": 25, "y": 25 },
       "onPlayerDefeat": { "story": "gameover", "then": { "action": "exit" } },
       "onBossDefeat": { "story": "clear", "then": { "action": "exit" } },
       "eventTriggers": [],

@@ -1169,9 +1169,9 @@ export default class MainScene extends Phaser.Scene {
     const playerWallCollider = this.physics.add.collider(this.player, this.walls!)
     this.colliders.push(playerWallCollider)
 
-    // ボス生成（gameflow.json の hasBoss フラグで判定）
+    // ボス生成（gameflow.json の boss フィールドで判定）
     const mapConfig = this.gameFlowManager.getMapConfig(mapId)
-    if (mapConfig?.hasBoss) {
+    if (mapConfig?.boss) {
       this.spawnBoss()
     }
 
@@ -1195,11 +1195,12 @@ export default class MainScene extends Phaser.Scene {
    * ボス生成
    */
   private spawnBoss() {
-    console.log('[MainScene] Spawning boss...')
+    const mapConfig = this.gameFlowManager.getMapConfig(this.currentMapId)
+    if (!mapConfig?.boss) return
+    const { configKey, x, y } = mapConfig.boss
+    console.log(`[MainScene] Spawning boss: ${configKey} at (${x}, ${y})`)
 
-    const bossX = 25 * TILE
-    const bossY = 25 * TILE
-    this.boss = makeBoss(this, bossX, bossY, 'volg_boss')
+    this.boss = makeBoss(this, x * TILE, y * TILE, configKey)
 
     const bossWallCollider = this.physics.add.collider(this.boss, this.walls!)
     this.colliders.push(bossWallCollider)
