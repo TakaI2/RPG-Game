@@ -1,5 +1,5 @@
 import Phaser from 'phaser'
-import type { GameFlowConfig, MapFlowConfig, StoryThenConfig, GameFlowEventTrigger } from '../types/GameFlowTypes'
+import type { GameFlowConfig, MapFlowConfig, StoryThenConfig, GameFlowEventTrigger, PortalDestination } from '../types/GameFlowTypes'
 
 export class GameFlowManager {
   private config: GameFlowConfig
@@ -22,5 +22,9 @@ export class GameFlowManager {
 
   getEventTriggers(mapId: string): GameFlowEventTrigger[] {
     return this.config.maps[mapId]?.eventTriggers ?? []
+  }
+
+  getPortals(mapId: string): PortalDestination[] {
+    return this.config.maps[mapId]?.portals ?? []
   }
 }

@@ -83,9 +83,15 @@ function getPortDefs(node) {
         if (t.type === 'story') {
           ports.push({ id: `trigger_${i}`, label: `trigger[${i}]: ${t.storyId || '?'} →`, side: 'output' });
         } else if (t.type === 'teleport') {
-          ports.push({ id: `trigger_${i}`, label: `teleport[${i}]: ${t.targetMap || '?'} →`, side: 'output' });
+          // 旧形式: 後方互換のため表示は維持（非推奨）
+          ports.push({ id: `trigger_${i}`, label: `[deprecated] teleport[${i}] →`, side: 'output' });
         }
       });
+      // ポータルピン（map JSON の portals[] 数に応じて動的生成）
+      const portalCount = node.data._portalCount || 0;
+      for (let i = 0; i < portalCount; i++) {
+        ports.push({ id: `portal_${i}`, label: `portal[${i}] →`, side: 'output' });
+      }
       break;
     }
     case 'story':
@@ -266,7 +272,8 @@ function getNodeFooter(node) {
   switch (node.type) {
     case 'map': {
       const et = (node.data.eventTriggers || []).length;
-      return `bgm: ${node.data.bgm || '-'}  triggers: ${et}`;
+      const pc = node.data._portalCount || 0;
+      return `bgm: ${node.data.bgm || '-'}  triggers: ${et}  portals: ${pc}`;
     }
     case 'story':
       return `then: ${node.data.thenAction || 'stay'}`;
@@ -400,24 +407,44 @@ function buildMapProps(node) {
           <td>${i}</td>
           <td><select class="trig-type" data-ti="${i}">
             <option value="story" selected>story</option>
-            <option value="teleport">teleport</option>
           </select></td>
           <td><input class="trig-val" data-ti="${i}" value="${escHtml(t.storyId||'')}" placeholder="storyId"></td>
           <td><button class="btn-del-trigger" data-ti="${i}">✕</button></td>
         </tr>`;
     } else {
+      // teleport 型（旧形式）: 警告表示のみ、編集不可
       triggerRows += `
-        <tr data-ti="${i}">
+        <tr data-ti="${i}" style="opacity:0.5">
           <td>${i}</td>
-          <td><select class="trig-type" data-ti="${i}">
-            <option value="story">story</option>
-            <option value="teleport" selected>teleport</option>
-          </select></td>
-          <td><input class="trig-val" data-ti="${i}" value="${escHtml(t.targetMap||'')}" placeholder="targetMap"></td>
+          <td style="color:#f38ba8">[deprecated] teleport</td>
+          <td style="color:#f38ba8">${escHtml(t.targetMap||'')}</td>
           <td><button class="btn-del-trigger" data-ti="${i}">✕</button></td>
         </tr>`;
     }
   });
+
+  // ポータルセクション
+  const portalCount = node.data._portalCount || 0;
+  const portalDests = node.data._portalDests || [];
+  let portalRows = '';
+  for (let i = 0; i < portalCount; i++) {
+    const dest = portalDests[i] || { targetX: 5, targetY: 5 };
+    const portalEdge = state.edges.find(e => e.fromNode === node.id && e.fromPort === `portal_${i}`);
+    const connectedMap = portalEdge ? (findNode(portalEdge.toNode)?.data?.id || '(未接続)') : '(未接続)';
+    portalRows += `
+      <tr>
+        <td>${i}</td>
+        <td style="color:#89b4fa">${escHtml(connectedMap)}</td>
+        <td><input class="portal-tx" data-pi="${i}" value="${Number(dest.targetX)}" type="number" style="width:55px"></td>
+        <td><input class="portal-ty" data-pi="${i}" value="${Number(dest.targetY)}" type="number" style="width:55px"></td>
+      </tr>`;
+  }
+  const portalSection = portalCount === 0
+    ? '<p style="color:#6c7086;font-size:0.8rem;">ポータルなし（Map JSON に portals[] が未定義）</p>'
+    : `<table class="trigger-table">
+        <thead><tr><th>#</th><th>接続先Map</th><th>destX</th><th>destY</th></tr></thead>
+        <tbody id="portal-tbody">${portalRows}</tbody>
+      </table>`;
 
   return `
     <div class="prop-section-title">Map</div>
@@ -444,6 +471,9 @@ function buildMapProps(node) {
       <tbody id="trigger-tbody">${triggerRows}</tbody>
     </table>
     <button class="btn-add-trigger" id="btn-add-trigger">+ トリガー追加</button>
+    <div class="prop-section-title" style="margin-top:12px">Portals</div>
+    <p style="font-size:0.78rem;color:#6c7086;margin-bottom:6px;">portal[N] ピンを他Mapノードの in に接続して接続先を設定</p>
+    ${portalSection}
   `;
 }
 
@@ -497,7 +527,13 @@ function bindPropertyHandlers(node) {
   if (node.type === 'map') {
     listen('prop-map-id', 'input', e => {
       node.data.id = e.target.value;
-      renderNodes(); // update title
+      renderNodes(); // タイトル即時更新
+      // Map JSON から portal 数を非同期取得
+      fetchMapPortals(e.target.value).then(portals => {
+        node.data._portalCount = portals.length;
+        renderAll();
+        renderProperties();
+      });
     });
     listen('prop-map-bgm', 'change', e => {
       node.data.bgm = e.target.value;
@@ -547,6 +583,23 @@ function bindPropertyHandlers(node) {
         node.data.eventTriggers.push({ type: 'story', storyId: '', x: 0, y: 0, once: true, marker: true, then: { action: 'stay' } });
         renderAll();
         renderNodeProperties(node);
+      });
+    }
+    // ポータル接続先座標の編集
+    const portalTbody = document.getElementById('portal-tbody');
+    if (portalTbody) {
+      portalTbody.addEventListener('input', e => {
+        const pi = parseInt(e.target.dataset.pi);
+        if (isNaN(pi)) return;
+        if (!node.data._portalDests) node.data._portalDests = [];
+        while (node.data._portalDests.length <= pi) {
+          node.data._portalDests.push({ targetX: 5, targetY: 5 });
+        }
+        if (e.target.classList.contains('portal-tx')) {
+          node.data._portalDests[pi].targetX = parseInt(e.target.value) || 0;
+        } else if (e.target.classList.contains('portal-ty')) {
+          node.data._portalDests[pi].targetY = parseInt(e.target.value) || 0;
+        }
       });
     }
   }
@@ -880,6 +933,19 @@ document.getElementById('btn-add-exit').addEventListener('click', () => {
   addNode('exit');
 });
 
+// Map JSON から portals 配列を取得（開発サーバー経由）
+async function fetchMapPortals(mapId) {
+  if (!mapId) return [];
+  try {
+    const res = await fetch(`/assets/maps/${mapId}.json`);
+    if (!res.ok) return [];
+    const data = await res.json();
+    return data.portals || [];
+  } catch {
+    return [];
+  }
+}
+
 function addNode(type) {
   // Place near center of viewport
   const vw = canvasContainer.clientWidth;
@@ -902,7 +968,7 @@ function addNode(type) {
 
 function defaultData(type) {
   switch (type) {
-    case 'map':   return { id: 'new_map', bgm: '', hasBoss: false, eventTriggers: [] };
+    case 'map':   return { id: 'new_map', bgm: '', hasBoss: false, eventTriggers: [], _portalCount: 0, _portalDests: [] };
     case 'story': return { storyId: 'new_story', thenAction: 'stay' };
     case 'bgm':   return { key: 'new_bgm', url: '' };
     case 'exit':  return {};
@@ -966,6 +1032,12 @@ function deserialize(cfg) {
     if (mapNodeMap[mapId]) return mapNodeMap[mapId];
     const p = pos(`map_${mapId}`) || { x: autoLayout.mapX, y: autoLayout.mapY };
     autoLayout.mapY += autoLayout.mapStep;
+    // teleport 型の eventTriggers は非推奨：警告を出す
+    const legacyTeleports = (mapData.eventTriggers || []).filter(t => t.type === 'teleport');
+    if (legacyTeleports.length > 0) {
+      console.warn(`[gameflow-editor] Map "${mapId}" has ${legacyTeleports.length} deprecated teleport trigger(s). Please migrate to portals.`);
+    }
+    const portals = mapData.portals || [];
     const node = {
       id:   genId(),
       type: 'map',
@@ -976,6 +1048,8 @@ function deserialize(cfg) {
         bgm:           mapData.bgm || '',
         hasBoss:       mapData.hasBoss || false,
         eventTriggers: mapData.eventTriggers ? JSON.parse(JSON.stringify(mapData.eventTriggers)) : [],
+        _portalCount:  portals.length,
+        _portalDests:  portals.map(pt => ({ targetX: pt.targetX || 5, targetY: pt.targetY || 5 })),
       },
     };
     state.nodes.push(node);
@@ -1069,8 +1143,17 @@ function deserialize(cfg) {
           addEdge(mapNodeId, `trigger_${i}`, sid, 'in');
           resolveThen(sid, t.then);
         } else if (t.type === 'teleport') {
+          // 旧形式: エッジは接続するが非推奨
           const targetMapNodeId = ensureMapNode(t.targetMap, cfg.maps?.[t.targetMap] || {});
           addEdge(mapNodeId, `trigger_${i}`, targetMapNodeId, 'in');
+        }
+      });
+
+      // portals → portal_N エッジを復元
+      (mapData.portals || []).forEach((portal, i) => {
+        if (portal.targetMap) {
+          const targetMapNodeId = ensureMapNode(portal.targetMap, cfg.maps?.[portal.targetMap] || {});
+          addEdge(mapNodeId, `portal_${i}`, targetMapNodeId, 'in');
         }
       });
     }
@@ -1131,6 +1214,27 @@ function serialize() {
         }
         return { ...t };
       });
+      // portals: portal_N エッジから接続先マップ + 座標を書き出し
+      const portalCount = mapNode.data._portalCount || 0;
+      const portalDests = mapNode.data._portalDests || [];
+      const portals = [];
+      for (let i = 0; i < portalCount; i++) {
+        const portalEdge = state.edges.find(e => e.fromNode === mapNode.id && e.fromPort === `portal_${i}`);
+        if (portalEdge) {
+          const targetMapNode = findNode(portalEdge.toNode);
+          if (targetMapNode && targetMapNode.type === 'map') {
+            const dest = portalDests[i] || { targetX: 5, targetY: 5 };
+            portals.push({
+              targetMap: targetMapNode.data.id,
+              targetX: dest.targetX || 0,
+              targetY: dest.targetY || 0,
+            });
+          }
+        }
+      }
+      if (portals.length > 0) {
+        mapObj.portals = portals;
+      }
       result.maps[mapId] = mapObj;
     }
   }

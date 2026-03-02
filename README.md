@@ -46,9 +46,12 @@ npm run dev
 - マップごとのBGM・ボス有無・イベントトリガーを宣言的に定義
 - **ゲームフローエディタ** (`tools/gameflow-editor/`) でGUI編集可能
 
-### マップ移動システム
+### マップ移動システム（ポータルスプライト）
 - 複数のマップ間を移動可能（`demo_map` ⇔ `boss_map`）
-- テレポートマーカーによる直感的な移動
+- **ポータルスプライト**（`door.png`）への物理オーバーラップで即テレポート
+  - マップJSON（`portals: [{x, y}]`）で位置を管理
+  - `gameflow.json`（`portals: [{targetMap, targetX, targetY}]`）で目的地を管理
+  - `PortalManager` が起動時にインデックス突合して統合
 - マップごとに異なる敵・NPC配置
 
 ### ストーリーシステム
@@ -83,8 +86,9 @@ npm run dev
 - LocalStorageに自動保存、JSONエクスポートで `public/assets/enemies/` に配置
 
 ### マップエディタ（`tools/map-editor/`）
-- マップのタイル・壁・敵スポーン・NPCスポーン・テレポートを GUI 編集
+- マップのタイル・壁・敵スポーン・ポータルを GUI 編集
 - enemy-editor と LocalStorage 連携——敵スポーン配置時にキャラ選択モーダルを表示
+- **ポータル配置モード**：🚪ボタンで選択、クリックで配置、右クリックで削除
 - JSONエクスポートで `public/assets/maps/` に配置
 
 ### アニメーションシステム
@@ -128,7 +132,8 @@ RPGGame/
 │   │   ├── EventTriggerManager.ts
 │   │   ├── GameFlowManager.ts
 │   │   ├── NPCManager.ts
-│   │   └── PauseMenu.ts
+│   │   ├── PauseMenu.ts
+│   │   └── PortalManager.ts  # ポータルスプライト管理・物理オーバーラップ
 │   └── story/                # ストーリー管理
 └── tools/                    # 開発支援ツール（ブラウザGUI）
     ├── enemy-editor/         # 敵キャラ定義エディタ
@@ -138,20 +143,31 @@ RPGGame/
 
 ## 開発ツールの使い方
 
-`npm run dev` 起動後、各ツールはブラウザで直接開けます。
+**エディタツール（マップ・エネミー）はサーバー不要**。`index.html` をブラウザで直接開けばOK。
+ゲームフローエディタは fetch API を使うため `npm run dev` 起動が必要。
 
-| ツール | URL |
-|--------|-----|
-| ゲーム本体 | `http://localhost:5173/Game_RPG/` |
-| マップエディタ | `http://localhost:5173/tools/map-editor/` |
-| エネミーエディタ | `http://localhost:5173/tools/enemy-editor/` |
-| ゲームフローエディタ | `http://localhost:5173/tools/gameflow-editor/` |
+| ツール | 起動方法 |
+|--------|----------|
+| ゲーム本体 | `npm run dev` → `http://localhost:5173/Game_RPG/` |
+| マップエディタ | `tools/map-editor/index.html` をブラウザで直接開く |
+| エネミーエディタ | `tools/enemy-editor/index.html` をブラウザで直接開く |
+| ゲームフローエディタ | `npm run dev` → `http://localhost:5173/tools/gameflow-editor/` |
+
+> マップエディタとエネミーエディタは LocalStorage でデータを共有します。
+> 同じブラウザ・同じ起動方法（どちらもファイル直開き）で使用してください。
 
 ### 敵キャラ追加の流れ
 
 1. **エネミーエディタ** でキャラを作成 → Export → `public/assets/enemies/enemy-defs.json` に配置
 2. **マップエディタ** で敵スポーンを配置 → キャラ選択モーダルで対象キャラを選択 → Export → `public/assets/maps/` に配置
 3. ゲームをリロードすると指定キャラが固定位置にスポーン
+
+### ポータル追加の流れ
+
+1. **マップエディタ** で 🚪 ポータルを配置 → Export → `public/assets/maps/xxx.json` に配置
+2. **ゲームフローエディタ** でマップノードの `portal_N` ピンを接続先マップの `in` へ接続 → Save
+   - `gameflow.json` の `maps.xxx.portals[N]` に目的地情報が書き出される
+3. ゲームをリロードするとポータルスプライトが表示され、踏むとテレポート
 
 ## ビルド
 

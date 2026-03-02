@@ -90,6 +90,7 @@
         .tile-option.floor { background: #143d2a; color: #a6e3a1; }
         .tile-option.wall  { background: #3a3a4a; color: #cdd6f4; border-color: #45475a; }
         .tile-option.spawn-tile { background: #3a1f35; color: #f5c2e7; border-color: #45475a; }
+        .tile-option.portal-tile { background: #1a1a3a; color: #cba6f7; border-color: #45475a; }
 
         .canvas-container {
             background: #181825;
@@ -300,6 +301,7 @@
             <div class="tile-option floor selected" data-tile="0" title="床 (0)">床</div>
             <div class="tile-option wall" data-tile="1" title="壁 (1)">壁</div>
             <div class="tile-option spawn-tile" data-tile="spawn" title="敵スポーン（左クリックで配置→キャラ選択）">敵</div>
+            <div class="tile-option portal-tile" data-tile="portal" title="ポータル（左クリックで配置、右クリックで削除）">🚪</div>
         </div>
     </div>
 
@@ -340,6 +342,7 @@
     let cols = 80, rows = 80
     let mapData = []
     let enemySpawns = []   // { x, y, enemyDefId?: string }
+    let portals = []       // { x, y }
     let selectedTile = 0
     let isDrawing = false
 
@@ -359,7 +362,7 @@
                 document.querySelectorAll('.tile-option').forEach(o => o.classList.remove('selected'))
                 opt.classList.add('selected')
                 const v = opt.getAttribute('data-tile')
-                selectedTile = v === 'spawn' ? 'spawn' : parseInt(v)
+                selectedTile = v === 'spawn' ? 'spawn' : v === 'portal' ? 'portal' : parseInt(v)
             })
         })
 
@@ -389,6 +392,7 @@
         rows = parseInt(document.getElementById('rows').value)
         mapData = Array(rows).fill(null).map(() => Array(cols).fill(0))
         enemySpawns = []
+        portals = []
         canvas.width = cols * TILE_SIZE
         canvas.height = rows * TILE_SIZE
         drawMap()
@@ -398,6 +402,7 @@
         if (!confirm('マップをクリアしますか？')) return
         mapData = Array(rows).fill(null).map(() => Array(cols).fill(0))
         enemySpawns = []
+        portals = []
         drawMap()
     }
 
@@ -408,6 +413,7 @@
             for (let x = 0; x < cols; x++)
                 drawTile(x, y, mapData[y][x])
         enemySpawns.forEach(s => drawSpawn(s))
+        portals.forEach(p => drawPortal(p))
         drawGrid()
     }
 
@@ -471,6 +477,26 @@
         }
     }
 
+    function drawPortal(portal) {
+        const px = portal.x * TILE_SIZE
+        const py = portal.y * TILE_SIZE
+        const cx = px + TILE_SIZE / 2
+        const cy = py + TILE_SIZE / 2
+        const img = getChromaCanvas('door')
+        if (img) {
+            ctx.imageSmoothingEnabled = false
+            ctx.drawImage(img, 0, 0, FRAME_SIZE, FRAME_SIZE, px, py, TILE_SIZE, TILE_SIZE)
+            return
+        }
+        // フォールバック: 絵文字（未ロード時）
+        ctx.fillStyle = '#1a1a3a99'
+        ctx.fillRect(px, py, TILE_SIZE, TILE_SIZE)
+        ctx.font = `${Math.floor(TILE_SIZE * 0.65)}px sans-serif`
+        ctx.textAlign = 'center'
+        ctx.textBaseline = 'middle'
+        ctx.fillText('\uD83D\uDEAA', cx, cy)
+    }
+
     function drawGrid() {
         ctx.strokeStyle = '#ffffff08'
         ctx.lineWidth = 1
@@ -518,10 +544,19 @@
         if (x < 0 || x >= cols || y < 0 || y >= rows) return
 
         if (e.button === 2) {
-            // 右クリック: 削除
+            // 右クリック: 削除（タイル・敵スポーン・ポータル）
             mapData[y][x] = 0
             enemySpawns = enemySpawns.filter(s => !(s.x === x && s.y === y))
+            portals = portals.filter(p => !(p.x === x && p.y === y))
             drawMap()
+        } else if (selectedTile === 'portal') {
+            // ポータル配置（重複不可）
+            const exists = portals.some(p => p.x === x && p.y === y)
+            if (!exists) {
+                portals.push({ x, y })
+                isDrawing = false
+                drawMap()
+            }
         } else if (selectedTile === 'spawn') {
             // 左クリック: スポーン → モーダルを開く
             const exists = enemySpawns.some(s => s.x === x && s.y === y)
@@ -625,7 +660,7 @@
 
     // ---- Export / Import ----
     function exportMap() {
-        const mapJSON = { cols, rows, tiles: mapData, enemySpawns }
+        const mapJSON = { cols, rows, tiles: mapData, enemySpawns, portals }
         const json = JSON.stringify(mapJSON, null, 2)
         const blob = new Blob([json], { type: 'application/json' })
         const url = URL.createObjectURL(blob)
@@ -648,6 +683,7 @@
                     x: s.x, y: s.y,
                     ...(s.enemyDefId ? { enemyDefId: s.enemyDefId } : {})
                 }))
+                portals = (j.portals || []).map(p => ({ x: p.x, y: p.y }))
                 document.getElementById('cols').value = cols
                 document.getElementById('rows').value = rows
                 canvas.width = cols * TILE_SIZE

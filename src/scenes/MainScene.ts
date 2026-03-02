@@ -40,6 +40,8 @@ import { BGMManager } from '../systems/BGMManager'
 import { PauseMenu } from '../ui/PauseMenu'
 import { GameStateManager } from '../systems/GameStateManager'
 import { GameFlowManager } from '../systems/GameFlowManager'
+import { PortalManager } from '../systems/PortalManager'
+import type { FullPortalData } from '../systems/PortalManager'
 import type { ThenAction } from '../types/GameFlowTypes'
 
 export default class MainScene extends Phaser.Scene {
@@ -64,6 +66,7 @@ export default class MainScene extends Phaser.Scene {
   private gameOverText?: Phaser.GameObjects.Text
   private isGameCleared: boolean = false
   private eventTriggerManager?: EventTriggerManager
+  private portalManager?: PortalManager
   private currentMapId: string = ''
   private currentMapData: Record<string, unknown> | null = null
   private colliders: Phaser.Physics.Arcade.Collider[] = []
@@ -102,6 +105,7 @@ export default class MainScene extends Phaser.Scene {
     this.boss = null
     this.bossHpUI = null
     this.eventTriggerManager = undefined
+    this.portalManager = undefined
     this.walls = undefined
     this.isGameOver = false
     this.isGameCleared = false
@@ -503,14 +507,9 @@ export default class MainScene extends Phaser.Scene {
         TILE
       )
 
-      if (result) {
-        if (result.type === 'story' && result.storyId) {
-          console.log(`[MainScene] Story event triggered: ${result.storyId}`)
-          this.launchStory(result.storyId, result.then ?? { action: 'stay' })
-        } else if (result.type === 'teleport' && result.targetMap) {
-          console.log(`[MainScene] Teleport triggered: ${result.targetMap} (${result.targetX}, ${result.targetY})`)
-          this.switchMap(result.targetMap, result.targetX || 0, result.targetY || 0)
-        }
+      if (result && result.type === 'story' && result.storyId) {
+        console.log(`[MainScene] Story event triggered: ${result.storyId}`)
+        this.launchStory(result.storyId, result.then ?? { action: 'stay' })
       }
     }
 
@@ -964,6 +963,27 @@ export default class MainScene extends Phaser.Scene {
       this.eventTriggerManager = new EventTriggerManager(this, eventTriggers, TILE, this.currentMapId)
       console.log(`[MainScene] Initialized ${eventTriggers.length} event triggers for ${this.currentMapId}`)
     }
+
+    // PortalManager を初期化（map JSON の portals と gameflow.json の portals をインデックス突合）
+    const gameflowPortals = this.gameFlowManager.getPortals(this.currentMapId)
+    const mapPortalPositions = ((this.currentMapData as Record<string, unknown>).portals as Array<{ x: number; y: number }> | undefined) ?? []
+    const fullPortals: FullPortalData[] = mapPortalPositions
+      .map((pos, i) => {
+        const dest = gameflowPortals[i]
+        if (!dest) return null
+        return { x: pos.x, y: pos.y, targetMap: dest.targetMap, targetX: dest.targetX, targetY: dest.targetY }
+      })
+      .filter((p): p is FullPortalData => p !== null)
+
+    if (fullPortals.length > 0) {
+      this.portalManager = new PortalManager(this, fullPortals, TILE)
+      this.portalManager.setupOverlap(this.player, (p: FullPortalData) => {
+        if (this.isGameOver || this.ui.visible) return
+        console.log(`[MainScene] Portal triggered: ${p.targetMap} (${p.targetX}, ${p.targetY})`)
+        this.switchMap(p.targetMap, p.targetX, p.targetY)
+      })
+      console.log(`[MainScene] Initialized ${fullPortals.length} portals for ${this.currentMapId}`)
+    }
   }
 
   /**
@@ -1090,6 +1110,12 @@ export default class MainScene extends Phaser.Scene {
     if (this.eventTriggerManager) {
       this.eventTriggerManager.destroy()
       this.eventTriggerManager = undefined
+    }
+
+    // PortalManagerを破棄
+    if (this.portalManager) {
+      this.portalManager.destroy()
+      this.portalManager = undefined
     }
 
     // NPCを破棄

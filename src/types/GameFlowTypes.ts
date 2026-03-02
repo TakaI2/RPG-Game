@@ -20,15 +20,18 @@ export type StoryThenConfig = {
 export type GameFlowEventTrigger = {
   x: number
   y: number
-  type: 'story' | 'teleport'
+  type: 'story'
   storyId?: string
   once: boolean
   marker?: boolean
   markerColor?: string
   then?: ThenAction
-  targetMap?: string
-  targetX?: number
-  targetY?: number
+}
+
+export type PortalDestination = {
+  targetMap: string
+  targetX: number
+  targetY: number
 }
 
 export type MapFlowConfig = {
@@ -38,6 +41,7 @@ export type MapFlowConfig = {
   onPlayerDefeat: StoryThenConfig
   onBossDefeat?: StoryThenConfig
   eventTriggers: GameFlowEventTrigger[]
+  portals?: PortalDestination[]
 }
 
 export type GameFlowConfig = {

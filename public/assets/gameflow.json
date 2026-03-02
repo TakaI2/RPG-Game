@@ -24,18 +24,10 @@
           "once": true,
           "marker": true,
           "then": { "action": "stay" }
-        },
-        {
-          "x": 55,
-          "y": 45,
-          "type": "teleport",
-          "targetMap": "boss_map",
-          "targetX": 25,
-          "targetY": 8,
-          "once": false,
-          "marker": true,
-          "markerColor": "green"
         }
+      ],
+      "portals": [
+        { "targetMap": "boss_map", "targetX": 25, "targetY": 8 }
       ]
     },
     "boss_map": {
@@ -44,18 +36,9 @@
       "hasBoss": true,
       "onPlayerDefeat": { "story": "gameover", "then": { "action": "exit" } },
       "onBossDefeat": { "story": "clear", "then": { "action": "exit" } },
-      "eventTriggers": [
-        {
-          "x": 25,
-          "y": 11,
-          "type": "teleport",
-          "targetMap": "demo_map",
-          "targetX": 50,
-          "targetY": 46,
-          "once": false,
-          "marker": true,
-          "markerColor": "green"
-        }
+      "eventTriggers": [],
+      "portals": [
+        { "targetMap": "demo_map", "targetX": 50, "targetY": 46 }
       ]
     }
   }

@@ -8,19 +8,14 @@ import type { ThenAction } from '../types/GameFlowTypes'
 export type EventTrigger = {
   x: number // タイル座標X
   y: number // タイル座標Y
-  type: 'story' | 'teleport' // トリガーの種類
+  type: 'story' // トリガーの種類（story のみ。teleport は PortalManager に移譲）
 
   // story用（ストーリーイベントを発火）
   storyId?: string // ストーリーファイルのID
 
-  // teleport用（マップ間移動）
-  targetMap?: string // 移動先マップID
-  targetX?: number // 移動先タイルX座標
-  targetY?: number // 移動先タイルY座標
-
   once: boolean // 一度だけ発火するか
   marker?: boolean // 視覚的マーカー表示
-  markerColor?: string // マーカーの色（デフォルト: story=黄、teleport=緑）
+  markerColor?: string // マーカーの色（デフォルト: 黄色）
   then?: ThenAction // story型トリガーの後続アクション
 }
 
@@ -28,11 +23,8 @@ export type EventTrigger = {
  * トリガー結果の型定義
  */
 export type TriggerResult = {
-  type: 'story' | 'teleport'
+  type: 'story'
   storyId?: string
-  targetMap?: string
-  targetX?: number
-  targetY?: number
   then?: ThenAction
 }
 
@@ -73,11 +65,9 @@ export class EventTriggerManager {
 
         console.log(`[EventTrigger] Creating ${trigger.type} marker at tile(${trigger.x}, ${trigger.y}) -> world(${x}, ${y})`)
 
-        let color = 0xffff00
-        if (trigger.markerColor === 'green' || trigger.type === 'teleport') {
+        let color = 0xffff00 // デフォルト（story）
+        if (trigger.markerColor === 'green') {
           color = 0x00ff00
-        } else if (trigger.markerColor === 'yellow' || trigger.type === 'story') {
-          color = 0xffff00
         } else if (trigger.markerColor === 'blue') {
           color = 0x0099ff
         } else if (trigger.markerColor === 'red') {
@@ -145,9 +135,6 @@ export class EventTriggerManager {
         return {
           type: trigger.type,
           storyId: trigger.storyId,
-          targetMap: trigger.targetMap,
-          targetX: trigger.targetX,
-          targetY: trigger.targetY,
           then: trigger.then
         }
       }

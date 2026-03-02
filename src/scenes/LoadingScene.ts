@@ -88,6 +88,9 @@ export default class LoadingScene extends Phaser.Scene {
     this.load.image('btn_resume', 'assets/images/Resume_Button.png')
     this.load.image('btn_backtotitle', 'assets/images/BacktoTitle_Button.png')
 
+    // ポータルスプライト（チョロマキー処理のため raw で読み込む）
+    this.load.image('door_raw', 'assets/images/door.png')
+
     // エラーハンドリング：画像が見つからない場合でもゲームを続行
     this.load.on('loaderror', (fileObj: Phaser.Loader.File) => {
       console.warn(`[LoadingScene] Failed to load: ${fileObj.key} (${fileObj.url})`)
@@ -179,6 +182,7 @@ export default class LoadingScene extends Phaser.Scene {
     this.applyChromaKey('vamp2_raw',    'vamp2',    0, 254, 0, 64, 64)
     this.applyChromaKey('succubus_raw', 'succubus', 0, 254, 0, 64, 64)
     this.applyChromaKey('mage_raw',     'mage',     0, 254, 0, 64, 64)
+    this.applyChromaKey('door_raw',     'door',     0, 254, 0, 64, 64)
 
     // タイル用のテクスチャを生成
     // これらはMainSceneのpreloadで生成されていたものをここに移動
