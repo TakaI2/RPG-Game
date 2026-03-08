@@ -55,7 +55,11 @@
     "boss_map": {
       "bgm": "redmoon",
       "onEnter": null,
-      "hasBoss": true,
+      "boss": {
+        "configKey": "belladonna_boss",
+        "x": 25,
+        "y": 35
+      },
       "onPlayerDefeat": {
         "story": "gameover",
         "then": {

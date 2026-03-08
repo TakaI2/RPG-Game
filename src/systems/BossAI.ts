@@ -12,6 +12,7 @@ import { fireArrowAngle, fireOrbAt, Projectile } from './Projectile'
 import { AudioBus } from './AudioBus'
 import { CutinSystem } from './CutinSystem'
 import { BossSpeechBubble } from './BossSpeechBubble'
+import { createEnemyAnimations } from './AnimationManager'
 import { GAME_W, GAME_H } from '../config'
 
 /**
@@ -31,8 +32,9 @@ export function loadBossConfig(scene: Phaser.Scene, bossId: string): BossConfig 
 export function makeBoss(scene: Phaser.Scene, x: number, y: number, configId: string): Boss {
   const config = loadBossConfig(scene, configId)
 
-  const sprite = config.sprite.key
-  const boss = scene.physics.add.sprite(x, y, sprite).setScale(config.stats.scale) as Boss
+  const textureKey = config.sprite.key
+  const animKey = config.sprite.animKey ?? textureKey
+  const boss = scene.physics.add.sprite(x, y, textureKey).setScale(config.stats.scale) as Boss
 
   // 型プロパティ設定
   boss.enemyType = 'boss'
@@ -42,6 +44,7 @@ export function makeBoss(scene: Phaser.Scene, x: number, y: number, configId: st
   boss.hp = config.stats.hp
   boss.maxHp = config.stats.hp
   boss.speed = config.stats.speed
+  boss.animKey = animKey
 
   // 設定データを保持
   boss.config = config
@@ -70,9 +73,13 @@ export function makeBoss(scene: Phaser.Scene, x: number, y: number, configId: st
     boss.setTint(tintValue)
   }
 
+  // アニメーション登録（animKey が指定されている場合）
+  createEnemyAnimations(scene, animKey, textureKey)
+  boss.play(`${animKey}-idle-down`, true)
+
   boss.setDepth(5)
 
-  console.log(`[BossAI] Boss created: ${config.name} (${config.id})`)
+  console.log(`[BossAI] Boss created: ${config.name} (${config.id}), animKey: ${animKey}`)
 
   return boss
 }
@@ -96,8 +103,18 @@ export function updateBossAI(
   // フェーズ判定
   updatePhase(boss, speechBubble)
 
-  // 攻撃状態の管理
+  // idle/cooldown 中はプレイヤーに向かって歩く
   if (boss.state === 'idle' || boss.state === 'cooldown') {
+    const dx = player.x - boss.x
+    const dy = player.y - boss.y
+    const dist = Math.sqrt(dx * dx + dy * dy)
+    const walkSpeed = boss.speed * 0.45
+    if (dist > 80) {
+      boss.setVelocity((dx / dist) * walkSpeed, (dy / dist) * walkSpeed)
+    } else {
+      boss.setVelocity(0, 0)
+    }
+
     // 次の攻撃を選択
     const timeSinceLastAttack = time - boss.lastAttackTime
     if (timeSinceLastAttack >= boss.attackCooldown) {

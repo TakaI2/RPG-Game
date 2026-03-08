@@ -454,6 +454,23 @@ export default class MainScene extends Phaser.Scene {
       if (this.bossHpUI) {
         this.bossHpUI.update(this.boss.hp, this.boss.maxHp, this.boss.phase)
       }
+
+      // ボスアニメーション更新
+      if (this.boss.animKey) {
+        const vx = this.boss.body.velocity.x
+        const vy = this.boss.body.velocity.y
+        const moving = Math.abs(vx) > 10 || Math.abs(vy) > 10
+        const dir = getDirectionFromVelocity(vx, vy)
+        if (moving) {
+          const targetAnim = `${this.boss.animKey}-walk-${dir}`
+          if (this.boss.anims.currentAnim?.key !== targetAnim) this.boss.play(targetAnim, true)
+        } else {
+          const idleAnim = `${this.boss.animKey}-idle-${dir}`
+          if (this.boss.anims.currentAnim?.key !== idleAnim && !this.boss.anims.currentAnim?.key.includes('atk')) {
+            this.boss.play(idleAnim, true)
+          }
+        }
+      }
     }
 
     // 誘導魔法弾の更新
