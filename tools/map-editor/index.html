@@ -265,6 +265,60 @@
         ::-webkit-scrollbar-track { background: #181825; }
         ::-webkit-scrollbar-thumb { background: #45475a; border-radius: 3px; }
         ::-webkit-scrollbar-thumb:hover { background: #585b70; }
+
+        /* --- タイル追加モーダル --- */
+        #addTileModal {
+            display: none;
+            position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.6);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+        #addTileModal.show { display: flex; }
+
+        .add-tile-form { display: grid; grid-template-columns: 130px 1fr; gap: 10px 12px; align-items: center; }
+        .add-tile-form label { color: #a6adc8; font-size: 0.875rem; }
+        .add-tile-form input, .add-tile-form select {
+            padding: 5px 10px; border: 1px solid #45475a;
+            background: #313244; color: #cdd6f4; border-radius: 4px; width: 100%;
+        }
+        .add-tile-form input:disabled { opacity: 0.4; cursor: not-allowed; }
+
+        .custom-tile-list { margin-top: 14px; }
+        .custom-tile-list h4 { font-size: 0.85rem; color: #a6adc8; margin-bottom: 8px; }
+        .custom-tile-item {
+            display: flex; align-items: center; gap: 8px;
+            padding: 5px 8px; background: #181825; border-radius: 4px; margin-bottom: 4px;
+            border: 1px solid #45475a;
+        }
+        .custom-tile-swatch { width: 20px; height: 20px; border-radius: 3px; flex-shrink: 0; }
+        .custom-tile-label { flex: 1; font-size: 0.82rem; color: #cdd6f4; }
+        .custom-tile-meta { font-size: 0.72rem; color: #6c7086; }
+        .custom-tile-del {
+            background: transparent; border: 1px solid #f38ba8; color: #f38ba8;
+            border-radius: 4px; padding: 2px 8px; cursor: pointer; font-size: 0.75rem;
+        }
+        .custom-tile-del:hover { background: #f38ba822; }
+
+        .tile-palette-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
+        .tile-palette-header h2 { margin: 0; font-size: 1rem; color: #a6adc8; }
+        .btn-add-tile {
+            padding: 5px 12px; background: #1e3a5f; color: #89b4fa;
+            border: 1px solid #89b4fa; border-radius: 6px; cursor: pointer; font-size: 0.82rem;
+        }
+        .btn-add-tile:hover { background: #2a5080; }
+
+        .tile-option {
+            position: relative;
+            background-size: cover !important;
+            background-position: center !important;
+        }
+        .tile-option .tile-label {
+            position: absolute; bottom: 2px; left: 0; right: 0;
+            text-align: center; font-size: 0.7rem;
+            background: rgba(0,0,0,0.5); padding: 1px 0;
+        }
     </style>
 </head>
 <body>
@@ -296,12 +350,49 @@
     </div>
 
     <div class="tile-palette">
-        <h2>タイルパレット</h2>
-        <div class="tile-options">
-            <div class="tile-option floor selected" data-tile="0" title="床 (0)">床</div>
-            <div class="tile-option wall" data-tile="1" title="壁 (1)">壁</div>
-            <div class="tile-option spawn-tile" data-tile="spawn" title="敵スポーン（左クリックで配置→キャラ選択）">敵</div>
-            <div class="tile-option portal-tile" data-tile="portal" title="ポータル（左クリックで配置、右クリックで削除）">🚪</div>
+        <div class="tile-palette-header">
+            <h2>タイルパレット</h2>
+            <button class="btn-add-tile" onclick="openAddTileModal()">+ タイル追加</button>
+        </div>
+        <div class="tile-options" id="tileOptions">
+            <!-- tilesets.json + localStorage から動的生成 -->
+        </div>
+    </div>
+
+    <!-- タイル追加モーダル -->
+    <div id="addTileModal">
+        <div class="modal-box" style="width:480px;">
+            <div class="modal-header">
+                <h3>タイルを追加</h3>
+                <button onclick="closeAddTileModal()">✕</button>
+            </div>
+            <div class="modal-body">
+                <div class="add-tile-form">
+                    <label>ラベル名</label>
+                    <input type="text" id="atLabel" placeholder="例: 草原">
+                    <label>ロール</label>
+                    <select id="atRole">
+                        <option value="floor">床（通過可能）</option>
+                        <option value="wall">壁（通過不可）</option>
+                    </select>
+                    <label>表示色</label>
+                    <input type="color" id="atColor" value="#2a5a1a">
+                    <label>テクスチャキー</label>
+                    <input type="text" id="atTextureKey" placeholder="例: tile_grass（省略可）">
+                    <label>アニメーション</label>
+                    <input type="checkbox" id="atAnimated" onchange="toggleFpsField(this.checked)" style="width:auto;">
+                    <label>アニメFPS</label>
+                    <input type="number" id="atFps" value="8" min="1" max="30" disabled>
+                </div>
+                <div class="custom-tile-list">
+                    <h4>追加済みタイル</h4>
+                    <div id="customTileList"></div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <span style="font-size:0.8rem;color:#6c7086;">追加したタイルはブラウザに保存されます</span>
+                <button class="btn-confirm" onclick="addCustomTile()">追加</button>
+            </div>
         </div>
     </div>
 
@@ -337,6 +428,8 @@
     const SHEET_COLS = 16
     const FRAME_SIZE = 64
     const STORAGE_KEY = 'rpg-enemy-defs'
+    const CUSTOM_TILES_KEY = 'rpg-custom-tiles'
+    const TILESET_URL = '../../public/assets/maps/tilesets.json'
 
     let canvas, ctx
     let cols = 80, rows = 80
@@ -345,6 +438,12 @@
     let portals = []       // { x, y }
     let selectedTile = 0
     let isDrawing = false
+
+    // タイルセット
+    let baseDefs = []    // tilesets.json から読み込んだ定義
+    let customDefs = []  // localStorage から読み込んだカスタム定義
+    let allDefs = []     // baseDefs + customDefs のマージ
+    let tileImageCache = {}  // id → HTMLImageElement（またはnull）
 
     // モーダル用
     let pendingSpawnPos = null   // { x, y } – モーダルを開いた際の仮位置
@@ -357,15 +456,6 @@
         canvas = document.getElementById('mapCanvas')
         ctx = canvas.getContext('2d')
 
-        document.querySelectorAll('.tile-option').forEach(opt => {
-            opt.addEventListener('click', () => {
-                document.querySelectorAll('.tile-option').forEach(o => o.classList.remove('selected'))
-                opt.classList.add('selected')
-                const v = opt.getAttribute('data-tile')
-                selectedTile = v === 'spawn' ? 'spawn' : v === 'portal' ? 'portal' : parseInt(v)
-            })
-        })
-
         canvas.addEventListener('mousedown', handleMouseDown)
         canvas.addEventListener('mousemove', handleMouseMove)
         canvas.addEventListener('mouseup', handleMouseUp)
@@ -373,7 +463,166 @@
         canvas.addEventListener('contextmenu', e => e.preventDefault())
 
         loadEnemyDefs()
+        loadTilesets()  // パレットを動的生成（完了後に createNewMap を呼ぶ）
+    }
+
+    // ---- Tileset ----
+    async function loadTilesets() {
+        try {
+            const res = await fetch(TILESET_URL)
+            baseDefs = res.ok ? await res.json() : []
+        } catch {
+            baseDefs = []
+        }
+        try {
+            const raw = localStorage.getItem(CUSTOM_TILES_KEY)
+            customDefs = raw ? JSON.parse(raw) : []
+        } catch {
+            customDefs = []
+        }
+        allDefs = [...baseDefs, ...customDefs]
+        renderPalette()
         createNewMap()
+    }
+
+    function renderPalette() {
+        const container = document.getElementById('tileOptions')
+        container.innerHTML = ''
+
+        allDefs.forEach(def => {
+            const el = document.createElement('div')
+            const roleClass = def.role === 'wall' ? 'wall' : 'floor'
+            el.className = `tile-option ${roleClass}`
+            el.setAttribute('data-tile', String(def.id))
+            el.title = `${def.label} (id:${def.id}, ${def.role})`
+            el.style.background = def.color
+
+            // テキストラベル
+            const labelEl = document.createElement('span')
+            labelEl.className = 'tile-label'
+            labelEl.textContent = def.label
+            el.appendChild(labelEl)
+
+            // 画像ロードを試みる（アニメタイルは1コマ目のみ切り出し）
+            if (def.textureKey) {
+                const img = new Image()
+                img.onload = () => {
+                    const c = document.createElement('canvas')
+                    c.width = 64; c.height = 64
+                    c.getContext('2d').drawImage(img, 0, 0, 64, 64, 0, 0, 64, 64)
+                    el.style.backgroundImage = `url(${c.toDataURL()})`
+                    el.style.backgroundSize = 'cover'
+                    labelEl.textContent = ''
+                    tileImageCache[def.id] = img
+                }
+                img.src = `../../public/assets/images/tiles/${def.textureKey}.png`
+            }
+
+            el.addEventListener('click', () => selectTile(el, def.id))
+            container.appendChild(el)
+        })
+
+        // 特殊タイル（敵スポーン / ポータル）は固定で追加
+        const spawnEl = document.createElement('div')
+        spawnEl.className = 'tile-option spawn-tile'
+        spawnEl.setAttribute('data-tile', 'spawn')
+        spawnEl.title = '敵スポーン（左クリックで配置→キャラ選択）'
+        spawnEl.textContent = '敵'
+        spawnEl.addEventListener('click', () => selectTile(spawnEl, 'spawn'))
+        container.appendChild(spawnEl)
+
+        const portalEl = document.createElement('div')
+        portalEl.className = 'tile-option portal-tile'
+        portalEl.setAttribute('data-tile', 'portal')
+        portalEl.title = 'ポータル（左クリックで配置、右クリックで削除）'
+        portalEl.textContent = '\uD83D\uDEAA'
+        portalEl.addEventListener('click', () => selectTile(portalEl, 'portal'))
+        container.appendChild(portalEl)
+
+        // 初期選択（id=0 の床）
+        const first = container.querySelector('[data-tile="0"]')
+        if (first) first.classList.add('selected')
+        selectedTile = 0
+    }
+
+    function selectTile(el, value) {
+        document.querySelectorAll('.tile-option').forEach(o => o.classList.remove('selected'))
+        el.classList.add('selected')
+        selectedTile = (value === 'spawn' || value === 'portal') ? value : parseInt(value)
+    }
+
+    // ---- カスタムタイル追加/削除 ----
+    function openAddTileModal() {
+        renderCustomTileList()
+        document.getElementById('addTileModal').classList.add('show')
+    }
+
+    function closeAddTileModal() {
+        document.getElementById('addTileModal').classList.remove('show')
+    }
+
+    function toggleFpsField(checked) {
+        document.getElementById('atFps').disabled = !checked
+    }
+
+    function addCustomTile() {
+        const label = document.getElementById('atLabel').value.trim()
+        const textureKey = document.getElementById('atTextureKey').value.trim()
+        if (!label) { alert('ラベル名を入力してください'); return }
+
+        const maxId = allDefs.length > 0 ? Math.max(...allDefs.map(d => d.id)) : -1
+        const newDef = {
+            id: maxId + 1,
+            role: document.getElementById('atRole').value,
+            textureKey: textureKey || `custom_tile_${maxId + 1}`,
+            label,
+            color: document.getElementById('atColor').value,
+            animated: document.getElementById('atAnimated').checked,
+            fps: parseInt(document.getElementById('atFps').value) || 8,
+        }
+
+        customDefs.push(newDef)
+        localStorage.setItem(CUSTOM_TILES_KEY, JSON.stringify(customDefs))
+        allDefs = [...baseDefs, ...customDefs]
+
+        // フォームをリセット
+        document.getElementById('atLabel').value = ''
+        document.getElementById('atTextureKey').value = ''
+        document.getElementById('atAnimated').checked = false
+        document.getElementById('atFps').disabled = true
+        document.getElementById('atFps').value = '8'
+
+        renderPalette()
+        renderCustomTileList()
+    }
+
+    function removeCustomTile(id) {
+        customDefs = customDefs.filter(d => d.id !== id)
+        localStorage.setItem(CUSTOM_TILES_KEY, JSON.stringify(customDefs))
+        allDefs = [...baseDefs, ...customDefs]
+        delete tileImageCache[id]
+        renderPalette()
+        renderCustomTileList()
+    }
+
+    function renderCustomTileList() {
+        const container = document.getElementById('customTileList')
+        container.innerHTML = ''
+        if (customDefs.length === 0) {
+            container.innerHTML = '<p style="color:#6c7086;font-size:0.8rem;">追加済みのタイルはありません</p>'
+            return
+        }
+        customDefs.forEach(def => {
+            const item = document.createElement('div')
+            item.className = 'custom-tile-item'
+            item.innerHTML = `
+                <div class="custom-tile-swatch" style="background:${def.color}"></div>
+                <span class="custom-tile-label">${def.label}</span>
+                <span class="custom-tile-meta">${def.role} / id:${def.id}${def.animated ? ` / ${def.fps}fps` : ''}</span>
+                <button class="custom-tile-del" onclick="removeCustomTile(${def.id})">削除</button>
+            `
+            container.appendChild(item)
+        })
     }
 
     // ---- Enemy Defs ----
@@ -417,15 +666,25 @@
         drawGrid()
     }
 
-    function drawTile(x, y, type) {
+    function drawTile(x, y, tileId) {
         const px = x * TILE_SIZE, py = y * TILE_SIZE
-        if (type === 0) {
-            ctx.fillStyle = '#143d2a'
-            ctx.fillRect(px, py, TILE_SIZE, TILE_SIZE)
-        } else if (type === 1) {
-            ctx.fillStyle = '#3a3a4a'
-            ctx.fillRect(px, py, TILE_SIZE, TILE_SIZE)
-            ctx.strokeStyle = '#2a2a36'
+        const def = allDefs.find(d => d.id === tileId)
+        const color = def ? def.color : '#143d2a'
+        const isWall = def ? def.role === 'wall' : false
+
+        // キャッシュ済み画像があれば描画（アニメタイルは1コマ目を使用）
+        const img = tileImageCache[tileId]
+        if (img) {
+            ctx.imageSmoothingEnabled = false
+            ctx.drawImage(img, 0, 0, 64, 64, px, py, TILE_SIZE, TILE_SIZE)
+            return
+        }
+
+        // フォールバック: color で塗りつぶし
+        ctx.fillStyle = color
+        ctx.fillRect(px, py, TILE_SIZE, TILE_SIZE)
+        if (isWall) {
+            ctx.strokeStyle = 'rgba(0,0,0,0.3)'
             ctx.lineWidth = 2
             ctx.strokeRect(px + 1, py + 1, TILE_SIZE - 2, TILE_SIZE - 2)
         }

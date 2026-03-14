@@ -1,0 +1,4 @@
+[
+  { "id": 0, "role": "floor", "textureKey": "tile_ground", "label": "地面", "color": "#143d2a" },
+  { "id": 1, "role": "wall",  "textureKey": "tile_wall",   "label": "石壁", "color": "#3a3a4a" }
+]

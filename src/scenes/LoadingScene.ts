@@ -1,6 +1,7 @@
 import Phaser from 'phaser'
 import { GAME_W, GAME_H, TILE } from '../config'
 import type { GameFlowConfig } from '../types/GameFlowTypes'
+import type { TileDef } from '../types/tileset'
 
 /**
  * ローディング画面
@@ -67,6 +68,23 @@ export default class LoadingScene extends Phaser.Scene {
       bossKeys.forEach(key => {
         this.load.json(key, `assets/bosses/${key}.json`)
       })
+    })
+
+    // タイルセット定義JSON（先行ロード → 完了後にタイル画像を動的ロード）
+    this.load.json('tilesets', 'assets/maps/tilesets.json')
+    this.load.once('filecomplete-json-tilesets', () => {
+      const defs = this.cache.json.get('tilesets') as TileDef[]
+      defs.forEach(def => {
+        if (def.animated) {
+          this.load.spritesheet(def.textureKey, `assets/images/tiles/${def.textureKey}.png`, {
+            frameWidth: 64,
+            frameHeight: 64,
+          })
+        } else {
+          this.load.image(def.textureKey, `assets/images/tiles/${def.textureKey}.png`)
+        }
+      })
+      this.load.start()
     })
 
     // マップJSON
@@ -194,15 +212,33 @@ export default class LoadingScene extends Phaser.Scene {
     // タイル用のテクスチャを生成
     // これらはMainSceneのpreloadで生成されていたものをここに移動
 
-    // 地面タイル
+    // 地面タイル（後方互換用）
     const g4 = this.make.graphics({ x: 0, y: 0 })
     g4.fillStyle(0x143d2a, 1).fillRect(0, 0, TILE, TILE).generateTexture('ground', TILE, TILE).clear()
 
-    // 壁タイル
+    // 壁タイル（後方互換用）
     const g5 = this.make.graphics({ x: 0, y: 0 })
     g5.fillStyle(0x3a3a4a, 1).fillRect(0, 0, TILE, TILE)
       .lineStyle(2, 0x2a2a36, 1).strokeRect(1, 1, TILE - 2, TILE - 2)
       .generateTexture('wall', TILE, TILE).clear()
+
+    // tilesets.json に定義された各タイルの procedural texture を生成
+    // （画像ファイルがロードできていない場合のフォールバック）
+    const defs = this.cache.json.get('tilesets') as TileDef[] | null
+    if (defs) {
+      defs.forEach(def => {
+        if (def.animated) return
+        if (this.textures.exists(def.textureKey)) return
+        const hex = parseInt(def.color.replace('#', ''), 16)
+        const g = this.make.graphics({ x: 0, y: 0 })
+        g.fillStyle(hex, 1).fillRect(0, 0, TILE, TILE)
+        if (def.role === 'wall') {
+          g.lineStyle(2, 0x000000, 0.3).strokeRect(1, 1, TILE - 2, TILE - 2)
+        }
+        g.generateTexture(def.textureKey, TILE, TILE).clear()
+        console.log(`[LoadingScene] Procedural texture generated: ${def.textureKey}`)
+      })
+    }
 
     // ポートレート用テクスチャ（DialogUI用）
     const g7 = this.make.graphics({ x: 0, y: 0 })

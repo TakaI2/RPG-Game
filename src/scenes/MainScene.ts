@@ -19,6 +19,7 @@ import {
 } from '../systems/EnemyAI'
 import { EnemySpeech } from '../systems/EnemySpeech'
 import { buildMapFromJSON } from '../systems/Tilemap'
+import type { TileDef, MapData } from '../types/tileset'
 import {
   createPlayerAnimations,
   createEnemyAnimations,
@@ -1175,7 +1176,9 @@ export default class MainScene extends Phaser.Scene {
     this.currentMapData = mapData
 
     // タイルマップを構築
-    const result = buildMapFromJSON(this, mapData)
+    const tileDefArray = this.cache.json.get('tilesets') as TileDef[]
+    const tileDefMap = new Map(tileDefArray.map(d => [d.id, d]))
+    const result = buildMapFromJSON(this, mapData as unknown as MapData, tileDefMap)
     this.walls = result.walls
 
     // カメラと物理世界の境界を更新
