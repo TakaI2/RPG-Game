@@ -1,4 +1,62 @@
 [
-  { "id": 0, "role": "floor", "textureKey": "tile_ground", "label": "地面", "color": "#143d2a" },
-  { "id": 1, "role": "wall",  "textureKey": "tile_wall",   "label": "石壁", "color": "#3a3a4a" }
+  {
+    "id": 0,
+    "role": "floor",
+    "textureKey": "grass2",
+    "label": "grass2",
+    "color": "#2a3a2a"
+  },
+  {
+    "id": 1,
+    "role": "wall",
+    "textureKey": "candle",
+    "label": "candle",
+    "color": "#3a3a4a",
+    "animated": true,
+    "fps": 8
+  },
+  {
+    "id": 2,
+    "role": "wall",
+    "textureKey": "grave1",
+    "label": "grave1",
+    "color": "#3a3a4a"
+  },
+  {
+    "id": 4,
+    "role": "wall",
+    "textureKey": "grave2",
+    "label": "grave2",
+    "color": "#3a3a4a"
+  },
+  {
+    "id": 5,
+    "role": "wall",
+    "textureKey": "brick",
+    "label": "brick",
+    "color": "#3a3a4a"
+  },
+  {
+    "id": 6,
+    "role": "floor",
+    "textureKey": "water",
+    "label": "water",
+    "color": "#2a3a2a",
+    "animated": true,
+    "fps": 8
+  },
+  {
+    "id": 7,
+    "role": "floor",
+    "textureKey": "tile",
+    "label": "tile",
+    "color": "#2a3a2a"
+  },
+  {
+    "id": 8,
+    "role": "floor",
+    "textureKey": "capet",
+    "label": "capet",
+    "color": "#2a3a2a"
+  }
 ]

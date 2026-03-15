@@ -21,12 +21,16 @@ export function buildMapFromJSON(
   const worldW = cols * TILE
   const worldH = rows * TILE
 
-  // 床を一括描画する RenderTexture（描画コスト O(1)）
-  const floorRT = scene.add.renderTexture(0, 0, worldW, worldH)
-  floorRT.setDepth(0)
-
   // 壁の物理グループ
   const walls = scene.physics.add.staticGroup()
+
+  // 床タイルを HTML Canvas に描画してから単一テクスチャとして登録
+  const floorCanvas = document.createElement('canvas')
+  floorCanvas.width = worldW
+  floorCanvas.height = worldH
+  const ctx = floorCanvas.getContext('2d')!
+
+  let floorTileCount = 0
 
   for (let y = 0; y < rows; y++) {
     for (let x = 0; x < cols; x++) {
@@ -62,15 +66,32 @@ export function buildMapFromJSON(
           sprite.setDepth(0)
         }
       } else if (def.role === 'floor') {
-        // 静的床: RenderTexture に一括描画
-        floorRT.draw(def.textureKey, x * TILE, y * TILE)
+        // 静的床: HTML Canvas に TILE サイズで描画
+        const texSrc = scene.textures.get(def.textureKey).source[0]
+        const img = texSrc.image as HTMLImageElement | HTMLCanvasElement
+        ctx.drawImage(img, 0, 0, texSrc.width, texSrc.height, x * TILE, y * TILE, TILE, TILE)
+        floorTileCount++
       } else {
         // 静的壁: StaticGroup に追加
         const wallObj = walls.create(cx, cy, def.textureKey) as Phaser.Physics.Arcade.Sprite
+        wallObj.setDisplaySize(TILE, TILE)
+        wallObj.refreshBody()
         wallObj.setDepth(1)
       }
     }
   }
+
+  // Canvas からテクスチャを生成して単一 Image として表示
+  const floorKey = '__floor_canvas__'
+  if (scene.textures.exists(floorKey)) {
+    scene.textures.remove(floorKey)
+  }
+  scene.textures.addCanvas(floorKey, floorCanvas)
+  scene.add.image(0, 0, floorKey).setOrigin(0, 0).setDepth(0)
+
+  console.log(
+    `[Tilemap] buildMapFromJSON: ${cols}x${rows}, floor=${floorTileCount}, worldSize=${worldW}x${worldH}`
+  )
 
   return { worldW, worldH, walls }
 }

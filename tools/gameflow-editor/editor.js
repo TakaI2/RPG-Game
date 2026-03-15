@@ -474,6 +474,10 @@ function buildMapProps(node) {
     <div class="prop-section-title" style="margin-top:12px">Portals</div>
     <p style="font-size:0.78rem;color:#6c7086;margin-bottom:6px;">portal[N] ピンを他Mapノードの in に接続して接続先を設定</p>
     ${portalSection}
+    <label id="btn-load-mapjson" style="margin-top:8px;display:inline-block;padding:4px 10px;font-size:0.8rem;background:#1e3a5f;color:#89b4fa;border:1px solid #89b4fa;border-radius:4px;cursor:pointer;">
+      Map JSON 読み込み（ポータル数を自動取得）
+      <input type="file" accept=".json" style="display:none" id="input-mapjson">
+    </label>
   `;
 }
 
@@ -600,6 +604,42 @@ function bindPropertyHandlers(node) {
         } else if (e.target.classList.contains('portal-ty')) {
           node.data._portalDests[pi].targetY = parseInt(e.target.value) || 0;
         }
+      });
+    }
+
+    // Map JSON 読み込み → ポータル数を map.json の portals[] から自動取得
+    const inputMapJson = document.getElementById('input-mapjson');
+    if (inputMapJson) {
+      inputMapJson.addEventListener('change', e => {
+        const file = e.target.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = ev => {
+          try {
+            const mapData = JSON.parse(ev.target.result);
+            const portals = mapData.portals || [];
+            const prevCount = node.data._portalCount || 0;
+            // 減った分のエッジを削除
+            for (let i = portals.length; i < prevCount; i++) {
+              state.edges = state.edges.filter(
+                ed => !(ed.fromNode === node.id && ed.fromPort === `portal_${i}`)
+              );
+            }
+            node.data._portalCount = portals.length;
+            // _portalDests は既存を維持しつつ不足分を補充
+            if (!node.data._portalDests) node.data._portalDests = [];
+            while (node.data._portalDests.length < portals.length) {
+              node.data._portalDests.push({ targetX: 5, targetY: 5 });
+            }
+            node.data._portalDests.length = portals.length;
+            renderAll();
+            renderProperties();
+          } catch (err) {
+            alert('読み込みエラー: ' + err.message);
+          }
+        };
+        reader.readAsText(file);
+        e.target.value = '';
       });
     }
   }

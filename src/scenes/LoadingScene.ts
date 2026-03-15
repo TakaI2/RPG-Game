@@ -70,26 +70,34 @@ export default class LoadingScene extends Phaser.Scene {
       })
     })
 
-    // タイルセット定義JSON（先行ロード → 完了後にタイル画像を動的ロード）
+    // タイルセット定義JSON（同期XHRで先行取得 → タイル画像を直接ロード）
     this.load.json('tilesets', 'assets/maps/tilesets.json')
-    this.load.once('filecomplete-json-tilesets', () => {
-      const defs = this.cache.json.get('tilesets') as TileDef[]
-      defs.forEach(def => {
-        if (def.animated) {
-          this.load.spritesheet(def.textureKey, `assets/images/tiles/${def.textureKey}.png`, {
-            frameWidth: 64,
-            frameHeight: 64,
-          })
-        } else {
-          this.load.image(def.textureKey, `assets/images/tiles/${def.textureKey}.png`)
-        }
-      })
-      this.load.start()
-    })
+    try {
+      const xhr = new XMLHttpRequest()
+      xhr.open('GET', 'assets/maps/tilesets.json', false) // synchronous
+      xhr.send()
+      if (xhr.status === 200) {
+        const defs = JSON.parse(xhr.responseText) as TileDef[]
+        defs.forEach(def => {
+          if (def.animated) {
+            this.load.spritesheet(def.textureKey, `assets/images/maptip/${def.textureKey}.png`, {
+              frameWidth: 64,
+              frameHeight: 64,
+            })
+          } else {
+            this.load.image(def.textureKey, `assets/images/maptip/${def.textureKey}.png`)
+          }
+        })
+      }
+    } catch (e) {
+      console.warn('[LoadingScene] Could not sync-load tilesets.json:', e)
+    }
 
     // マップJSON
     this.load.json('demo_map', 'assets/maps/demo_map.json')
     this.load.json('boss_map', 'assets/maps/boss_map.json')
+    this.load.json('first_map', 'assets/maps/first_map.json')
+    this.load.json('queen_map', 'assets/maps/queen_map.json')
 
     // NPC設定JSON
     this.load.json('npc_config', 'assets/npcs/npcs.json')

@@ -15,51 +15,16 @@
     "story": "intro",
     "then": {
       "action": "goto_map",
-      "mapId": "demo_map",
+      "mapId": "first_map",
       "x": 10,
       "y": 10
     }
   },
   "maps": {
-    "demo_map": {
-      "bgm": "spiral",
-      "onEnter": null,
-      "hasBoss": false,
-      "onPlayerDefeat": {
-        "story": "gameover",
-        "then": {
-          "action": "exit"
-        }
-      },
-      "eventTriggers": [
-        {
-          "x": 50,
-          "y": 45,
-          "type": "story",
-          "storyId": "priest_event",
-          "once": true,
-          "marker": true,
-          "then": {
-            "action": "stay"
-          }
-        }
-      ],
-      "portals": [
-        {
-          "targetMap": "boss_map",
-          "targetX": 25,
-          "targetY": 8
-        }
-      ]
-    },
     "boss_map": {
       "bgm": "redmoon",
       "onEnter": null,
-      "boss": {
-        "configKey": "belladonna_boss",
-        "x": 25,
-        "y": 35
-      },
+      "hasBoss": true,
       "onPlayerDefeat": {
         "story": "gameover",
         "then": {
@@ -72,11 +37,23 @@
           "action": "exit"
         }
       },
+      "eventTriggers": []
+    },
+    "first_map": {
+      "bgm": "spiral",
+      "onEnter": null,
+      "hasBoss": false,
+      "onPlayerDefeat": {
+        "story": "gameover",
+        "then": {
+          "action": "exit"
+        }
+      },
       "eventTriggers": [],
       "portals": [
         {
-          "targetMap": "demo_map",
-          "targetX": 50,
+          "targetMap": "boss_map",
+          "targetX": 30,
           "targetY": 46
         }
       ]
@@ -84,44 +61,40 @@
   },
   "_editorPositions": {
     "bgm_spiral": {
-      "x": 80,
-      "y": 60
+      "x": 18.400009155273438,
+      "y": 237.60003662109375
     },
     "bgm_redmoon": {
-      "x": 80,
-      "y": 140
-    },
-    "map_demo_map": {
-      "x": 349,
-      "y": 36
+      "x": 9.599990844726562,
+      "y": 343.9999694824219
     },
     "map_boss_map": {
-      "x": 341,
-      "y": 323
+      "x": 484.20001220703125,
+      "y": 235.79995727539062
     },
     "start": {
-      "x": 80,
-      "y": 300
+      "x": -80,
+      "y": -32.79999542236328
     },
     "story_intro": {
-      "x": 640,
-      "y": 80
+      "x": 179.99996948242188,
+      "y": -35.20000457763672
     },
     "story_gameover": {
-      "x": 640,
-      "y": 210
+      "x": 780.0000610351562,
+      "y": 157.1999969482422
     },
     "exit": {
-      "x": 930,
-      "y": 300
-    },
-    "story_priest_event": {
-      "x": 640,
-      "y": 340
+      "x": 1042.7999267578125,
+      "y": 295.99993896484375
     },
     "story_clear": {
-      "x": 640,
-      "y": 470
+      "x": 773.6000366210938,
+      "y": 426
+    },
+    "map_first_map": {
+      "x": 486.7999267578125,
+      "y": -44.199989318847656
     }
   }
 }

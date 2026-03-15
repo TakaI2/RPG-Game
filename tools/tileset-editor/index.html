@@ -1,0 +1,500 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RPG Tileset Editor</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Segoe UI', 'Meiryo', sans-serif;
+            background: #1e1e2e;
+            color: #cdd6f4;
+            padding: 20px;
+        }
+
+        h1 { margin-bottom: 4px; color: #cba6f7; }
+        .subtitle { color: #6c7086; font-size: 0.85rem; margin-bottom: 20px; }
+
+        .toolbar {
+            background: #181825;
+            padding: 12px 16px;
+            border-radius: 8px;
+            margin-bottom: 16px;
+            border: 1px solid #45475a;
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        button {
+            padding: 7px 14px;
+            background: #45475a;
+            color: #cdd6f4;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.85rem;
+            transition: background 0.2s;
+        }
+        button:hover { background: #585b70; }
+        button.primary {
+            background: #1e3a5f;
+            color: #89b4fa;
+            border: 1px solid #89b4fa;
+        }
+        button.primary:hover { background: #2a5080; }
+        button.danger {
+            background: transparent;
+            color: #f38ba8;
+            border: 1px solid #f38ba8;
+        }
+        button.danger:hover { background: #f38ba822; }
+
+        .section {
+            background: #181825;
+            border: 1px solid #45475a;
+            border-radius: 8px;
+            padding: 16px;
+            margin-bottom: 16px;
+        }
+
+        .section h2 {
+            font-size: 1rem;
+            color: #a6adc8;
+            margin-bottom: 14px;
+            padding-bottom: 8px;
+            border-bottom: 1px solid #313244;
+        }
+
+        /* --- 登録済みタイル一覧 --- */
+        .tile-list {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .tile-row {
+            display: grid;
+            grid-template-columns: 64px 1fr 80px 80px auto;
+            gap: 12px;
+            align-items: center;
+            background: #1e1e2e;
+            border: 1px solid #313244;
+            border-radius: 6px;
+            padding: 8px;
+        }
+
+        .tile-preview {
+            width: 64px;
+            height: 64px;
+            border-radius: 4px;
+            border: 1px solid #45475a;
+            background: #11111b;
+            image-rendering: pixelated;
+            object-fit: cover;
+            object-position: top;
+        }
+
+        .tile-preview-canvas {
+            width: 64px;
+            height: 64px;
+            border-radius: 4px;
+            border: 1px solid #45475a;
+            background: #11111b;
+            image-rendering: pixelated;
+        }
+
+        .tile-info { display: flex; flex-direction: column; gap: 4px; }
+        .tile-info .tile-label { font-size: 0.95rem; color: #cdd6f4; font-weight: bold; }
+        .tile-info .tile-meta { font-size: 0.75rem; color: #6c7086; }
+
+        .role-badge {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            font-weight: bold;
+        }
+        .role-floor { background: #1a3a28; color: #a6e3a1; border: 1px solid #a6e3a1; }
+        .role-wall  { background: #3a2a1a; color: #fab387; border: 1px solid #fab387; }
+
+        .id-badge {
+            font-size: 0.72rem;
+            color: #6c7086;
+            background: #313244;
+            padding: 2px 6px;
+            border-radius: 3px;
+            text-align: center;
+        }
+
+        /* --- 追加フォーム --- */
+        .add-form {
+            display: grid;
+            grid-template-columns: 200px 1fr;
+            gap: 10px 16px;
+            align-items: center;
+        }
+
+        .add-form label {
+            font-size: 0.875rem;
+            color: #a6adc8;
+            text-align: right;
+        }
+
+        .add-form input[type="text"],
+        .add-form input[type="number"],
+        .add-form select {
+            padding: 6px 10px;
+            border: 1px solid #45475a;
+            background: #313244;
+            color: #cdd6f4;
+            border-radius: 4px;
+            font-size: 0.875rem;
+        }
+
+        .add-form input:disabled { opacity: 0.4; cursor: not-allowed; }
+
+        .filename-row {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+        }
+
+        .filename-row input { flex: 1; }
+
+        .preview-area {
+            grid-column: 2;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            background: #11111b;
+            border: 1px solid #313244;
+            border-radius: 6px;
+            padding: 10px;
+            min-height: 84px;
+        }
+
+        .preview-area canvas {
+            width: 64px;
+            height: 64px;
+            border-radius: 4px;
+            border: 1px solid #45475a;
+            image-rendering: pixelated;
+        }
+
+        .preview-info { font-size: 0.8rem; color: #6c7086; }
+        .preview-info.ok { color: #a6e3a1; }
+        .preview-info.ng { color: #f38ba8; }
+
+        .form-actions {
+            grid-column: 2;
+            display: flex;
+            gap: 10px;
+        }
+
+        .empty-state {
+            color: #6c7086;
+            font-size: 0.85rem;
+            padding: 16px 0;
+            text-align: center;
+        }
+
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: #181825; }
+        ::-webkit-scrollbar-thumb { background: #45475a; border-radius: 3px; }
+        ::-webkit-scrollbar-thumb:hover { background: #585b70; }
+    </style>
+</head>
+<body>
+    <h1>RPG Tileset Editor</h1>
+    <p class="subtitle">maptip 画像を tilesets.json に登録するツール</p>
+
+    <div class="toolbar">
+        <button class="primary" onclick="importJSON()">tilesets.json を読み込む</button>
+        <button class="primary" onclick="exportJSON()">tilesets.json をエクスポート</button>
+        <input type="file" id="fileInput" accept=".json" style="display:none" onchange="onFileLoaded(event)">
+        <span style="color:#6c7086; font-size:0.8rem; margin-left:auto;">
+            画像パス: public/assets/images/maptip/{ファイル名}.png
+        </span>
+    </div>
+
+    <!-- 登録済みタイル一覧 -->
+    <div class="section">
+        <h2>登録済みタイル</h2>
+        <div class="tile-list" id="tileList">
+            <div class="empty-state">tilesets.json を読み込んでください</div>
+        </div>
+    </div>
+
+    <!-- 新規追加フォーム -->
+    <div class="section">
+        <h2>新規タイル追加</h2>
+        <div class="add-form">
+            <label>ファイル名 (.png 不要)</label>
+            <div class="filename-row">
+                <input type="text" id="fFilename" placeholder="例: grass2">
+                <button onclick="previewImage()">プレビュー</button>
+            </div>
+
+            <label>プレビュー</label>
+            <div class="preview-area">
+                <canvas id="previewCanvas" width="64" height="64"></canvas>
+                <span class="preview-info" id="previewInfo">ファイル名を入力してプレビューを押してください</span>
+            </div>
+
+            <label>ラベル名</label>
+            <input type="text" id="fLabel" placeholder="例: 草地">
+
+            <label>ロール</label>
+            <select id="fRole">
+                <option value="floor">floor — 床（通過可能）</option>
+                <option value="wall">wall — 壁（通過不可）</option>
+            </select>
+
+            <label>アニメーション</label>
+            <div style="display:flex; align-items:center; gap:10px;">
+                <input type="checkbox" id="fAnimated" onchange="onAnimatedChange()">
+                <span style="font-size:0.85rem; color:#a6adc8;">
+                    縦4コマ（64×256px）の場合にチェック
+                </span>
+            </div>
+
+            <label>アニメ FPS</label>
+            <input type="number" id="fFps" value="8" min="1" max="30" disabled>
+
+            <label></label>
+            <div class="form-actions">
+                <button class="primary" onclick="addTile()">追加</button>
+                <button onclick="clearForm()">クリア</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+    const TILESET_PATH = '../../public/assets/maps/tilesets.json'
+    const MAPTIP_BASE  = '../../public/assets/images/maptip/'
+
+    let tileDefs = []   // 現在の定義リスト
+
+    // ---- ロード / エクスポート ----
+    function importJSON() {
+        document.getElementById('fileInput').click()
+    }
+
+    function onFileLoaded(event) {
+        const file = event.target.files[0]
+        if (!file) return
+        const reader = new FileReader()
+        reader.onload = e => {
+            try {
+                tileDefs = JSON.parse(e.target.result)
+                renderTileList()
+            } catch (err) {
+                alert('読み込みエラー: ' + err.message)
+            }
+        }
+        reader.readAsText(file)
+        event.target.value = ''
+    }
+
+    function exportJSON() {
+        const json = JSON.stringify(tileDefs, null, 2)
+        const blob = new Blob([json], { type: 'application/json' })
+        const url = URL.createObjectURL(blob)
+        const a = document.createElement('a')
+        a.href = url
+        a.download = 'tilesets.json'
+        a.click()
+        URL.revokeObjectURL(url)
+    }
+
+    // ---- 自動読み込み（同一オリジン時） ----
+    window.onload = async () => {
+        try {
+            const res = await fetch(TILESET_PATH)
+            if (res.ok) {
+                tileDefs = await res.json()
+                renderTileList()
+            }
+        } catch {
+            // fetch 失敗時はファイル選択で読み込む
+        }
+    }
+
+    // ---- タイル一覧描画 ----
+    function renderTileList() {
+        const container = document.getElementById('tileList')
+        if (tileDefs.length === 0) {
+            container.innerHTML = '<div class="empty-state">登録済みタイルはありません</div>'
+            return
+        }
+
+        container.innerHTML = ''
+        tileDefs.forEach((def, index) => {
+            const row = document.createElement('div')
+            row.className = 'tile-row'
+
+            // プレビューキャンバス
+            const canvas = document.createElement('canvas')
+            canvas.className = 'tile-preview-canvas'
+            canvas.width = 64
+            canvas.height = 64
+            const ctx = canvas.getContext('2d')
+            // まず color でフィルしてから画像を試みる
+            const hex = def.color ? parseInt(def.color.replace('#', ''), 16) : 0x143d2a
+            ctx.fillStyle = def.color || '#143d2a'
+            ctx.fillRect(0, 0, 64, 64)
+            if (def.textureKey) {
+                const img = new Image()
+                img.onload = () => {
+                    ctx.clearRect(0, 0, 64, 64)
+                    ctx.drawImage(img, 0, 0, 64, 64, 0, 0, 64, 64)
+                }
+                img.src = MAPTIP_BASE + def.textureKey + '.png'
+            }
+
+            // 情報
+            const info = document.createElement('div')
+            info.className = 'tile-info'
+            const animated = def.animated ? ` / アニメ ${def.fps ?? 8}fps` : ''
+            info.innerHTML = `
+                <span class="tile-label">${def.label}</span>
+                <span class="tile-meta">textureKey: ${def.textureKey}${animated}</span>
+            `
+
+            // ロールバッジ
+            const roleBadge = document.createElement('span')
+            roleBadge.className = `role-badge role-${def.role}`
+            roleBadge.textContent = def.role
+
+            // ID バッジ
+            const idBadge = document.createElement('span')
+            idBadge.className = 'id-badge'
+            idBadge.textContent = `id: ${def.id}`
+
+            // 削除ボタン
+            const delBtn = document.createElement('button')
+            delBtn.className = 'danger'
+            delBtn.textContent = '削除'
+            delBtn.onclick = () => {
+                if (!confirm(`「${def.label}」(id:${def.id}) を削除しますか？`)) return
+                tileDefs.splice(index, 1)
+                renderTileList()
+            }
+
+            row.appendChild(canvas)
+            row.appendChild(info)
+            row.appendChild(roleBadge)
+            row.appendChild(idBadge)
+            row.appendChild(delBtn)
+            container.appendChild(row)
+        })
+    }
+
+    // ---- プレビュー ----
+    function previewImage() {
+        const filename = document.getElementById('fFilename').value.trim()
+        if (!filename) {
+            setPreviewState('ng', 'ファイル名を入力してください')
+            return
+        }
+
+        const canvas = document.getElementById('previewCanvas')
+        const ctx = canvas.getContext('2d')
+        const infoEl = document.getElementById('previewInfo')
+
+        const img = new Image()
+        img.onload = () => {
+            ctx.clearRect(0, 0, 64, 64)
+            ctx.drawImage(img, 0, 0, 64, 64, 0, 0, 64, 64)
+            const animated = img.naturalHeight > 64
+            const frameCount = Math.floor(img.naturalHeight / 64)
+            const sizeInfo = `${img.naturalWidth}×${img.naturalHeight}px`
+            const animInfo = animated ? ` / ${frameCount}コマアニメ` : ''
+            setPreviewState('ok', `読み込み成功 (${sizeInfo}${animInfo})`)
+            // アニメチェックを自動設定
+            if (animated) {
+                document.getElementById('fAnimated').checked = true
+                document.getElementById('fFps').disabled = false
+            }
+            // ラベルが空なら filename をセット
+            if (!document.getElementById('fLabel').value) {
+                document.getElementById('fLabel').value = filename
+            }
+        }
+        img.onerror = () => {
+            ctx.clearRect(0, 0, 64, 64)
+            ctx.fillStyle = '#f38ba822'
+            ctx.fillRect(0, 0, 64, 64)
+            ctx.fillStyle = '#f38ba8'
+            ctx.font = '12px sans-serif'
+            ctx.textAlign = 'center'
+            ctx.textBaseline = 'middle'
+            ctx.fillText('Not Found', 32, 32)
+            setPreviewState('ng', `maptip/${filename}.png が見つかりません`)
+        }
+        img.src = MAPTIP_BASE + filename + '.png'
+    }
+
+    function setPreviewState(state, message) {
+        const el = document.getElementById('previewInfo')
+        el.className = 'preview-info ' + state
+        el.textContent = message
+    }
+
+    function onAnimatedChange() {
+        document.getElementById('fFps').disabled = !document.getElementById('fAnimated').checked
+    }
+
+    // ---- タイル追加 ----
+    function addTile() {
+        const filename = document.getElementById('fFilename').value.trim()
+        const label    = document.getElementById('fLabel').value.trim()
+        const role     = document.getElementById('fRole').value
+        const animated = document.getElementById('fAnimated').checked
+        const fps      = parseInt(document.getElementById('fFps').value) || 8
+
+        if (!filename) { alert('ファイル名を入力してください'); return }
+        if (!label)    { alert('ラベル名を入力してください'); return }
+
+        // 重複チェック
+        const exists = tileDefs.some(d => d.textureKey === filename)
+        if (exists) {
+            alert(`textureKey "${filename}" は既に登録されています`)
+            return
+        }
+
+        const maxId = tileDefs.length > 0 ? Math.max(...tileDefs.map(d => d.id)) : -1
+        const newDef = {
+            id: maxId + 1,
+            role,
+            textureKey: filename,
+            label,
+            color: role === 'floor' ? '#2a3a2a' : '#3a3a4a',
+            ...(animated ? { animated: true, fps } : {}),
+        }
+
+        tileDefs.push(newDef)
+        renderTileList()
+        clearForm()
+
+        // 一覧の末尾にスクロール
+        document.getElementById('tileList').lastElementChild?.scrollIntoView({ behavior: 'smooth' })
+    }
+
+    function clearForm() {
+        document.getElementById('fFilename').value = ''
+        document.getElementById('fLabel').value = ''
+        document.getElementById('fRole').value = 'floor'
+        document.getElementById('fAnimated').checked = false
+        document.getElementById('fFps').disabled = true
+        document.getElementById('fFps').value = '8'
+        const canvas = document.getElementById('previewCanvas')
+        canvas.getContext('2d').clearRect(0, 0, 64, 64)
+        setPreviewState('', 'ファイル名を入力してプレビューを押してください')
+    }
+    </script>
+</body>
+</html>

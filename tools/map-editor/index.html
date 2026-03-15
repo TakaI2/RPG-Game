@@ -352,7 +352,13 @@
     <div class="tile-palette">
         <div class="tile-palette-header">
             <h2>タイルパレット</h2>
-            <button class="btn-add-tile" onclick="openAddTileModal()">+ タイル追加</button>
+            <div style="display:flex; gap:8px; align-items:center;">
+                <label style="padding:5px 12px; background:#1e3a5f; color:#89b4fa; border:1px solid #89b4fa; border-radius:6px; cursor:pointer; font-size:0.82rem;">
+                    tilesets.json 読み込み
+                    <input type="file" accept=".json" style="display:none" onchange="loadTilesetsFromFile(event)">
+                </label>
+                <button class="btn-add-tile" onclick="openAddTileModal()">+ タイル追加</button>
+            </div>
         </div>
         <div class="tile-options" id="tileOptions">
             <!-- tilesets.json + localStorage から動的生成 -->
@@ -418,6 +424,10 @@
             </div>
             <div class="modal-footer">
                 <button onclick="openEnemyEditor()">+ 新規作成 (Enemy Editor)</button>
+                <label style="padding:5px 10px; background:#313244; color:#a6adc8; border:1px solid #45475a; border-radius:6px; cursor:pointer; font-size:0.82rem;">
+                    enemy-defs.json 読み込み
+                    <input type="file" accept=".json" style="display:none" onchange="loadEnemyDefsFromFile(event)">
+                </label>
                 <button class="btn-confirm" onclick="confirmEnemySelection()">決定</button>
             </div>
         </div>
@@ -429,7 +439,9 @@
     const FRAME_SIZE = 64
     const STORAGE_KEY = 'rpg-enemy-defs'
     const CUSTOM_TILES_KEY = 'rpg-custom-tiles'
+    const BASE_DEFS_KEY = 'rpg-base-tiles'
     const TILESET_URL = '../../public/assets/maps/tilesets.json'
+    const ENEMY_DEFS_URL = '../../public/assets/enemies/enemy-defs.json'
 
     let canvas, ctx
     let cols = 80, rows = 80
@@ -468,11 +480,22 @@
 
     // ---- Tileset ----
     async function loadTilesets() {
+        // fetch を試みる（file:// では失敗するので localStorage にフォールバック）
         try {
             const res = await fetch(TILESET_URL)
-            baseDefs = res.ok ? await res.json() : []
+            if (res.ok) {
+                baseDefs = await res.json()
+                localStorage.setItem(BASE_DEFS_KEY, JSON.stringify(baseDefs))
+            } else {
+                throw new Error('fetch failed')
+            }
         } catch {
-            baseDefs = []
+            try {
+                const cached = localStorage.getItem(BASE_DEFS_KEY)
+                baseDefs = cached ? JSON.parse(cached) : []
+            } catch {
+                baseDefs = []
+            }
         }
         try {
             const raw = localStorage.getItem(CUSTOM_TILES_KEY)
@@ -483,6 +506,25 @@
         allDefs = [...baseDefs, ...customDefs]
         renderPalette()
         createNewMap()
+    }
+
+    function loadTilesetsFromFile(event) {
+        const file = event.target.files[0]
+        if (!file) return
+        const reader = new FileReader()
+        reader.onload = e => {
+            try {
+                baseDefs = JSON.parse(e.target.result)
+                localStorage.setItem(BASE_DEFS_KEY, JSON.stringify(baseDefs))
+                allDefs = [...baseDefs, ...customDefs]
+                renderPalette()
+                drawMap()
+            } catch (err) {
+                alert('読み込みエラー: ' + err.message)
+            }
+        }
+        reader.readAsText(file)
+        event.target.value = ''
     }
 
     function renderPalette() {
@@ -507,15 +549,20 @@
             if (def.textureKey) {
                 const img = new Image()
                 img.onload = () => {
-                    const c = document.createElement('canvas')
-                    c.width = 64; c.height = 64
-                    c.getContext('2d').drawImage(img, 0, 0, 64, 64, 0, 0, 64, 64)
-                    el.style.backgroundImage = `url(${c.toDataURL()})`
-                    el.style.backgroundSize = 'cover'
-                    labelEl.textContent = ''
                     tileImageCache[def.id] = img
+                    drawMap()
+                    try {
+                        const c = document.createElement('canvas')
+                        c.width = 64; c.height = 64
+                        c.getContext('2d').drawImage(img, 0, 0, 64, 64, 0, 0, 64, 64)
+                        el.style.backgroundImage = `url(${c.toDataURL()})`
+                        el.style.backgroundSize = 'cover'
+                        labelEl.textContent = ''
+                    } catch {
+                        // file:// のセキュリティ制限で toDataURL が失敗してもキャンバス描画は続行
+                    }
                 }
-                img.src = `../../public/assets/images/tiles/${def.textureKey}.png`
+                img.src = `../../public/assets/images/maptip/${def.textureKey}.png`
             }
 
             el.addEventListener('click', () => selectTile(el, def.id))
@@ -626,13 +673,47 @@
     }
 
     // ---- Enemy Defs ----
-    function loadEnemyDefs() {
+    async function loadEnemyDefs() {
+        // localStorage にあればそれを使う（enemy-editor との共有）
         try {
             const raw = localStorage.getItem(STORAGE_KEY)
-            enemyDefs = raw ? JSON.parse(raw) : []
-        } catch {
-            enemyDefs = []
+            if (raw) {
+                enemyDefs = JSON.parse(raw)
+                return
+            }
+        } catch { /* fall through */ }
+
+        // なければ enemy-defs.json から fetch（file:// では失敗するので無音で続行）
+        try {
+            const res = await fetch(ENEMY_DEFS_URL)
+            if (res.ok) {
+                enemyDefs = await res.json()
+                localStorage.setItem(STORAGE_KEY, JSON.stringify(enemyDefs))
+                return
+            }
+        } catch { /* fall through */ }
+
+        enemyDefs = []
+    }
+
+    function loadEnemyDefsFromFile(event) {
+        const file = event.target.files[0]
+        if (!file) return
+        const reader = new FileReader()
+        reader.onload = e => {
+            try {
+                enemyDefs = JSON.parse(e.target.result)
+                localStorage.setItem(STORAGE_KEY, JSON.stringify(enemyDefs))
+                // モーダルが開いていれば再描画
+                if (document.getElementById('enemyModal').classList.contains('show')) {
+                    buildEnemyGrid()
+                }
+            } catch (err) {
+                alert('読み込みエラー: ' + err.message)
+            }
         }
+        reader.readAsText(file)
+        event.target.value = ''
     }
 
     // ---- Map Ops ----
@@ -830,11 +911,15 @@
     }
 
     // ---- Enemy Modal ----
-    function openEnemyModal(x, y) {
-        loadEnemyDefs()
+    async function openEnemyModal(x, y) {
+        await loadEnemyDefs()
         pendingSpawnPos = { x, y }
         selectedEnemyDefId = null
+        buildEnemyGrid()
+        document.getElementById('enemyModal').classList.add('show')
+    }
 
+    function buildEnemyGrid() {
         const grid = document.getElementById('enemyGrid')
         grid.innerHTML = ''
 
@@ -878,8 +963,6 @@
             })
             grid.appendChild(card)
         })
-
-        document.getElementById('enemyModal').classList.add('show')
     }
 
     function closeEnemyModal() {

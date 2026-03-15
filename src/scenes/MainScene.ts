@@ -1118,6 +1118,14 @@ export default class MainScene extends Phaser.Scene {
     // 既存のマップオブジェクト（床と壁）を破棄
     const tileSprites = this.children.list.filter(obj => obj.type === 'TileSprite')
     tileSprites.forEach(sprite => sprite.destroy())
+    // 床キャンバス Image を破棄
+    if (this.textures.exists('__floor_canvas__')) {
+      const floorImg = this.children.list.find(
+        obj => obj.type === 'Image' && (obj as Phaser.GameObjects.Image).texture?.key === '__floor_canvas__'
+      ) as Phaser.GameObjects.Image | undefined
+      floorImg?.destroy()
+      this.textures.remove('__floor_canvas__')
+    }
 
     if (this.walls) {
       this.walls.clear(true, true)
@@ -1166,10 +1174,25 @@ export default class MainScene extends Phaser.Scene {
   private loadMap(mapId: string) {
     console.log(`[MainScene] Loading map: ${mapId}`)
 
-    const mapData = this.cache.json.get(mapId) as Record<string, unknown> | undefined
+    let mapData = this.cache.json.get(mapId) as Record<string, unknown> | undefined
     if (!mapData) {
-      console.error(`Map data not found: ${mapId}`)
-      return
+      // キャッシュにない場合、同期XHRでフォールバック取得
+      console.warn(`[MainScene] ${mapId} not in cache, fetching directly...`)
+      try {
+        const xhr = new XMLHttpRequest()
+        xhr.open('GET', `assets/maps/${mapId}.json`, false)
+        xhr.send()
+        if (xhr.status === 200) {
+          mapData = JSON.parse(xhr.responseText) as Record<string, unknown>
+          this.cache.json.add(mapId, mapData)
+        } else {
+          console.error(`Map data not found: ${mapId} (HTTP ${xhr.status})`)
+          return
+        }
+      } catch (e) {
+        console.error(`Map data not found: ${mapId}`, e)
+        return
+      }
     }
 
     this.currentMapId = mapId
