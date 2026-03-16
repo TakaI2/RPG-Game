@@ -7,6 +7,12 @@ export class EnemySpeech {
   private speechText: Phaser.GameObjects.Text
   private isVisible: boolean = false
   private delayTimer: Phaser.Time.TimerEvent | null = null
+  private loopTimer: Phaser.Time.TimerEvent | null = null
+  private loopLines: string[] | null = null
+  private loopOwner: Phaser.GameObjects.Sprite | null = null
+  private loopDisplayMs: number = 2000
+  private loopIntervalMs: number = 5000
+  private loopIndex: number = 0
 
   constructor(scene: Phaser.Scene) {
     this.scene = scene
@@ -24,6 +30,38 @@ export class EnemySpeech {
 
     this.container.add([this.bubble, this.speechText])
     this.container.setVisible(false)
+  }
+
+  startLoop(owner: Phaser.GameObjects.Sprite, lines: string[], displayMs: number, intervalMs: number): void {
+    this.stopLoop()
+    this.loopLines = lines
+    this.loopOwner = owner
+    this.loopDisplayMs = displayMs
+    this.loopIntervalMs = intervalMs
+    this.loopIndex = 0
+    this._showNextLine()
+  }
+
+  private _showNextLine(): void {
+    if (!this.loopLines || !this.loopOwner) return
+    const text = this.loopLines[this.loopIndex]
+    this.loopIndex = (this.loopIndex + 1) % this.loopLines.length
+    this.show(this.loopOwner, text, this.loopDisplayMs)
+    // 表示時間 + フェード時間(250ms) + インターバルの後に次のセリフへ
+    this.loopTimer = this.scene.time.delayedCall(
+      this.loopDisplayMs + 250 + this.loopIntervalMs,
+      () => { this._showNextLine() }
+    )
+  }
+
+  stopLoop(): void {
+    if (this.loopTimer) {
+      this.loopTimer.remove()
+      this.loopTimer = null
+    }
+    this.loopLines = null
+    this.loopOwner = null
+    this.hide()
   }
 
   show(owner: Phaser.GameObjects.Sprite, text: string, duration: number): void {
@@ -87,7 +125,7 @@ export class EnemySpeech {
   }
 
   destroy(): void {
-    this.hide()
+    this.stopLoop()
     this.container.destroy()
   }
 }

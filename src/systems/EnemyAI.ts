@@ -3,6 +3,8 @@ import { fireArrow, fireHomingOrb } from './Projectile'
 import { EnemySpeech } from './EnemySpeech'
 
 export type DialogEntry = { lines: string[]; intervalMs?: number }
+
+const DEFAULT_SPEECH_INTERVAL = 5000
 export type EnemyDialogs = Partial<Record<string, DialogEntry>>
 
 export type EnemyOverrides = {
@@ -215,20 +217,15 @@ export function updateEnemyAI(scene: Phaser.Scene, en: EnemyWithAI, player: Phas
   // セリフトリガー
   if (en.dialogs && en.speech) {
     const stateStr = en.state as string
-    const dialog = en.dialogs[stateStr]
-    if (dialog) {
-      const stateChanged = en.lastSpeechState !== stateStr
-      if (!dialog.intervalMs && stateChanged) {
-        const line = dialog.lines[Math.floor(Math.random() * dialog.lines.length)]
-        en.speech.show(en, line, 2000)
-        en.lastSpeechTime = now
-      } else if (dialog.intervalMs && now - en.lastSpeechTime >= dialog.intervalMs) {
-        const line = dialog.lines[Math.floor(Math.random() * dialog.lines.length)]
-        en.speech.show(en, line, 2000)
-        en.lastSpeechTime = now
+    if (en.lastSpeechState !== stateStr) {
+      const dialog = en.dialogs[stateStr]
+      if (dialog && dialog.lines.length > 0) {
+        en.speech.startLoop(en, dialog.lines, 2000, dialog.intervalMs ?? DEFAULT_SPEECH_INTERVAL)
+      } else {
+        en.speech.stopLoop()
       }
+      en.lastSpeechState = stateStr
     }
-    en.lastSpeechState = stateStr
   }
 
   const moveTowards = (target: Phaser.Math.Vector2 | Phaser.GameObjects.Sprite, speed: number) => {
@@ -283,20 +280,15 @@ export function updateArcherAI(scene: Phaser.Scene, archer: Archer, player: Phas
   // セリフトリガー
   if (archer.dialogs && archer.speech) {
     const stateStr = archer.state as string
-    const dialog = archer.dialogs[stateStr]
-    if (dialog) {
-      const stateChanged = archer.lastSpeechState !== stateStr
-      if (!dialog.intervalMs && stateChanged) {
-        const line = dialog.lines[Math.floor(Math.random() * dialog.lines.length)]
-        archer.speech.show(archer, line, 2000)
-        archer.lastSpeechTime = now
-      } else if (dialog.intervalMs && now - archer.lastSpeechTime >= dialog.intervalMs) {
-        const line = dialog.lines[Math.floor(Math.random() * dialog.lines.length)]
-        archer.speech.show(archer, line, 2000)
-        archer.lastSpeechTime = now
+    if (archer.lastSpeechState !== stateStr) {
+      const dialog = archer.dialogs[stateStr]
+      if (dialog && dialog.lines.length > 0) {
+        archer.speech.startLoop(archer, dialog.lines, 2000, dialog.intervalMs ?? DEFAULT_SPEECH_INTERVAL)
+      } else {
+        archer.speech.stopLoop()
       }
+      archer.lastSpeechState = stateStr
     }
-    archer.lastSpeechState = stateStr
   }
 
   const moveTowards = (target: Phaser.Math.Vector2 | Phaser.GameObjects.Sprite, speed: number) => {
@@ -374,20 +366,15 @@ export function updateMageAI(scene: Phaser.Scene, mage: Mage, player: Phaser.Phy
   // セリフトリガー
   if (mage.dialogs && mage.speech) {
     const stateStr = mage.state as string
-    const dialog = mage.dialogs[stateStr]
-    if (dialog) {
-      const stateChanged = mage.lastSpeechState !== stateStr
-      if (!dialog.intervalMs && stateChanged) {
-        const line = dialog.lines[Math.floor(Math.random() * dialog.lines.length)]
-        mage.speech.show(mage, line, 2000)
-        mage.lastSpeechTime = now
-      } else if (dialog.intervalMs && now - mage.lastSpeechTime >= dialog.intervalMs) {
-        const line = dialog.lines[Math.floor(Math.random() * dialog.lines.length)]
-        mage.speech.show(mage, line, 2000)
-        mage.lastSpeechTime = now
+    if (mage.lastSpeechState !== stateStr) {
+      const dialog = mage.dialogs[stateStr]
+      if (dialog && dialog.lines.length > 0) {
+        mage.speech.startLoop(mage, dialog.lines, 2000, dialog.intervalMs ?? DEFAULT_SPEECH_INTERVAL)
+      } else {
+        mage.speech.stopLoop()
       }
+      mage.lastSpeechState = stateStr
     }
-    mage.lastSpeechState = stateStr
   }
 
   const moveTowards = (target: Phaser.Math.Vector2 | Phaser.GameObjects.Sprite, speed: number) => {
@@ -473,20 +460,15 @@ export function updateBruteAI(scene: Phaser.Scene, brute: Brute, player: Phaser.
   // セリフトリガー
   if (brute.dialogs && brute.speech) {
     const stateStr = brute.state as string
-    const dialog = brute.dialogs[stateStr]
-    if (dialog) {
-      const stateChanged = brute.lastSpeechState !== stateStr
-      if (!dialog.intervalMs && stateChanged) {
-        const line = dialog.lines[Math.floor(Math.random() * dialog.lines.length)]
-        brute.speech.show(brute, line, 2000)
-        brute.lastSpeechTime = now
-      } else if (dialog.intervalMs && now - brute.lastSpeechTime >= dialog.intervalMs) {
-        const line = dialog.lines[Math.floor(Math.random() * dialog.lines.length)]
-        brute.speech.show(brute, line, 2000)
-        brute.lastSpeechTime = now
+    if (brute.lastSpeechState !== stateStr) {
+      const dialog = brute.dialogs[stateStr]
+      if (dialog && dialog.lines.length > 0) {
+        brute.speech.startLoop(brute, dialog.lines, 2000, dialog.intervalMs ?? DEFAULT_SPEECH_INTERVAL)
+      } else {
+        brute.speech.stopLoop()
       }
+      brute.lastSpeechState = stateStr
     }
-    brute.lastSpeechState = stateStr
   }
 
   const moveTowards = (target: Phaser.Math.Vector2 | Phaser.GameObjects.Sprite, speed: number) => {
