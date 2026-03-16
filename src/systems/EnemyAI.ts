@@ -18,6 +18,8 @@ export type EnemyOverrides = {
   dialogs?: EnemyDialogs
   name?: string
   animKey?: string
+  hitSound?: string
+  attackSound?: string
 }
 
 // 基本の敵タイプ

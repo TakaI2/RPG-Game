@@ -7,6 +7,13 @@ export type Projectile = Phaser.Physics.Arcade.Image & {
   life: number
 }
 
+// 火炎弾の型（プレイヤー遠距離攻撃）
+export type FireBall = Phaser.Physics.Arcade.Image & {
+  damage: number
+  originX: number
+  originY: number
+}
+
 // 誘導魔法弾の型
 export type HomingOrb = Projectile & {
   target: Phaser.GameObjects.Sprite | null

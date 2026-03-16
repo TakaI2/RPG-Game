@@ -194,6 +194,8 @@ function showEditor(def) {
   document.getElementById('statAimDuration').value = s.aimDuration ?? 600
   document.getElementById('statCastDuration').value = s.castDuration ?? 400
   document.getElementById('statDashSpeed').value = s.dashSpeed ?? 480
+  document.getElementById('statHitSound').value = def.hitSound || ''
+  document.getElementById('statAttackSound').value = def.attackSound || ''
 
   renderDialogStates(def)
   loadSprite(def.spriteKey)
@@ -241,6 +243,10 @@ function collectCurrentDefDry() {
     },
     dialogs: collectDialogs(),
   }
+  const hitSound = document.getElementById('statHitSound').value.trim()
+  const attackSound = document.getElementById('statAttackSound').value.trim()
+  if (hitSound)    def.hitSound    = hitSound
+  if (attackSound) def.attackSound = attackSound
   if (id && id !== selectedId) {
     selectedId = id
   }

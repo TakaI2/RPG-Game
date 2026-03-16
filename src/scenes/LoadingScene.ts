@@ -123,6 +123,36 @@ export default class LoadingScene extends Phaser.Scene {
     // ポータルスプライト（チョロマキー処理のため raw で読み込む）
     this.load.image('door_raw', 'assets/images/door.png')
 
+    // 飛び道具（プレイヤー用）
+    this.load.image('magic_fire', 'assets/images/magic_fire.png')
+
+    // UIボタン
+    this.load.image('btn_config', 'assets/images/Se_config_Button.png')
+
+    // ゲームSE（ファイルが存在しない場合は loaderror で警告のみ）
+    this.load.audio('se_player_attack', 'assets/sounds/se/player_attack.ogg')
+    this.load.audio('se_player_hit',    'assets/sounds/se/player_hit.ogg')
+    this.load.audio('se_enemy_attack',  'assets/sounds/se/enemy_attack.ogg')
+    this.load.audio('se_enemy_hit',     'assets/sounds/se/enemy_hit.ogg')
+    this.load.audio('se_flame',         'assets/sounds/se/flame.mp3')
+
+    // enemy-defs ロード完了後に hitSound/attackSound を動的ロード
+    this.load.once('filecomplete-json-enemy-defs', () => {
+      const defs = this.cache.json.get('enemy-defs') as Array<{ hitSound?: string; attackSound?: string }>
+      if (!defs) return
+      const loaded = new Set<string>()
+      defs.forEach(def => {
+        [def.hitSound, def.attackSound].forEach(sound => {
+          if (sound && !loaded.has(sound)) {
+            loaded.add(sound)
+            const key = 'se_' + sound.replace(/\.(ogg|mp3)$/, '')
+            this.load.audio(key, `assets/sounds/se/${sound}`)
+          }
+        })
+      })
+      this.load.start()
+    })
+
     // エラーハンドリング：画像が見つからない場合でもゲームを続行
     this.load.on('loaderror', (fileObj: Phaser.Loader.File) => {
       console.warn(`[LoadingScene] Failed to load: ${fileObj.key} (${fileObj.url})`)

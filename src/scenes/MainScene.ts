@@ -26,7 +26,7 @@ import {
   getDirectionFromVelocity
 } from '../systems/AnimationManager'
 import { NPCManager } from '../systems/NPCManager'
-import { updateHomingOrbs } from '../systems/Projectile'
+import { updateHomingOrbs, FireBall } from '../systems/Projectile'
 import { events } from '../systems/Events'
 import { EventTriggerManager } from '../systems/EventTriggerManager'
 import { Boss } from '../types/BossTypes'
@@ -85,6 +85,14 @@ export default class MainScene extends Phaser.Scene {
   private mouseWorldX: number = 0
   private mouseWorldY: number = 0
 
+  // 火炎放射
+  private firePool!: Phaser.Physics.Arcade.Group
+  private lastFireTime: number = 0
+  private flameIsPlaying: boolean = false
+  private readonly FIRE_INTERVAL = 50
+  private readonly FIRE_SPEED    = 600
+  private readonly FIRE_RANGE    = 1000
+
   // タイトル画面・ポーズメニュー関連
   private bgmManager?: BGMManager
   private pauseMenu?: PauseMenu
@@ -140,6 +148,7 @@ export default class MainScene extends Phaser.Scene {
 
     // 飛び道具グループ初期化
     this.projectiles = this.physics.add.group()
+    this.firePool = this.physics.add.group({ maxSize: 20, runChildUpdate: false })
 
     // ボスシステム初期化
     this.audioBus = new AudioBus(this)
@@ -477,6 +486,9 @@ export default class MainScene extends Phaser.Scene {
     // 誘導魔法弾の更新
     updateHomingOrbs(this)
 
+    // 火炎放射の更新
+    this.updateFireBalls(time)
+
     // 飛び道具とプレイヤーの衝突判定
     this.physics.world.colliders.getActive().forEach((_collider) => {
       // 既存のコライダーを維持
@@ -496,9 +508,10 @@ export default class MainScene extends Phaser.Scene {
               console.log(`Player hit by ${img.texture.key}! HP: ${oldHP} -> ${newHP}`)
 
               this.updateHPDisplay()
-              this.player.setTint(0xffaaaa)
+              this.player.setTint(0xff4444)
+              this.audioBus.playSe('se_player_hit', { volume: 0.8 })
               this.player.setData('hitCool', true)
-              this.time.delayedCall(120, () => this.player.clearTint())
+              this.time.delayedCall(100, () => this.player.clearTint())
               this.time.delayedCall(500, () => this.player.setData('hitCool', false))
               img.destroy()
 
@@ -831,6 +844,57 @@ export default class MainScene extends Phaser.Scene {
     this.doAttack()
   }
 
+  private spawnFireBall(): void {
+    const fb = this.firePool.get(this.player.x, this.player.y, 'magic_fire') as FireBall | null
+    if (!fb) return
+
+    fb.setActive(true).setVisible(true)
+    fb.setScale(0.1)
+    fb.damage = 1
+    fb.originX = this.player.x
+    fb.originY = this.player.y
+
+    const ptr = this.input.activePointer
+    const worldMouse = this.cameras.main.getWorldPoint(ptr.x, ptr.y)
+    const dir = new Phaser.Math.Vector2(worldMouse.x - this.player.x, worldMouse.y - this.player.y).normalize()
+    fb.setVelocity(dir.x * this.FIRE_SPEED, dir.y * this.FIRE_SPEED)
+    fb.setRotation(Phaser.Math.Angle.Between(0, 0, dir.x, dir.y))
+
+    if (fb.body) {
+      (fb.body as Phaser.Physics.Arcade.Body).setEnable(true)
+    }
+  }
+
+  private updateFireBalls(now: number): void {
+    // 発射ループ
+    if (this.isSpecialAttacking && this.isRightMouseHeld) {
+      if (now - this.lastFireTime >= this.FIRE_INTERVAL) {
+        this.lastFireTime = now
+        this.spawnFireBall()
+      }
+      if (!this.flameIsPlaying) {
+        this.audioBus.playSeLoop('se_flame', 0.6)
+        this.flameIsPlaying = true
+      }
+    } else if (this.flameIsPlaying) {
+      this.audioBus.stopSeLoop('se_flame')
+      this.flameIsPlaying = false
+    }
+
+    // 各弾の更新（飛距離チェック・スケール更新）
+    this.firePool.getChildren().forEach(obj => {
+      const fb = obj as FireBall
+      if (!fb.active) return
+      const dist = Phaser.Math.Distance.Between(fb.originX, fb.originY, fb.x, fb.y)
+      if (dist >= this.FIRE_RANGE) {
+        this.firePool.killAndHide(fb)
+        if (fb.body) (fb.body as Phaser.Physics.Arcade.Body).setEnable(false)
+        return
+      }
+      fb.setScale(Math.min(1.0, 0.1 + 0.9 * (dist / this.FIRE_RANGE)))
+    })
+  }
+
   private getFacingVector() {
     if (this.playerDirection === 'left') return new Phaser.Math.Vector2(-1, 0)
     if (this.playerDirection === 'right') return new Phaser.Math.Vector2(1, 0)
@@ -904,6 +968,8 @@ export default class MainScene extends Phaser.Scene {
       animPrefix: string
       stats: Record<string, number>
       dialogs?: EnemyDialogs
+      hitSound?: string
+      attackSound?: string
     }
 
     const defs = (this.cache.json.get('enemy-defs') as EnemyDef[]) || []
@@ -921,7 +987,13 @@ export default class MainScene extends Phaser.Scene {
         ? def.spriteKey
         : (def?.enemyType ? (defaultAnimKey[def.enemyType] ?? def.enemyType) : undefined)
       const overrides: EnemyOverrides | undefined = def
-        ? { ...def.stats, dialogs: def.dialogs, ...(animKey ? { animKey } : {}) }
+        ? {
+            ...def.stats,
+            dialogs: def.dialogs,
+            ...(animKey ? { animKey } : {}),
+            ...(def.hitSound    ? { hitSound: def.hitSound }       : {}),
+            ...(def.attackSound ? { attackSound: def.attackSound } : {}),
+          }
         : undefined
       const resolvedType = def?.enemyType ?? (['blob', 'archer', 'mage', 'brute'] as const)[Math.floor(Math.random() * 4)]
 
@@ -945,9 +1017,11 @@ export default class MainScene extends Phaser.Scene {
       const hitCollider = this.physics.add.overlap(this.hitbox, en, () => {
         if (!en.getData('hitCool') && !en.getData('dead')) {
           en.hp -= 1
-          en.setTint(0xffffaa)
+          en.setTint(0xff4444)
+          const enHitKey = (en as any).hitSound ? 'se_' + (en as any).hitSound.replace(/\.(ogg|mp3)$/, '') : 'se_enemy_hit'
+          this.audioBus.playSe(enHitKey, { volume: 0.8 })
           en.setData('hitCool', true)
-          this.time.delayedCall(120, () => en.clearTint())
+          this.time.delayedCall(100, () => en.clearTint())
           this.time.delayedCall(250, () => en.setData('hitCool', false))
           if (en.hp <= 0) {
             if (!en.getData('dead')) this.triggerEnemyDeath(en)
@@ -973,6 +1047,34 @@ export default class MainScene extends Phaser.Scene {
       const collider = this.physics.add.collider(br, this.walls!)
       this.colliders.push(collider)
       this.setupEnemyHit(br)
+    })
+
+    // 火炎弾 vs 壁・敵
+    if (this.walls) {
+      const fireVsWall = this.physics.add.overlap(this.firePool, this.walls, (fb) => {
+        this.firePool.killAndHide(fb as Phaser.GameObjects.GameObject)
+        if ((fb as FireBall).body) ((fb as FireBall).body as Phaser.Physics.Arcade.Body).setEnable(false)
+      })
+      this.colliders.push(fireVsWall)
+    }
+
+    const allEnemyGroups = [...this.enemies, ...this.archers, ...this.mages, ...this.brutes]
+    allEnemyGroups.forEach(en => {
+      const fireVsEnemy = this.physics.add.overlap(this.firePool, en, (fb) => {
+        this.firePool.killAndHide(fb as Phaser.GameObjects.GameObject)
+        if ((fb as FireBall).body) ((fb as FireBall).body as Phaser.Physics.Arcade.Body).setEnable(false)
+        if (!en.getData('hitCool') && !en.getData('dead')) {
+          en.hp -= 1
+          en.setTint(0xff4444)
+          const hitKey = (en as any).hitSound ? 'se_' + (en as any).hitSound.replace(/\.(ogg|mp3)$/, '') : 'se_enemy_hit'
+          this.audioBus.playSe(hitKey, { volume: 0.8 })
+          en.setData('hitCool', true)
+          this.time.delayedCall(100, () => en.clearTint())
+          this.time.delayedCall(250, () => en.setData('hitCool', false))
+          if (en.hp <= 0 && !en.getData('dead')) this.triggerEnemyDeath(en)
+        }
+      })
+      this.colliders.push(fireVsEnemy)
     })
 
     // イベントトリガーを gameflow.json から取得して初期化
@@ -1034,9 +1136,11 @@ export default class MainScene extends Phaser.Scene {
     const hitCollider = this.physics.add.overlap(this.hitbox, en, () => {
       if (!en.getData('hitCool') && !en.getData('dead')) {
         en.hp -= 1
-        en.setTint(0xffffaa)
+        en.setTint(0xff4444)
+        const hitKey = (en as any).hitSound ? 'se_' + (en as any).hitSound.replace(/\.(ogg|mp3)$/, '') : 'se_enemy_hit'
+        this.audioBus.playSe(hitKey, { volume: 0.8 })
         en.setData('hitCool', true)
-        this.time.delayedCall(120, () => en.clearTint())
+        this.time.delayedCall(100, () => en.clearTint())
         this.time.delayedCall(250, () => en.setData('hitCool', false))
 
         if (en.hp <= 0) {
@@ -1058,9 +1162,10 @@ export default class MainScene extends Phaser.Scene {
           const newHP = (this.player as any).hp
           console.log(`Player hit by Brute dash! HP: ${oldHP} -> ${newHP}`)
           this.updateHPDisplay()
-          this.player.setTint(0xffaaaa)
+          this.player.setTint(0xff4444)
+          this.audioBus.playSe('se_player_hit', { volume: 0.8 })
           this.player.setData('hitCool', true)
-          this.time.delayedCall(120, () => this.player.clearTint())
+          this.time.delayedCall(100, () => this.player.clearTint())
           this.time.delayedCall(1000, () => this.player.setData('hitCool', false))
 
           if (newHP <= 0) {
@@ -1270,14 +1375,14 @@ export default class MainScene extends Phaser.Scene {
         const oldHP = this.boss.hp
         this.boss.hp -= 1
         console.log(`[MainScene] Boss damaged! HP: ${oldHP} -> ${this.boss.hp} (Phase: ${this.boss.phase})`)
-        this.boss.setTint(0xffffaa)
+        this.boss.setTint(0xff4444)
         this.boss.setData('hitCool', true)
 
         if (this.boss.config.se.damage) {
           this.audioBus.playSe(this.boss.config.se.damage, { volume: 0.7 })
         }
 
-        this.time.delayedCall(120, () => {
+        this.time.delayedCall(100, () => {
           if (this.boss) this.boss.clearTint()
         })
         this.time.delayedCall(250, () => {
@@ -1302,9 +1407,10 @@ export default class MainScene extends Phaser.Scene {
         console.log(`Player hit by boss dash! HP: ${oldHP} -> ${(this.player as any).hp}`)
 
         this.updateHPDisplay()
-        this.player.setTint(0xffaaaa)
+        this.player.setTint(0xff4444)
+        this.audioBus.playSe('se_player_hit', { volume: 0.8 })
         this.player.setData('hitCool', true)
-        this.time.delayedCall(120, () => this.player.clearTint())
+        this.time.delayedCall(100, () => this.player.clearTint())
         this.time.delayedCall(500, () => this.player.setData('hitCool', false))
 
         if ((this.player as any).hp <= 0) {
@@ -1313,6 +1419,26 @@ export default class MainScene extends Phaser.Scene {
       }
     })
     this.colliders.push(bossContactCollider)
+
+    // 火炎弾 vs ボス
+    if (this.firePool) {
+      const fireVsBoss = this.physics.add.overlap(this.firePool, this.boss, (fb) => {
+        if (!this.boss || !this.boss.active || !this.boss.getData) return
+        this.firePool.killAndHide(fb as Phaser.GameObjects.GameObject)
+        if ((fb as FireBall).body) ((fb as FireBall).body as Phaser.Physics.Arcade.Body).setEnable(false)
+        if (!this.boss.getData('hitCool')) {
+          this.boss.hp -= 1
+          this.boss.setTint(0xff4444)
+          this.boss.setData('hitCool', true)
+          if (this.boss.config.se.damage) this.audioBus.playSe(this.boss.config.se.damage, { volume: 0.7 })
+          this.time.delayedCall(100, () => { if (this.boss) this.boss.clearTint() })
+          this.time.delayedCall(250, () => { if (this.boss) this.boss.setData('hitCool', false) })
+          this.bossHpUI?.update(this.boss.hp, this.boss.maxHp, this.boss.phase)
+          if (this.boss.hp <= 0) this.defeatBoss()
+        }
+      })
+      this.colliders.push(fireVsBoss)
+    }
   }
 
   /**
