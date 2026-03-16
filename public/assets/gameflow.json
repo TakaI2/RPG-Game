@@ -17,14 +17,18 @@
       "action": "goto_map",
       "mapId": "first_map",
       "x": 10,
-      "y": 10
+      "y": 12
     }
   },
   "maps": {
     "boss_map": {
       "bgm": "redmoon",
       "onEnter": null,
-      "hasBoss": true,
+      "boss": {
+        "configKey": "belladonna_boss",
+        "x": 30,
+        "y": 15
+      },
       "onPlayerDefeat": {
         "story": "gameover",
         "then": {

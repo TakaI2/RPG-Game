@@ -21,6 +21,7 @@ const game = new Phaser.Game({
   pixelArt: true,
   physics: { default: 'arcade', arcade: { debug: false, gravity: { x: 0, y: 0 } } },
   scale: { mode: Phaser.Scale.FIT, autoCenter: Phaser.Scale.CENTER_BOTH },
+  loader: { imageLoadType: 'HTMLImageElement' },
   scene: [LoadingScene, TitleScene, MainScene, StoryScene]
 })
 

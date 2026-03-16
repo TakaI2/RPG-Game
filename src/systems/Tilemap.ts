@@ -40,30 +40,52 @@ export function buildMapFromJSON(
       const cy = y * TILE + TILE / 2
 
       if (def.animated) {
-        // アニメーションタイル: Sprite として配置
-        const sprite = scene.add.sprite(cx, cy, def.textureKey)
-        sprite.setDisplaySize(TILE, TILE)
-
+        // アニメーションタイル: スプライトシートが有効かどうかを確認
         const animKey = `anim_${def.textureKey}`
-        if (!scene.anims.exists(animKey)) {
-          scene.anims.create({
-            key: animKey,
-            frames: scene.anims.generateFrameNumbers(def.textureKey, { start: 0, end: 3 }),
-            frameRate: def.fps ?? DEFAULT_ANIM_FPS,
-            repeat: -1,
-          })
-        }
-        sprite.play(animKey)
+        const animFrames = scene.anims.exists(animKey)
+          ? null // すでに登録済み
+          : scene.anims.generateFrameNumbers(def.textureKey, { start: 0, end: 3 })
 
-        if (def.role === 'wall') {
-          // 可視スプライトは depth=1、衝突用の不可視ボディを別途作成
-          sprite.setDepth(1)
-          const body = walls.create(cx, cy, def.textureKey, 0) as Phaser.Physics.Arcade.Sprite
-          body.setVisible(false)
-          body.setDisplaySize(TILE, TILE)
-          body.refreshBody()
+        const hasValidAnim = scene.anims.exists(animKey) || (animFrames !== null && animFrames.length > 0)
+
+        if (hasValidAnim) {
+          // 有効なスプライトシート: アニメーションスプライトとして配置
+          const sprite = scene.add.sprite(cx, cy, def.textureKey)
+          sprite.setDisplaySize(TILE, TILE)
+
+          if (animFrames !== null && animFrames.length > 0) {
+            scene.anims.create({
+              key: animKey,
+              frames: animFrames,
+              frameRate: def.fps ?? DEFAULT_ANIM_FPS,
+              repeat: -1,
+            })
+          }
+          sprite.play(animKey)
+
+          if (def.role === 'wall') {
+            sprite.setDepth(1)
+            const body = walls.create(cx, cy, def.textureKey, 0) as Phaser.Physics.Arcade.Sprite
+            body.setVisible(false)
+            body.setDisplaySize(TILE, TILE)
+            body.refreshBody()
+          } else {
+            sprite.setDepth(0)
+          }
+        } else if (def.role === 'wall') {
+          // スプライトシート失敗 + 壁: 静的壁としてフォールバック
+          const wallObj = walls.create(cx, cy, def.textureKey) as Phaser.Physics.Arcade.Sprite
+          wallObj.setDisplaySize(TILE, TILE)
+          wallObj.refreshBody()
+          wallObj.setDepth(1)
         } else {
-          sprite.setDepth(0)
+          // スプライトシート失敗 + 床: HTMLCanvas に描画してフォールバック
+          const texSrc = scene.textures.get(def.textureKey).source[0]
+          const img = texSrc.image as HTMLImageElement | HTMLCanvasElement
+          if (img) {
+            ctx.drawImage(img, 0, 0, texSrc.width, texSrc.height, x * TILE, y * TILE, TILE, TILE)
+            floorTileCount++
+          }
         }
       } else if (def.role === 'floor') {
         // 静的床: HTML Canvas に TILE サイズで描画

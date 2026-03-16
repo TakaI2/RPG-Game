@@ -235,8 +235,16 @@ export default class LoadingScene extends Phaser.Scene {
     const defs = this.cache.json.get('tilesets') as TileDef[] | null
     if (defs) {
       defs.forEach(def => {
-        if (def.animated) return
-        if (this.textures.exists(def.textureKey)) return
+        if (this.textures.exists(def.textureKey)) {
+          // アニメーションタイルでフレーム0が存在しない = スプライトシートの読み込み失敗
+          // 無効なテクスチャエントリを削除してプロシージャルテクスチャで上書きする
+          if (def.animated && this.textures.get(def.textureKey).getFrameNames().length === 0) {
+            this.textures.remove(def.textureKey)
+            console.warn(`[LoadingScene] Spritesheet failed for '${def.textureKey}', generating procedural fallback`)
+          } else {
+            return
+          }
+        }
         const hex = parseInt(def.color.replace('#', ''), 16)
         const g = this.make.graphics({ x: 0, y: 0 })
         g.fillStyle(hex, 1).fillRect(0, 0, TILE, TILE)
