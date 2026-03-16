@@ -1,0 +1,59 @@
+{
+  "id": "new_story",
+  "script": [
+    {
+      "op": "bg",
+      "name": "collider.png",
+      "fade": 500,
+      "scaleX": 1.5
+    },
+    {
+      "op": "bgm.play",
+      "name": "bgm1.ogg",
+      "loop": true,
+      "volume": 0.6,
+      "fade": 1000
+    },
+    {
+      "op": "say",
+      "lines": [
+        "うわぁぁぁ！！"
+      ],
+      "name": "勇者"
+    },
+    {
+      "op": "say",
+      "lines": [
+        "ふふふ！　どうやらここまでのようね！"
+      ],
+      "name": "魔女",
+      "portrait": "witch.png",
+      "portraitX": 875,
+      "portraitY": 1071
+    },
+    {
+      "op": "say",
+      "lines": [
+        "貴方も、この私の虜にしてあげるわ！",
+        "私の下で永遠に飼殺してあげる！"
+      ],
+      "name": "魔女",
+      "portrait": "witch.png",
+      "portraitX": 875,
+      "portraitY": 1071
+    },
+    {
+      "op": "say",
+      "lines": [
+        "こうして勇者の冒険は終わってしまった。"
+      ]
+    },
+    {
+      "op": "say",
+      "name": "名前",
+      "lines": [
+        "BADEND"
+      ]
+    }
+  ]
+}

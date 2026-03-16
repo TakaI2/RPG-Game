@@ -74,25 +74,23 @@ export class AudioBus {
   stopBgm(options?: { fade?: number }) {
     const fade = options?.fade ?? 0
 
-    if (!this.currentBgm || !this.currentBgm.isPlaying) {
+    if (!this.currentBgm) {
       return
     }
 
-    if (fade > 0) {
+    const soundToStop = this.currentBgm  // ローカルに退避して stale tween 問題を回避
+    this.currentBgm = null
+    this.bgmKey = ''
+
+    if (fade > 0 && soundToStop.isPlaying) {
       this.scene.tweens.add({
-        targets: this.currentBgm,
+        targets: soundToStop,
         volume: 0,
         duration: fade,
-        onComplete: () => {
-          this.currentBgm?.stop()
-          this.currentBgm = null
-          this.bgmKey = ''
-        }
+        onComplete: () => { soundToStop.stop() }
       })
     } else {
-      this.currentBgm.stop()
-      this.currentBgm = null
-      this.bgmKey = ''
+      soundToStop.stop()
     }
 
     console.log('[AudioBus] BGM stopped')

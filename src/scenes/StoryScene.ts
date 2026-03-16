@@ -4,6 +4,7 @@ import { StoryRunner } from '../systems/StoryRunner'
 import { AudioBus } from '../systems/AudioBus'
 import { events } from '../systems/Events'
 import { GAME_W, GAME_H } from '../config'
+import type { ThenAction } from '../types/GameFlowTypes'
 
 /**
  * ストーリーパート専用シーン（M2: 完全版）
@@ -17,6 +18,7 @@ export default class StoryScene extends Phaser.Scene {
   private audio!: AudioBus
   private spaceKey!: Phaser.Input.Keyboard.Key
   private scriptId!: string
+  private thenAction!: ThenAction
   private waitingForSpace = false
 
   // 背景・立ち絵
@@ -30,9 +32,10 @@ export default class StoryScene extends Phaser.Scene {
     super('StoryScene')
   }
 
-  init(data: { id: string }) {
+  init(data: { id: string; then?: ThenAction }) {
     this.scriptId = data?.id || 'intro'
-    console.log(`[StoryScene] init with id: ${this.scriptId}`, 'data:', data)
+    this.thenAction = data?.then ?? { action: 'stay' }
+    console.log(`[StoryScene] init with id: ${this.scriptId}`, 'then:', this.thenAction)
 
     if (!data || !data.id) {
       console.warn('[StoryScene] No id provided, using default: intro')
@@ -60,8 +63,8 @@ export default class StoryScene extends Phaser.Scene {
 
     if (!scriptData) {
       console.error(`[StoryScene] Script data not found: story_${this.scriptId}`)
-      // フォールバック: ゲームに戻る
-      events.emit('story:end', { id: this.scriptId })
+      // フォールバック: story:end を発火して MainScene に制御を戻す
+      events.emit('story:end', { id: this.scriptId, then: this.thenAction })
       this.scene.stop()
       return
     }
@@ -74,6 +77,10 @@ export default class StoryScene extends Phaser.Scene {
 
   private initializeStory(scriptData: { script: { op: string; [key: string]: unknown }[] }) {
     console.log('[StoryScene] initializeStory')
+
+    // ストーリー開始イベントを発火（BGMはBGMManagerが適切に停止する）
+    events.emit('story-start')
+    console.log('[StoryScene] story-start event emitted')
 
     // 黒背景
     this.cameras.main.setBackgroundColor('#000000')
@@ -97,8 +104,8 @@ export default class StoryScene extends Phaser.Scene {
       onBg: async (payload) => {
         await this.showBg(payload)
       },
-      onEnd: (returnTo) => {
-        this.endStory(returnTo)
+      onEnd: (_returnTo) => {
+        this.endStory()
       }
     })
 
@@ -107,7 +114,14 @@ export default class StoryScene extends Phaser.Scene {
 
     // 既存のリスナーを削除してから新しいリスナーを追加
     this.spaceKey.removeAllListeners()
-    this.spaceKey.on('down', () => this.onSpacePressed())
+    this.spaceKey.on('down', () => this.onAdvance())
+
+    // 左クリックでも進められるようにする
+    this.input.on('pointerdown', (pointer: Phaser.Input.Pointer) => {
+      if (pointer.leftButtonDown()) {
+        this.onAdvance()
+      }
+    })
 
     // シーン終了時のクリーンアップ
     this.events.once('shutdown', this.cleanup, this)
@@ -184,6 +198,22 @@ export default class StoryScene extends Phaser.Scene {
 
   private cleanup() {
     console.log('[StoryScene] cleanup')
+
+    // BGM停止
+    if (this.audio) {
+      this.audio.stopBgm({ fade: 0 })
+      this.audio.destroy()
+    }
+
+    // 画像の削除
+    if (this.bgImage) {
+      this.bgImage.destroy()
+      this.bgImage = undefined
+    }
+    if (this.portraitImage) {
+      this.portraitImage.destroy()
+      this.portraitImage = undefined
+    }
 
     // Spaceキーリスナーを削除
     if (this.spaceKey) {
@@ -297,7 +327,6 @@ export default class StoryScene extends Phaser.Scene {
         loop: true,
         callback: () => {
           if (!this.ui.visible) {
-            // DialogUIが閉じた = 会話終了
             console.log('[StoryScene] DialogUI closed, resolving showSay promise')
             if (this.checkInterval) {
               this.checkInterval.remove()
@@ -311,14 +340,15 @@ export default class StoryScene extends Phaser.Scene {
     })
   }
 
-  private onSpacePressed() {
-    console.log('[StoryScene] Space pressed, ui.visible:', this.ui.visible, 'waitingForSpace:', this.waitingForSpace)
+  /**
+   * ストーリーを進める（Spaceキーまたは左クリック）
+   */
+  private onAdvance() {
+    console.log('[StoryScene] Advance triggered, ui.visible:', this.ui.visible, 'waitingForSpace:', this.waitingForSpace)
     if (this.ui.visible) {
-      // DialogUIのnextを呼ぶ（タイプ中なら即表示、終わったら次へ）
       console.log('[StoryScene] Calling ui.next()')
       this.ui.next()
     } else if (!this.waitingForSpace) {
-      // 次のステップへ
       console.log('[StoryScene] Calling runner.step()')
       this.runner.step()
     } else {
@@ -326,29 +356,18 @@ export default class StoryScene extends Phaser.Scene {
     }
   }
 
-  private endStory(returnTo: string) {
-    console.log(`[StoryScene] endStory, returnTo: ${returnTo}`)
+  /**
+   * ストーリー終了処理
+   * story:end イベントを発火して MainScene に制御を渡し、自身を停止する
+   */
+  private endStory() {
+    console.log(`[StoryScene] endStory, id: ${this.scriptId}, then:`, this.thenAction)
 
-    // BGM停止
-    this.audio.stopBgm({ fade: 500 })
+    // story:end イベントを発火（MainScene の executeThen が受け取る）
+    events.emit('story:end', { id: this.scriptId, then: this.thenAction })
+    console.log('[StoryScene] story:end event emitted')
 
-    this.cameras.main.fadeOut(300, 0, 0, 0, (_: unknown, progress: number) => {
-      if (progress === 1) {
-        // クリーンアップ
-        if (this.bgImage) {
-          this.bgImage.destroy()
-        }
-        if (this.portraitImage) {
-          this.portraitImage.destroy()
-        }
-        this.audio.destroy()
-
-        // 手動でクリーンアップを呼ぶ（shutdownイベントより前に実行）
-        this.cleanup()
-
-        events.emit('story:end', { id: this.scriptId })
-        this.scene.stop()
-      }
-    })
+    // 自身を停止（shutdownイベントでcleanupが呼ばれる）
+    this.scene.stop()
   }
 }

@@ -172,6 +172,34 @@ export default defineConfig({ server: { port: 5173 }, build: { sourcemap: true }
 
 ---
 
+## 最新の開発状況（2025-11-16）
+
+### ✅ 完了した機能
+- **タイトル画面・ポーズメニュー実装** (feature/title-screen-and-pause-menu ブランチ)
+  - `TitleScene.ts`: タイトル画面とPlayボタン
+  - `PauseMenu.ts`: Escキーでポーズ、タイトルに戻る/再開機能
+  - `BGMManager.ts`: マップBGM自動管理システム
+  - `GameStateManager.ts`: ゲーム状態のリセット管理
+  - `VirtualJoystick.ts` / `AttackButton.ts`: タッチ操作対応
+
+### ⚠️ 現在の問題
+**ブラウザキャッシュによる修正未反映**
+- 症状: BGMManager.tsの修正がブラウザに反映されず、`playBGM is not a function`エラーが継続
+- 影響: MainSceneのcreate()が途中停止し、画面真っ暗・BGM再生不可
+- 対策: PC再起動後、開発者ツールの「Disable cache」を有効化してテスト
+
+### 修正済みの問題
+1. **シーン遷移エラー**: `intro.json`の`returnTo`を`"game"`→`"MainScene"`に修正
+2. **BGMManagerメソッド名不一致**: `playBGM`/`stopBGM`→`playBgm`/`stopBgm`に統一
+
+### PC再起動後の手順
+```bash
+npm run dev
+```
+ブラウザで`http://localhost:5173/Game_RPG/`を開き、F12→Networkタブ→「Disable cache」チェック
+
+---
+
 ## 既知の前提/注意
 
 - 画像は64×64のスプライトシート（横4×縦8）を前提。`row*4 + col`でフレーム計算

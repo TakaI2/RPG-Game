@@ -114,6 +114,16 @@ export class VirtualJoystick {
   }
 
   /**
+   * 表示/非表示を設定
+   */
+  setVisible(visible: boolean) {
+    // ドラッグ中でない場合のみ変更可能
+    if (!this.isDragging) {
+      this.container.setVisible(visible)
+    }
+  }
+
+  /**
    * クリーンアップ
    */
   destroy() {

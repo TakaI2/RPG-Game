@@ -65,8 +65,7 @@
       ]
     },
     {
-      "op": "end",
-      "returnTo": "game"
+      "op": "end"
     }
   ]
 }

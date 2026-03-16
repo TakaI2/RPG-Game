@@ -175,6 +175,7 @@ export type PhaseConfig = {
  */
 export type SpriteConfig = {
   key: string
+  animKey?: string
   tint?: string
 }
 
@@ -235,6 +236,7 @@ export type Boss = Phaser.Types.Physics.Arcade.SpriteWithDynamicBody & {
   hp: number
   maxHp: number
   speed: number
+  animKey: string
 
   // 設定データ
   config: BossConfig

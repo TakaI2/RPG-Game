@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Enemy Editor</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div id="app">
+    <header class="header">
+      <h1>Enemy Editor</h1>
+      <div class="header-actions">
+        <button id="btnImport" class="btn-primary" title="enemy-defs.json を読み込む">Import JSON</button>
+        <input type="file" id="fileInput" accept=".json" style="display:none">
+        <button id="btnExport" title="enemy-defs.json としてダウンロード（public/assets/enemies/ に配置してください）">Export JSON</button>
+        <div class="separator"></div>
+        <button id="btnSave" class="btn-success">Save (LocalStorage)</button>
+      </div>
+    </header>
+
+    <div class="main-content">
+      <!-- Left Sidebar -->
+      <aside class="sidebar">
+        <div class="sidebar-header">
+          <span>キャラ一覧</span>
+          <button id="btnNew" class="btn-new">+ 新規作成</button>
+        </div>
+        <div class="char-list" id="charList"></div>
+      </aside>
+
+      <!-- Right Panel -->
+      <main class="right-panel" id="rightPanel">
+        <div class="empty-state" id="emptyState">
+          キャラを選択するか、「+ 新規作成」でキャラを追加してください
+        </div>
+
+        <div id="editorContent" style="display:none; display:flex; flex-direction:column; gap:14px;">
+          <!-- 基本情報 -->
+          <div class="section-card">
+            <div class="section-title">基本情報</div>
+            <div class="section-body">
+              <div class="form-grid">
+                <div class="form-field">
+                  <label>ID</label>
+                  <input type="text" id="fieldId" placeholder="archer_01">
+                </div>
+                <div class="form-field">
+                  <label>名前</label>
+                  <input type="text" id="fieldName" placeholder="ヴァンパイアアーチャー">
+                </div>
+                <div class="form-field">
+                  <label>enemyType</label>
+                  <select id="fieldEnemyType">
+                    <option value="archer">archer</option>
+                    <option value="mage">mage</option>
+                    <option value="brute">brute</option>
+                    <option value="blob">blob</option>
+                  </select>
+                </div>
+                <div class="form-field">
+                  <label>spriteKey</label>
+                  <input type="text" id="fieldSpriteKey" placeholder="vamp1">
+                </div>
+                <div class="form-field">
+                  <label>animPrefix</label>
+                  <input type="text" id="fieldAnimPrefix" placeholder="archer">
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- スプライトプレビュー -->
+          <div class="section-card">
+            <div class="section-title">スプライトプレビュー</div>
+            <div class="section-body">
+              <div class="sprite-preview-area">
+                <div class="canvas-wrapper">
+                  <canvas id="spriteCanvas" width="128" height="128"></canvas>
+                  <div class="anim-btns">
+                    <button class="anim-btn active" data-anim="idle">Idle</button>
+                    <button class="anim-btn" data-anim="walk">Walk</button>
+                    <button class="anim-btn" data-anim="atk">Atk</button>
+                  </div>
+                </div>
+                <div class="preview-info">
+                  <p>スプライトシート: 1024×256px</p>
+                  <p>フレームサイズ: 64×64px（16列×4行）</p>
+                  <p>アイドル下: row=2, col=0〜3</p>
+                  <p style="margin-top:10px; color:#6c7086; font-size:0.75rem;">
+                    spriteKeyを入力すると自動プレビューされます。<br>
+                    画像は <code>../../public/assets/images/{spriteKey}.png</code> から読み込みます。
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- ステータス -->
+          <div class="section-card">
+            <div class="section-title">ステータス</div>
+            <div class="section-body">
+              <div class="stats-grid">
+                <div class="form-field">
+                  <label>hp</label>
+                  <input type="number" id="statHp" value="25" min="1">
+                </div>
+                <div class="form-field">
+                  <label>speed</label>
+                  <input type="number" id="statSpeed" value="160" min="1">
+                </div>
+                <div class="form-field">
+                  <label>sight</label>
+                  <input type="number" id="statSight" value="360" min="1">
+                </div>
+                <div class="form-field">
+                  <label>cooldownTime (ms)</label>
+                  <input type="number" id="statCooldownTime" value="2000" min="0">
+                </div>
+                <div class="form-field">
+                  <label>aimDuration (ms)</label>
+                  <input type="number" id="statAimDuration" value="600" min="0">
+                </div>
+                <div class="form-field">
+                  <label>castDuration (ms)</label>
+                  <input type="number" id="statCastDuration" value="400" min="0">
+                </div>
+                <div class="form-field">
+                  <label>dashSpeed</label>
+                  <input type="number" id="statDashSpeed" value="480" min="0">
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- ダイアログ設定 -->
+          <div class="section-card">
+            <div class="section-title">ダイアログ設定</div>
+            <div class="section-body">
+              <div class="dialog-states" id="dialogStates"></div>
+            </div>
+          </div>
+        </div>
+      </main>
+    </div>
+
+    <div class="status-bar">
+      <span id="statusText">準備完了</span>
+    </div>
+  </div>
+
+  <script src="editor.js"></script>
+</body>
+</html>

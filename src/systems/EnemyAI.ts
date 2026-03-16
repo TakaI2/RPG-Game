@@ -1,5 +1,22 @@
 import Phaser from 'phaser'
 import { fireArrow, fireHomingOrb } from './Projectile'
+import { EnemySpeech } from './EnemySpeech'
+
+export type DialogEntry = { lines: string[]; intervalMs?: number }
+export type EnemyDialogs = Partial<Record<string, DialogEntry>>
+
+export type EnemyOverrides = {
+  hp?: number
+  speed?: number
+  sight?: number
+  cooldownTime?: number
+  aimDuration?: number
+  castDuration?: number
+  dashSpeed?: number
+  dialogs?: EnemyDialogs
+  name?: string
+  animKey?: string
+}
 
 // 基本の敵タイプ
 export type EnemyWithAI = Phaser.Types.Physics.Arcade.SpriteWithDynamicBody & {
@@ -8,6 +25,11 @@ export type EnemyWithAI = Phaser.Types.Physics.Arcade.SpriteWithDynamicBody & {
   hp: number
   patrolPoints: Phaser.Math.Vector2[]
   patrolIndex: number
+  animKey: string
+  dialogs?: EnemyDialogs
+  speech?: EnemySpeech
+  lastSpeechTime: number
+  lastSpeechState: string
 }
 
 // 遠距離攻撃敵（Archer）の状態
@@ -25,6 +47,11 @@ export type Archer = Phaser.Types.Physics.Arcade.SpriteWithDynamicBody & {
   lastShot: number
   aimDuration: number
   aimStart: number
+  animKey: string
+  dialogs?: EnemyDialogs
+  speech?: EnemySpeech
+  lastSpeechTime: number
+  lastSpeechState: string
 }
 
 // メイジの状態
@@ -44,6 +71,11 @@ export type Mage = Phaser.Types.Physics.Arcade.SpriteWithDynamicBody & {
   castDuration: number
   aimStart: number
   castStart: number
+  animKey: string
+  dialogs?: EnemyDialogs
+  speech?: EnemySpeech
+  lastSpeechTime: number
+  lastSpeechState: string
 }
 
 // Bruteの状態
@@ -65,27 +97,40 @@ export type Brute = Phaser.Types.Physics.Arcade.SpriteWithDynamicBody & {
   dashStart: number
   recoverStart: number
   dashDirection: Phaser.Math.Vector2 | null
+  animKey: string
+  dialogs?: EnemyDialogs
+  speech?: EnemySpeech
+  lastSpeechTime: number
+  lastSpeechState: string
 }
 
 export type AnyEnemy = EnemyWithAI | Archer | Mage | Brute
 
-export function makeEnemy(scene: Phaser.Scene, x: number, y: number): EnemyWithAI {
-  const en = scene.physics.add.sprite(x, y, 'enemy16').setScale(2) as EnemyWithAI
+export function makeEnemy(scene: Phaser.Scene, x: number, y: number, overrides?: EnemyOverrides): EnemyWithAI {
+  const en = scene.physics.add.sprite(x, y, 'solder').setScale(2) as EnemyWithAI
   en.state = 'patrol'
   en.speed = 180
   en.hp = 3
   en.patrolPoints = [new Phaser.Math.Vector2(x, y), new Phaser.Math.Vector2(x + 10 * 32, y)]
   en.patrolIndex = 0
+  en.animKey = 'blob'
+  en.lastSpeechTime = 0
+  en.lastSpeechState = ''
+  if (overrides) {
+    const { dialogs, ...rest } = overrides
+    Object.assign(en, rest)
+    if (dialogs !== undefined) en.dialogs = dialogs
+  }
   return en
 }
 
 // Archer（弓兵）を生成
-export function makeArcher(scene: Phaser.Scene, x: number, y: number): Archer {
-  const archer = scene.physics.add.sprite(x, y, 'archer') as Archer
+export function makeArcher(scene: Phaser.Scene, x: number, y: number, overrides?: EnemyOverrides): Archer {
+  const archer = scene.physics.add.sprite(x, y, 'vamp1') as Archer
   archer.enemyType = 'archer'
   archer.state = 'patrol'
   archer.speed = 160
-  archer.hp = 4
+  archer.hp = 25
   archer.patrolPoints = [new Phaser.Math.Vector2(x, y), new Phaser.Math.Vector2(x + 8 * 32, y)]
   archer.patrolIndex = 0
   archer.sight = 360
@@ -93,16 +138,24 @@ export function makeArcher(scene: Phaser.Scene, x: number, y: number): Archer {
   archer.lastShot = 0
   archer.aimDuration = 600
   archer.aimStart = 0
+  archer.animKey = 'archer'
+  archer.lastSpeechTime = 0
+  archer.lastSpeechState = ''
+  if (overrides) {
+    const { dialogs, ...rest } = overrides
+    Object.assign(archer, rest)
+    if (dialogs !== undefined) archer.dialogs = dialogs
+  }
   return archer
 }
 
 // Mage（メイジ）を生成
-export function makeMage(scene: Phaser.Scene, x: number, y: number): Mage {
-  const mage = scene.physics.add.sprite(x, y, 'mage') as Mage
+export function makeMage(scene: Phaser.Scene, x: number, y: number, overrides?: EnemyOverrides): Mage {
+  const mage = scene.physics.add.sprite(x, y, 'succubus') as Mage
   mage.enemyType = 'mage'
   mage.state = 'patrol'
   mage.speed = 140
-  mage.hp = 3
+  mage.hp = 20
   mage.patrolPoints = [new Phaser.Math.Vector2(x, y), new Phaser.Math.Vector2(x + 6 * 32, y)]
   mage.patrolIndex = 0
   mage.sight = 400
@@ -112,17 +165,25 @@ export function makeMage(scene: Phaser.Scene, x: number, y: number): Mage {
   mage.castDuration = 400
   mage.aimStart = 0
   mage.castStart = 0
+  mage.animKey = 'mage'
+  mage.lastSpeechTime = 0
+  mage.lastSpeechState = ''
+  if (overrides) {
+    const { dialogs, ...rest } = overrides
+    Object.assign(mage, rest)
+    if (dialogs !== undefined) mage.dialogs = dialogs
+  }
   return mage
 }
 
 // Brute（突進戦士）を生成
-export function makeBrute(scene: Phaser.Scene, x: number, y: number): Brute {
-  const brute = scene.physics.add.sprite(x, y, 'brute') as Brute
+export function makeBrute(scene: Phaser.Scene, x: number, y: number, overrides?: EnemyOverrides): Brute {
+  const brute = scene.physics.add.sprite(x, y, 'mage') as Brute
   brute.enemyType = 'brute'
   brute.state = 'patrol'
   brute.speed = 120
   brute.dashSpeed = 480
-  brute.hp = 8
+  brute.hp = 40
   brute.patrolPoints = [new Phaser.Math.Vector2(x, y), new Phaser.Math.Vector2(x + 5 * 32, y)]
   brute.patrolIndex = 0
   brute.sight = 280
@@ -133,13 +194,42 @@ export function makeBrute(scene: Phaser.Scene, x: number, y: number): Brute {
   brute.dashStart = 0
   brute.recoverStart = 0
   brute.dashDirection = null
+  brute.animKey = 'brute'
+  brute.lastSpeechTime = 0
+  brute.lastSpeechState = ''
+  if (overrides) {
+    const { dialogs, ...rest } = overrides
+    Object.assign(brute, rest)
+    if (dialogs !== undefined) brute.dialogs = dialogs
+  }
   return brute
 }
 
 export function updateEnemyAI(scene: Phaser.Scene, en: EnemyWithAI, player: Phaser.Physics.Arcade.Sprite) {
   if (!en.active) return
+  if (en.getData('dying') || en.getData('dead')) return
   const dist = Phaser.Math.Distance.Between(en.x, en.y, player.x, player.y)
   const vision = 220, attackR = 44
+  const now = scene.time.now
+
+  // セリフトリガー
+  if (en.dialogs && en.speech) {
+    const stateStr = en.state as string
+    const dialog = en.dialogs[stateStr]
+    if (dialog) {
+      const stateChanged = en.lastSpeechState !== stateStr
+      if (!dialog.intervalMs && stateChanged) {
+        const line = dialog.lines[Math.floor(Math.random() * dialog.lines.length)]
+        en.speech.show(en, line, 2000)
+        en.lastSpeechTime = now
+      } else if (dialog.intervalMs && now - en.lastSpeechTime >= dialog.intervalMs) {
+        const line = dialog.lines[Math.floor(Math.random() * dialog.lines.length)]
+        en.speech.show(en, line, 2000)
+        en.lastSpeechTime = now
+      }
+    }
+    en.lastSpeechState = stateStr
+  }
 
   const moveTowards = (target: Phaser.Math.Vector2 | Phaser.GameObjects.Sprite, speed: number) => {
     const tx = (target as any).x
@@ -185,9 +275,29 @@ export function updateEnemyAI(scene: Phaser.Scene, en: EnemyWithAI, player: Phas
 // Archerの更新
 export function updateArcherAI(scene: Phaser.Scene, archer: Archer, player: Phaser.Physics.Arcade.Sprite) {
   if (!archer.active) return
+  if (archer.getData('dying') || archer.getData('dead')) return
 
   const dist = Phaser.Math.Distance.Between(archer.x, archer.y, player.x, player.y)
   const now = scene.time.now
+
+  // セリフトリガー
+  if (archer.dialogs && archer.speech) {
+    const stateStr = archer.state as string
+    const dialog = archer.dialogs[stateStr]
+    if (dialog) {
+      const stateChanged = archer.lastSpeechState !== stateStr
+      if (!dialog.intervalMs && stateChanged) {
+        const line = dialog.lines[Math.floor(Math.random() * dialog.lines.length)]
+        archer.speech.show(archer, line, 2000)
+        archer.lastSpeechTime = now
+      } else if (dialog.intervalMs && now - archer.lastSpeechTime >= dialog.intervalMs) {
+        const line = dialog.lines[Math.floor(Math.random() * dialog.lines.length)]
+        archer.speech.show(archer, line, 2000)
+        archer.lastSpeechTime = now
+      }
+    }
+    archer.lastSpeechState = stateStr
+  }
 
   const moveTowards = (target: Phaser.Math.Vector2 | Phaser.GameObjects.Sprite, speed: number) => {
     const tx = (target as any).x
@@ -256,9 +366,29 @@ export function updateArcherAI(scene: Phaser.Scene, archer: Archer, player: Phas
 // Mageの更新
 export function updateMageAI(scene: Phaser.Scene, mage: Mage, player: Phaser.Physics.Arcade.Sprite) {
   if (!mage.active) return
+  if (mage.getData('dying') || mage.getData('dead')) return
 
   const dist = Phaser.Math.Distance.Between(mage.x, mage.y, player.x, player.y)
   const now = scene.time.now
+
+  // セリフトリガー
+  if (mage.dialogs && mage.speech) {
+    const stateStr = mage.state as string
+    const dialog = mage.dialogs[stateStr]
+    if (dialog) {
+      const stateChanged = mage.lastSpeechState !== stateStr
+      if (!dialog.intervalMs && stateChanged) {
+        const line = dialog.lines[Math.floor(Math.random() * dialog.lines.length)]
+        mage.speech.show(mage, line, 2000)
+        mage.lastSpeechTime = now
+      } else if (dialog.intervalMs && now - mage.lastSpeechTime >= dialog.intervalMs) {
+        const line = dialog.lines[Math.floor(Math.random() * dialog.lines.length)]
+        mage.speech.show(mage, line, 2000)
+        mage.lastSpeechTime = now
+      }
+    }
+    mage.lastSpeechState = stateStr
+  }
 
   const moveTowards = (target: Phaser.Math.Vector2 | Phaser.GameObjects.Sprite, speed: number) => {
     const tx = (target as any).x
@@ -335,9 +465,29 @@ export function updateMageAI(scene: Phaser.Scene, mage: Mage, player: Phaser.Phy
 // Bruteの更新
 export function updateBruteAI(scene: Phaser.Scene, brute: Brute, player: Phaser.Physics.Arcade.Sprite) {
   if (!brute.active) return
+  if (brute.getData('dying') || brute.getData('dead')) return
 
   const dist = Phaser.Math.Distance.Between(brute.x, brute.y, player.x, player.y)
   const now = scene.time.now
+
+  // セリフトリガー
+  if (brute.dialogs && brute.speech) {
+    const stateStr = brute.state as string
+    const dialog = brute.dialogs[stateStr]
+    if (dialog) {
+      const stateChanged = brute.lastSpeechState !== stateStr
+      if (!dialog.intervalMs && stateChanged) {
+        const line = dialog.lines[Math.floor(Math.random() * dialog.lines.length)]
+        brute.speech.show(brute, line, 2000)
+        brute.lastSpeechTime = now
+      } else if (dialog.intervalMs && now - brute.lastSpeechTime >= dialog.intervalMs) {
+        const line = dialog.lines[Math.floor(Math.random() * dialog.lines.length)]
+        brute.speech.show(brute, line, 2000)
+        brute.lastSpeechTime = now
+      }
+    }
+    brute.lastSpeechState = stateStr
+  }
 
   const moveTowards = (target: Phaser.Math.Vector2 | Phaser.GameObjects.Sprite, speed: number) => {
     const tx = (target as any).x

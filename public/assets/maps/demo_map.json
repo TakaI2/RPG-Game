@@ -6565,49 +6565,24 @@
   ],
   "enemySpawns": [
     {
-      "x": 50,
-      "y": 45
-    },
-    {
       "x": 60,
       "y": 60
     },
     {
-      "x": 40,
-      "y": 55
+      "x": 37,
+      "y": 38,
+      "enemyDefId": "enemy_1772311949392"
     },
     {
-      "x": 40,
-      "y": 39
-    },
-    {
-      "x": 39,
-      "y": 42
-    },
-    {
-      "x": 43,
-      "y": 45
+      "x": 35,
+      "y": 47,
+      "enemyDefId": "enemy_1772312138257"
     }
   ],
-  "eventTriggers": [
-    {
-      "x": 50,
-      "y": 45,
-      "type": "story",
-      "storyId": "priest_event",
-      "once": true,
-      "marker": true
-    },
+  "portals": [
     {
       "x": 55,
-      "y": 45,
-      "type": "teleport",
-      "targetMap": "boss_map",
-      "targetX": 25,
-      "targetY": 8,
-      "once": false,
-      "marker": true,
-      "markerColor": "green"
+      "y": 44
     }
   ]
 }
