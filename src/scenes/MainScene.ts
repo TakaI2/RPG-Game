@@ -701,6 +701,7 @@ export default class MainScene extends Phaser.Scene {
    */
   private launchStory(storyId: string, then: ThenAction) {
     console.log(`[MainScene] launchStory: ${storyId}`, then)
+    events.emit('story-start')
     this.scene.launch('StoryScene', { id: storyId, then })
     this.scene.pause()
 
