@@ -87,6 +87,7 @@ export type ProjectileRadialConfig = {
   windupEffect: 'blink_red' | 'blink_yellow' | 'none'
   projectileCount: number
   projectileType: 'arrow' | 'orb'
+  projectileTexture?: string
   projectileSpeed: number
   damage: number
   angleOffset: number
@@ -98,6 +99,7 @@ export type ProjectileRadialConfig = {
 export type ProjectileCircleConfig = {
   projectileCount: number
   projectileType: 'orb' | 'arrow'
+  projectileTexture?: string
   radius: number
   waitDuration: number
   projectileSpeed: number
@@ -124,6 +126,7 @@ export type TeleportDashConfig = {
 export type UltimateConfig = {
   projectileCount: number
   projectileType: 'orb'
+  projectileTexture?: string
   spiralAngleStep: number
   spiralRadiusStep: number
   spiralRadiusStart: number

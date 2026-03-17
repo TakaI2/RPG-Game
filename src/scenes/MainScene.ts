@@ -26,7 +26,7 @@ import {
   getDirectionFromVelocity
 } from '../systems/AnimationManager'
 import { NPCManager } from '../systems/NPCManager'
-import { updateHomingOrbs, FireBall } from '../systems/Projectile'
+import { updateHomingOrbs, FireBall, type Projectile } from '../systems/Projectile'
 import { events } from '../systems/Events'
 import { EventTriggerManager } from '../systems/EventTriggerManager'
 import { Boss } from '../types/BossTypes'
@@ -149,6 +149,27 @@ export default class MainScene extends Phaser.Scene {
     // 飛び道具グループ初期化
     this.projectiles = this.physics.add.group()
     this.firePool = this.physics.add.group({ maxSize: 20, runChildUpdate: false })
+
+    // 飛び道具 vs プレイヤーの永続オーバーラップ
+    // physics.add.overlap(group, sprite, cb) の引数順: cb は (sprite, groupMember)
+    this.physics.add.overlap(this.projectiles, this.player, (_playerObj, projObj) => {
+      const proj = projObj as Projectile
+      if (!proj.active) return
+      if (this.player.getData('hitCool') || this.isGameOver) return
+      const damage = (proj.damage as number | undefined) ?? 1
+      type PlayerWithHp = Phaser.Types.Physics.Arcade.SpriteWithDynamicBody & { hp: number }
+      const oldHP = (this.player as PlayerWithHp).hp
+      const newHP = Math.max(0, oldHP - damage)
+      ;(this.player as PlayerWithHp).hp = newHP
+      this.updateHPDisplay()
+      this.player.setTint(0xff4444)
+      this.audioBus.playSe('se_player_hit', { volume: 0.8 })
+      this.player.setData('hitCool', true)
+      this.time.delayedCall(100, () => this.player.clearTint())
+      this.time.delayedCall(500, () => this.player.setData('hitCool', false))
+      proj.destroy()
+      if (newHP <= 0) this.triggerGameOver()
+    })
 
     // ボスシステム初期化
     this.audioBus = new AudioBus(this)
@@ -489,47 +510,6 @@ export default class MainScene extends Phaser.Scene {
     // 火炎放射の更新
     this.updateFireBalls(time)
 
-    // 飛び道具とプレイヤーの衝突判定
-    this.physics.world.colliders.getActive().forEach((_collider) => {
-      // 既存のコライダーを維持
-    })
-
-    this.children.list.forEach((obj) => {
-      if (obj instanceof Phaser.Physics.Arcade.Image) {
-        const img = obj as Phaser.Physics.Arcade.Image
-        if ((img.texture.key === 'arrow' || img.texture.key === 'orb') && img.active) {
-          if (this.physics.overlap(img, this.player)) {
-            if (!this.player.getData('hitCool') && !this.isGameOver) {
-              const damage = (img as any).damage || 1
-              const oldHP = (this.player as any).hp
-              const newHP = Math.max(0, oldHP - damage)
-              ;(this.player as any).hp = newHP
-
-              console.log(`Player hit by ${img.texture.key}! HP: ${oldHP} -> ${newHP}`)
-
-              this.updateHPDisplay()
-              this.player.setTint(0xff4444)
-              this.audioBus.playSe('se_player_hit', { volume: 0.8 })
-              this.player.setData('hitCool', true)
-              this.time.delayedCall(100, () => this.player.clearTint())
-              this.time.delayedCall(500, () => this.player.setData('hitCool', false))
-              img.destroy()
-
-              if (newHP <= 0) {
-                this.triggerGameOver()
-              }
-            }
-          }
-
-          if (this.walls && this.walls.active) {
-            this.physics.overlap(img, this.walls, () => {
-              img.destroy()
-            })
-          }
-        }
-      }
-    })
-
     // イベントトリガーのチェック
     if (this.eventTriggerManager && !this.ui.visible) {
       const result = this.eventTriggerManager.checkTrigger(
@@ -545,47 +525,47 @@ export default class MainScene extends Phaser.Scene {
     }
 
     // 攻撃中・特殊攻撃中は移動不可
+    // プレイヤー移動（攻撃中はスキップ）
     if (this.isAttacking || this.isSpecialAttacking) {
       this.player.setVelocity(0)
-      return
-    }
-
-    const speed: number = (this.player as any).speed
-
-    let vx = (this.cursors.left?.isDown ? -1 : this.cursors.right?.isDown ? 1 : 0)
-    let vy = (this.cursors.up?.isDown ? -1 : this.cursors.down?.isDown ? 1 : 0)
-
-    if (vx === 0 && vy === 0 && this.isMouseMoving) {
-      const dx = this.mouseWorldX - this.player.x
-      const dy = this.mouseWorldY - this.player.y
-      const distance = Math.sqrt(dx * dx + dy * dy)
-
-      const arrivalThreshold = 20
-      if (distance > arrivalThreshold) {
-        vx = dx / distance
-        vy = dy / distance
-      }
-    }
-
-    const v = new Phaser.Math.Vector2(vx, vy)
-
-    if (v.lengthSq() > 0) {
-      v.normalize().scale(speed)
-      this.player.setVelocity(v.x, v.y)
-
-      const direction = getDirectionFromVelocity(v.x, v.y)
-      this.playerDirection = direction
-
-      const targetAnim = `hero-walk-${direction}`
-      if (this.player.anims.currentAnim?.key !== targetAnim) {
-        this.player.play(targetAnim, true)
-      }
     } else {
-      this.player.setVelocity(0, 0)
-      const idleAnim = `hero-idle-${this.playerDirection}`
-      const currentKey = this.player.anims.currentAnim?.key
-      if (currentKey !== idleAnim && !this.isAttacking && !this.isSpecialAttacking) {
-        this.player.play(idleAnim, true)
+      const speed: number = (this.player as any).speed
+
+      let vx = (this.cursors.left?.isDown ? -1 : this.cursors.right?.isDown ? 1 : 0)
+      let vy = (this.cursors.up?.isDown ? -1 : this.cursors.down?.isDown ? 1 : 0)
+
+      if (vx === 0 && vy === 0 && this.isMouseMoving) {
+        const dx = this.mouseWorldX - this.player.x
+        const dy = this.mouseWorldY - this.player.y
+        const distance = Math.sqrt(dx * dx + dy * dy)
+
+        const arrivalThreshold = 20
+        if (distance > arrivalThreshold) {
+          vx = dx / distance
+          vy = dy / distance
+        }
+      }
+
+      const v = new Phaser.Math.Vector2(vx, vy)
+
+      if (v.lengthSq() > 0) {
+        v.normalize().scale(speed)
+        this.player.setVelocity(v.x, v.y)
+
+        const direction = getDirectionFromVelocity(v.x, v.y)
+        this.playerDirection = direction
+
+        const targetAnim = `hero-walk-${direction}`
+        if (this.player.anims.currentAnim?.key !== targetAnim) {
+          this.player.play(targetAnim, true)
+        }
+      } else {
+        this.player.setVelocity(0, 0)
+        const idleAnim = `hero-idle-${this.playerDirection}`
+        const currentKey = this.player.anims.currentAnim?.key
+        if (currentKey !== idleAnim) {
+          this.player.play(idleAnim, true)
+        }
       }
     }
 

@@ -2,10 +2,10 @@
   "id": "belladonna",
   "name": "魔女ベラドンナ",
   "stats": {
-    "hp": 18,
-    "speed": 95,
-    "scale": 2,
-    "damage": 1
+    "hp": 30,
+    "speed": 110,
+    "scale": 1,
+    "damage": 4
   },
   "sprite": {
     "key": "belladonna",
@@ -18,14 +18,14 @@
   "phases": [
     {
       "phase": 1,
-      "hpRange": [10, 18],
-      "attackCooldown": 1.2,
+      "hpRange": [16, 30],
+      "attackCooldown": 0.8,
       "patterns": ["orb_spread", "cursed_circle", "blink_dash"]
     },
     {
       "phase": 2,
-      "hpRange": [0, 9],
-      "attackCooldown": 0.8,
+      "hpRange": [0, 15],
+      "attackCooldown": 0.5,
       "patterns": ["orb_spread", "cursed_circle", "blink_dash", "witch_calamity"]
     }
   ],
@@ -39,8 +39,9 @@
         "windupEffect": "blink_red",
         "projectileCount": 6,
         "projectileType": "orb",
+        "projectileTexture": "witch_orb",
         "projectileSpeed": 220,
-        "damage": 1,
+        "damage": 4,
         "angleOffset": 30
       },
       "se": {
@@ -56,10 +57,11 @@
       "config": {
         "projectileCount": 8,
         "projectileType": "orb",
+        "projectileTexture": "witch_orb",
         "radius": 100,
         "waitDuration": 1200,
         "projectileSpeed": 160,
-        "damage": 1,
+        "damage": 4,
         "tint": "0x9900ff"
       },
       "se": {
@@ -83,7 +85,7 @@
         "windupDuration": 300,
         "dashSpeed": 350,
         "dashDuration": 800,
-        "damage": 2
+        "damage": 4
       },
       "se": {
         "teleport": "boss_belladonna_teleport",
@@ -98,12 +100,13 @@
       "config": {
         "projectileCount": 16,
         "projectileType": "orb",
+        "projectileTexture": "witch_orb",
         "spiralAngleStep": 22,
         "spiralRadiusStep": 12,
         "spiralRadiusStart": 80,
         "spawnInterval": 60,
         "projectileSpeed": 180,
-        "damage": 2,
+        "damage": 4,
         "tint": "0xaa00ff"
       },
       "se": {

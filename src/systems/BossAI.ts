@@ -279,7 +279,7 @@ function executeRadialAttack(
         const projectile = fireArrowAngle(scene, projectiles, boss.x, boss.y, angle, cfg.projectileSpeed)
         projectile.setData('damage', cfg.damage)
       } else if (cfg.projectileType === 'orb') {
-        const proj = projectiles.create(boss.x, boss.y, 'orb') as Projectile
+        const proj = projectiles.create(boss.x, boss.y, cfg.projectileTexture ?? 'orb') as Projectile
         proj.setVelocity(Math.cos(angle) * cfg.projectileSpeed, Math.sin(angle) * cfg.projectileSpeed)
         proj.damage = cfg.damage
         proj.bornAt = scene.time.now
@@ -324,7 +324,7 @@ function executeCircleAttack(
       const x = boss.x + Math.cos(angle) * cfg.radius
       const y = boss.y + Math.sin(angle) * cfg.radius
 
-      const orb = fireOrbAt(scene, projectiles, x, y, player, 0)
+      const orb = fireOrbAt(scene, projectiles, x, y, player, 0, cfg.projectileTexture ?? 'orb')
       orb.setVelocity(0, 0) // 静止
       if (cfg.tint) {
         const tintValue = parseInt(cfg.tint, 16)
@@ -525,7 +525,7 @@ function executeUltimateFire(
     scene.time.delayedCall(i * cfg.spawnInterval, () => {
       const x = boss.x + Math.cos(angle) * radius
       const y = boss.y + Math.sin(angle) * radius
-      const orb = fireOrbAt(scene, projectiles, x, y, player, cfg.projectileSpeed)
+      const orb = fireOrbAt(scene, projectiles, x, y, player, cfg.projectileSpeed, cfg.projectileTexture ?? 'orb')
       orb.setData('damage', cfg.damage)
 
       if (cfg.tint) {

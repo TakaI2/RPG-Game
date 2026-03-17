@@ -111,7 +111,6 @@ export default class LoadingScene extends Phaser.Scene {
     this.load.json('demo_map', 'assets/maps/demo_map.json')
     this.load.json('boss_map', 'assets/maps/boss_map.json')
     this.load.json('first_map', 'assets/maps/first_map.json')
-    this.load.json('queen_map', 'assets/maps/queen_map.json')
 
     // NPC設定JSON
     this.load.json('npc_config', 'assets/npcs/npcs.json')
@@ -139,6 +138,7 @@ export default class LoadingScene extends Phaser.Scene {
 
     // 飛び道具（プレイヤー用）
     this.load.image('magic_fire', 'assets/images/magic_fire.png')
+    this.load.image('witch_orb', 'assets/images/witch_orb.png')
 
     // UIボタン
     this.load.image('btn_config', 'assets/images/Se_config_Button.png')
@@ -146,8 +146,6 @@ export default class LoadingScene extends Phaser.Scene {
     // ゲームSE（ファイルが存在しない場合は loaderror で警告のみ）
     this.load.audio('se_player_attack', 'assets/sounds/se/player_attack.ogg')
     this.load.audio('se_player_hit',    'assets/sounds/se/player_hit.ogg')
-    this.load.audio('se_enemy_attack',  'assets/sounds/se/enemy_attack.ogg')
-    this.load.audio('se_enemy_hit',     'assets/sounds/se/enemy_hit.ogg')
     this.load.audio('se_flame',         'assets/sounds/se/flame.mp3')
 
     // enemy-defs ロード完了後に hitSound/attackSound を動的ロード
