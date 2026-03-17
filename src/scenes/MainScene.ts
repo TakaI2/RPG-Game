@@ -91,7 +91,7 @@ export default class MainScene extends Phaser.Scene {
   private flameIsPlaying: boolean = false
   private readonly FIRE_INTERVAL = 50
   private readonly FIRE_SPEED    = 600
-  private readonly FIRE_RANGE    = 1000
+  private readonly FIRE_RANGE    = 333
 
   // タイトル画面・ポーズメニュー関連
   private bgmManager?: BGMManager
@@ -827,6 +827,7 @@ export default class MainScene extends Phaser.Scene {
     if (this.isAttacking) return
 
     this.isAttacking = true
+    this.audioBus.playSe('se_player_attack', { volume: 0.8 })
 
     this.player.play(`hero-atk-${this.playerDirection}`)
 
@@ -848,7 +849,7 @@ export default class MainScene extends Phaser.Scene {
     const fb = this.firePool.get(this.player.x, this.player.y, 'magic_fire') as FireBall | null
     if (!fb) return
 
-    fb.setActive(true).setVisible(true)
+    fb.setActive(true).setVisible(true).setDepth(5)
     fb.setScale(0.1)
     fb.damage = 1
     fb.originX = this.player.x
@@ -1060,7 +1061,7 @@ export default class MainScene extends Phaser.Scene {
 
     const allEnemyGroups = [...this.enemies, ...this.archers, ...this.mages, ...this.brutes]
     allEnemyGroups.forEach(en => {
-      const fireVsEnemy = this.physics.add.overlap(this.firePool, en, (fb) => {
+      const fireVsEnemy = this.physics.add.overlap(this.firePool, en, (_enCb, fb) => {
         this.firePool.killAndHide(fb as Phaser.GameObjects.GameObject)
         if ((fb as FireBall).body) ((fb as FireBall).body as Phaser.Physics.Arcade.Body).setEnable(false)
         if (!en.getData('hitCool') && !en.getData('dead')) {
@@ -1218,6 +1219,9 @@ export default class MainScene extends Phaser.Scene {
     // 飛び道具を破棄
     if (this.projectiles) {
       this.projectiles.clear(true, true)
+    }
+    if (this.firePool) {
+      this.firePool.clear(true, true)
     }
 
     // 既存のマップオブジェクト（床と壁）を破棄
@@ -1422,7 +1426,7 @@ export default class MainScene extends Phaser.Scene {
 
     // 火炎弾 vs ボス
     if (this.firePool) {
-      const fireVsBoss = this.physics.add.overlap(this.firePool, this.boss, (fb) => {
+      const fireVsBoss = this.physics.add.overlap(this.firePool, this.boss, (_bossCb, fb) => {
         if (!this.boss || !this.boss.active || !this.boss.getData) return
         this.firePool.killAndHide(fb as Phaser.GameObjects.GameObject)
         if ((fb as FireBall).body) ((fb as FireBall).body as Phaser.Physics.Arcade.Body).setEnable(false)

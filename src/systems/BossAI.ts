@@ -278,6 +278,15 @@ function executeRadialAttack(
       if (cfg.projectileType === 'arrow') {
         const projectile = fireArrowAngle(scene, projectiles, boss.x, boss.y, angle, cfg.projectileSpeed)
         projectile.setData('damage', cfg.damage)
+      } else if (cfg.projectileType === 'orb') {
+        const proj = projectiles.create(boss.x, boss.y, 'orb') as Projectile
+        proj.setVelocity(Math.cos(angle) * cfg.projectileSpeed, Math.sin(angle) * cfg.projectileSpeed)
+        proj.damage = cfg.damage
+        proj.bornAt = scene.time.now
+        proj.life = 2500
+        proj.setBlendMode(Phaser.BlendModes.ADD)
+        proj.setScale(0.8)
+        scene.time.delayedCall(proj.life, () => { if (proj.active) proj.destroy() })
       }
     }
 

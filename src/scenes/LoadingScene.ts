@@ -2,6 +2,7 @@ import Phaser from 'phaser'
 import { GAME_W, GAME_H, TILE } from '../config'
 import type { GameFlowConfig } from '../types/GameFlowTypes'
 import type { TileDef } from '../types/tileset'
+import type { BossConfig } from '../types/BossTypes'
 
 /**
  * ローディング画面
@@ -67,6 +68,19 @@ export default class LoadingScene extends Phaser.Scene {
       })
       bossKeys.forEach(key => {
         this.load.json(key, `assets/bosses/${key}.json`)
+        this.load.once(`filecomplete-json-${key}`, () => {
+          const bossConfig = this.cache.json.get(key) as BossConfig
+          if (!bossConfig) return
+          const seKeys = new Set<string>()
+          Object.values(bossConfig.se).forEach(v => { if (v) seKeys.add(v) })
+          bossConfig.attacks?.forEach(atk => {
+            Object.values(atk.se).forEach(v => { if (v) seKeys.add(v) })
+          })
+          seKeys.forEach(seKey => {
+            this.load.audio(seKey, `assets/sounds/se/${seKey}.ogg`)
+          })
+          this.load.start()
+        })
       })
     })
 
