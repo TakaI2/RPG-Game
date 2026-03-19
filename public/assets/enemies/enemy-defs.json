@@ -38,7 +38,9 @@
           "ああもう・・・"
         ]
       }
-    }
+    },
+    "hitSound": "beat.ogg",
+    "attackSound": "beam.ogg"
   },
   {
     "id": "enemy_1772312138257",
@@ -79,6 +81,8 @@
           "逃げても無駄なのに・・・♥"
         ]
       }
-    }
+    },
+    "hitSound": "beat.ogg",
+    "attackSound": "charm.ogg"
   }
 ]

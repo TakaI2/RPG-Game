@@ -1,10 +1,22 @@
 import Phaser from 'phaser'
 
+// MainScene の projectiles グループへのアクセス用インターフェース
+interface SceneWithProjectiles extends Phaser.Scene {
+  projectiles?: Phaser.Physics.Arcade.Group
+}
+
 // 飛び道具の基本型
 export type Projectile = Phaser.Physics.Arcade.Image & {
   damage: number
   bornAt: number
   life: number
+}
+
+// 火炎弾の型（プレイヤー遠距離攻撃）
+export type FireBall = Phaser.Physics.Arcade.Image & {
+  damage: number
+  originX: number
+  originY: number
 }
 
 // 誘導魔法弾の型
@@ -24,7 +36,10 @@ export function fireArrow(
   speed = 420
 ): Projectile {
   const v = new Phaser.Math.Vector2(to.x - from.x, to.y - from.y).normalize().scale(speed)
-  const proj = scene.physics.add.image(from.x, from.y, 'arrow') as Projectile
+  const group = (scene as SceneWithProjectiles).projectiles
+  const proj = (group
+    ? group.create(from.x, from.y, 'arrow')
+    : scene.physics.add.image(from.x, from.y, 'arrow')) as Projectile
 
   proj.setVelocity(v.x, v.y)
   proj.damage = 1
@@ -60,7 +75,10 @@ export function fireHomingOrb(
   turnRate = 6.0,
   life = 3000
 ): HomingOrb {
-  const orb = scene.physics.add.image(from.x, from.y, 'orb') as HomingOrb
+  const group = (scene as SceneWithProjectiles).projectiles
+  const orb = (group
+    ? group.create(from.x, from.y, 'orb')
+    : scene.physics.add.image(from.x, from.y, 'orb')) as HomingOrb
 
   orb.target = target
   orb.speed = speed
@@ -190,12 +208,13 @@ export function fireOrbAt(
   x: number,
   y: number,
   target: Phaser.GameObjects.Sprite,
-  speed = 220
+  speed = 220,
+  textureKey = 'orb'
 ): HomingOrb {
   if (!projectiles) {
     throw new Error('[Projectile] projectiles group is undefined in fireOrbAt')
   }
-  const orb = projectiles.create(x, y, 'orb') as HomingOrb
+  const orb = projectiles.create(x, y, textureKey) as HomingOrb
 
   orb.target = target
   orb.speed = speed

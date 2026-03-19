@@ -68,9 +68,9 @@ export class BGMManager {
 
   onStoryStart(): void {
     this.isStoryActive = true;
-    // マップBGMを停止し、currentBgmKey をリセット（Bug1 修正）
+    // scene.pause() 直後はtweenが止まるためフェードなし即時停止
     if (this.currentBgmKey) {
-      this.audioBus.stopBgm({ fade: 500 });
+      this.audioBus.stopBgm();
       this.currentBgmKey = null;
     }
     console.log('[BGMManager] Story started, map BGM stopped');

@@ -44,6 +44,10 @@ export class EnemySpeech {
 
   private _showNextLine(): void {
     if (!this.loopLines || !this.loopOwner) return
+    if (!this.loopOwner.active) {
+      this.stopLoop()
+      return
+    }
     const text = this.loopLines[this.loopIndex]
     this.loopIndex = (this.loopIndex + 1) % this.loopLines.length
     this.show(this.loopOwner, text, this.loopDisplayMs)
@@ -65,6 +69,7 @@ export class EnemySpeech {
   }
 
   show(owner: Phaser.GameObjects.Sprite, text: string, duration: number): void {
+    if (!owner.active) return
     this.hide()
 
     this.speechText.setText(text)

@@ -18,6 +18,8 @@ export type EnemyOverrides = {
   dialogs?: EnemyDialogs
   name?: string
   animKey?: string
+  hitSound?: string
+  attackSound?: string
 }
 
 // 基本の敵タイプ
@@ -325,6 +327,10 @@ export function updateArcherAI(scene: Phaser.Scene, archer: Archer, player: Phas
         fireArrow(scene, archer, player, 420)
         archer.lastShot = now
         archer.state = 'cooldown'
+        const atkKey = (archer as any).attackSound
+          ? 'se_' + (archer as any).attackSound.replace(/\.(ogg|mp3)$/, '')
+          : 'se_enemy_attack'
+        if (scene.cache.audio.exists(atkKey)) scene.sound.play(atkKey, { volume: 0.6 })
       }
       break
     }
@@ -419,6 +425,10 @@ export function updateMageAI(scene: Phaser.Scene, mage: Mage, player: Phaser.Phy
         fireHomingOrb(scene, mage, player, 220, 6.0, 3000)
         mage.lastCast = now
         mage.state = 'cooldown'
+        const atkKey = (mage as any).attackSound
+          ? 'se_' + (mage as any).attackSound.replace(/\.(ogg|mp3)$/, '')
+          : 'se_enemy_attack'
+        if (scene.cache.audio.exists(atkKey)) scene.sound.play(atkKey, { volume: 0.6 })
       }
       break
     }

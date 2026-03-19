@@ -1,29 +1,58 @@
 import Phaser from 'phaser'
+import { loadSoundConfig, saveSoundConfig } from '../utils/SoundConfig'
 
-/**
- * BGM/SE管理システム
- * ストーリーパートでの音声制御を一元管理
- */
 export class AudioBus {
   private scene: Phaser.Scene
   private currentBgm: Phaser.Sound.BaseSound | null = null
   private bgmKey: string = ''
+  private bgmVolume: number
+  private seVolume: number
+  private storySeVolume: number
+  private loopSounds: Map<string, Phaser.Sound.BaseSound> = new Map()
 
   constructor(scene: Phaser.Scene) {
     this.scene = scene
+    const cfg = loadSoundConfig()
+    this.bgmVolume     = cfg.bgmVolume
+    this.seVolume      = cfg.seVolume
+    this.storySeVolume = cfg.storySeVolume
   }
 
-  /**
-   * BGM再生
-   * @param key アセットキー
-   * @param options ループ・ボリューム・フェード設定
-   */
-  playBgm(key: string, options?: { loop?: boolean; volume?: number; fade?: number }) {
-    const loop = options?.loop ?? true
-    const volume = options?.volume ?? 0.7
-    const fade = options?.fade ?? 0
+  // -------------------------------------------------------
+  // 音量設定
+  // -------------------------------------------------------
 
-    // 既存のBGMを停止
+  setBgmVolume(volume: number): void {
+    this.bgmVolume = volume
+    if (this.currentBgm && 'setVolume' in this.currentBgm) {
+      (this.currentBgm as Phaser.Sound.WebAudioSound | Phaser.Sound.HTML5AudioSound).setVolume(volume)
+    }
+    saveSoundConfig({ bgmVolume: volume, seVolume: this.seVolume, storySeVolume: this.storySeVolume })
+  }
+
+  setSeVolume(volume: number): void {
+    this.seVolume = volume
+    saveSoundConfig({ bgmVolume: this.bgmVolume, seVolume: volume, storySeVolume: this.storySeVolume })
+  }
+
+  setStorySeVolume(volume: number): void {
+    this.storySeVolume = volume
+    saveSoundConfig({ bgmVolume: this.bgmVolume, seVolume: this.seVolume, storySeVolume: volume })
+  }
+
+  getBgmVolume(): number    { return this.bgmVolume }
+  getSeVolume(): number     { return this.seVolume }
+  getStorySeVolume(): number { return this.storySeVolume }
+
+  // -------------------------------------------------------
+  // BGM
+  // -------------------------------------------------------
+
+  playBgm(key: string, options?: { loop?: boolean; volume?: number; fade?: number }) {
+    const loop   = options?.loop ?? true
+    const volume = (options?.volume ?? 0.7) * this.bgmVolume
+    const fade   = options?.fade ?? 0
+
     if (this.currentBgm && this.currentBgm.isPlaying) {
       if (fade > 0) {
         this.scene.tweens.add({
@@ -45,40 +74,24 @@ export class AudioBus {
   }
 
   private startNewBgm(key: string, loop: boolean, volume: number, fade: number) {
-    // 新しいBGMを開始
     if (!this.scene.cache.audio.exists(key)) {
       console.warn(`[AudioBus] BGM not found: ${key}`)
       return
     }
-
     this.bgmKey = key
     this.currentBgm = this.scene.sound.add(key, { loop, volume: fade > 0 ? 0 : volume })
     this.currentBgm.play()
-
-    // フェードイン
     if (fade > 0) {
-      this.scene.tweens.add({
-        targets: this.currentBgm,
-        volume: volume,
-        duration: fade
-      })
+      this.scene.tweens.add({ targets: this.currentBgm, volume, duration: fade })
     }
-
     console.log(`[AudioBus] BGM started: ${key}`)
   }
 
-  /**
-   * BGM停止
-   * @param options フェード設定
-   */
   stopBgm(options?: { fade?: number }) {
     const fade = options?.fade ?? 0
+    if (!this.currentBgm) return
 
-    if (!this.currentBgm) {
-      return
-    }
-
-    const soundToStop = this.currentBgm  // ローカルに退避して stale tween 問題を回避
+    const soundToStop = this.currentBgm
     this.currentBgm = null
     this.bgmKey = ''
 
@@ -92,93 +105,101 @@ export class AudioBus {
     } else {
       soundToStop.stop()
     }
-
     console.log('[AudioBus] BGM stopped')
   }
 
-  /**
-   * BGMクロスフェード
-   * @param from 現在のBGMキー（確認用）
-   * @param to 新しいBGMキー
-   * @param time クロスフェード時間
-   * @param loop ループ設定
-   */
   cross(from: string, to: string, time: number, loop: boolean = true) {
     if (this.bgmKey !== from) {
       console.warn(`[AudioBus] cross: current BGM is ${this.bgmKey}, not ${from}`)
     }
-
     this.playBgm(to, { loop, fade: time })
   }
 
-  /**
-   * SE再生
-   * @param key アセットキー
-   */
+  // -------------------------------------------------------
+  // SE（ワンショット）
+  // -------------------------------------------------------
+
   se(key: string) {
     if (!this.scene.cache.audio.exists(key)) {
       console.warn(`[AudioBus] SE not found: ${key}`)
       return
     }
-
-    this.scene.sound.play(key)
-    console.log(`[AudioBus] SE played: ${key}`)
+    this.scene.sound.play(key, { volume: this.seVolume })
   }
 
-  /**
-   * SE再生（詳細設定版）
-   * @param key アセットキー
-   * @param options ボリューム・ピッチ設定
-   */
   playSe(key: string, options?: { volume?: number; rate?: number }) {
     if (!this.scene.cache.audio.exists(key)) {
       console.warn(`[AudioBus] SE not found: ${key}`)
       return
     }
+    const volume = (options?.volume ?? 1.0) * this.seVolume
+    const rate   = options?.rate ?? 1.0
 
-    const volume = options?.volume ?? 1.0
-    const rate = options?.rate ?? 1.0
-
-    const se = this.scene.sound.add(key, { volume })
-    se.setRate(rate)
-    se.play()
-
-    // 再生終了後に自動削除
-    se.once('complete', () => {
-      se.destroy()
-    })
-
-    console.log(`[AudioBus] SE played: ${key} (volume: ${volume}, rate: ${rate})`)
+    const sound = this.scene.sound.add(key, { volume })
+    sound.setRate(rate)
+    sound.play()
+    sound.once('complete', () => { sound.destroy() })
   }
 
-  /**
-   * BGM音量設定
-   * @param volume 音量（0.0-1.0）
-   */
+  playStorySe(key: string, options?: { volume?: number; rate?: number }) {
+    if (!this.scene.cache.audio.exists(key)) {
+      console.warn(`[AudioBus] StorySE not found: ${key}`)
+      return
+    }
+    const volume = (options?.volume ?? 1.0) * this.storySeVolume
+    const rate   = options?.rate ?? 1.0
+
+    const sound = this.scene.sound.add(key, { volume })
+    sound.setRate(rate)
+    sound.play()
+    sound.once('complete', () => { sound.destroy() })
+  }
+
+  // -------------------------------------------------------
+  // SE（ループ）
+  // -------------------------------------------------------
+
+  playSeLoop(key: string, volume: number = 1.0): void {
+    if (this.loopSounds.has(key)) return  // 既に再生中
+    if (!this.scene.cache.audio.exists(key)) {
+      console.warn(`[AudioBus] LoopSE not found: ${key}`)
+      return
+    }
+    const sound = this.scene.sound.add(key, { loop: true, volume: volume * this.seVolume })
+    sound.play()
+    this.loopSounds.set(key, sound)
+  }
+
+  stopSeLoop(key: string): void {
+    const sound = this.loopSounds.get(key)
+    if (!sound) return
+    sound.stop()
+    sound.destroy()
+    this.loopSounds.delete(key)
+  }
+
+  // -------------------------------------------------------
+  // レガシー互換
+  // -------------------------------------------------------
+
   setVolume(volume: number) {
-    if (this.currentBgm && 'setVolume' in this.currentBgm) {
-      (this.currentBgm as Phaser.Sound.WebAudioSound | Phaser.Sound.HTML5AudioSound).setVolume(volume)
-      console.log(`[AudioBus] BGM volume set to ${volume}`)
-    }
+    this.setBgmVolume(volume)
   }
 
-  /**
-   * 現在のBGM音量を取得
-   */
   getVolume(): number {
-    if (this.currentBgm && 'volume' in this.currentBgm) {
-      return (this.currentBgm as Phaser.Sound.WebAudioSound | Phaser.Sound.HTML5AudioSound).volume
-    }
-    return 0
+    return this.bgmVolume
   }
 
-  /**
-   * クリーンアップ
-   */
+  // -------------------------------------------------------
+  // クリーンアップ
+  // -------------------------------------------------------
+
   destroy() {
     if (this.currentBgm) {
       this.currentBgm.stop()
       this.currentBgm = null
     }
+    this.loopSounds.forEach(s => { s.stop(); s.destroy() })
+    this.loopSounds.clear()
   }
 }
