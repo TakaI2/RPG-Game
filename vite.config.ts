@@ -47,7 +47,7 @@ function saveAssetPlugin() {
 }
 
 export default defineConfig({
-  base: '/Game_RPG/',
+  base: '/htdocs/Game_RPG/',
   server: { port: 5173 },
   build: { sourcemap: true },
   plugins: [saveAssetPlugin()]
