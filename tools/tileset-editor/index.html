@@ -208,12 +208,13 @@
     </style>
 </head>
 <body>
-    <h1>RPG Tileset Editor</h1>
+    <h1><a href="../" style="color:#a6adc8; text-decoration:none; font-size:0.75rem; opacity:0.6; margin-right:10px;">← ハブ</a>RPG Tileset Editor</h1>
     <p class="subtitle">maptip 画像を tilesets.json に登録するツール</p>
 
     <div class="toolbar">
         <button class="primary" onclick="importJSON()">tilesets.json を読み込む</button>
         <button class="primary" onclick="exportJSON()">tilesets.json をエクスポート</button>
+        <button class="primary" onclick="saveToGameJSON()">ゲームに保存</button>
         <input type="file" id="fileInput" accept=".json" style="display:none" onchange="onFileLoaded(event)">
         <span style="color:#6c7086; font-size:0.8rem; margin-left:auto;">
             画像パス: public/assets/images/maptip/{ファイル名}.png
@@ -308,6 +309,10 @@
         a.download = 'tilesets.json'
         a.click()
         URL.revokeObjectURL(url)
+    }
+
+    function saveToGameJSON() {
+        window.saveToGame('assets/maps/tilesets.json', tileDefs)
     }
 
     // ---- 自動読み込み（同一オリジン時） ----
@@ -496,5 +501,6 @@
         setPreviewState('', 'ファイル名を入力してプレビューを押してください')
     }
     </script>
+    <script src="../shared/save-api.js"></script>
 </body>
 </html>

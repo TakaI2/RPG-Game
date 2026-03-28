@@ -9,13 +9,14 @@
 <body>
   <div id="app">
     <header class="header">
-      <h1>Enemy Editor</h1>
+      <h1><a href="../" style="color:inherit; text-decoration:none; font-size:0.75rem; opacity:0.6; margin-right:10px;">← ハブ</a>Enemy Editor</h1>
       <div class="header-actions">
         <button id="btnImport" class="btn-primary" title="enemy-defs.json を読み込む">Import JSON</button>
         <input type="file" id="fileInput" accept=".json" style="display:none">
         <button id="btnExport" title="enemy-defs.json としてダウンロード（public/assets/enemies/ に配置してください）">Export JSON</button>
         <div class="separator"></div>
         <button id="btnSave" class="btn-success">Save (LocalStorage)</button>
+        <button id="btnSaveToGame" class="btn-primary" title="public/assets/enemies/enemy-defs.json に直接書き込む">ゲームに保存</button>
       </div>
     </header>
 
@@ -157,6 +158,7 @@
     </div>
   </div>
 
+  <script src="../shared/save-api.js"></script>
   <script src="editor.js"></script>
 </body>
 </html>

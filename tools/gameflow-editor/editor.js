@@ -960,6 +960,10 @@ document.getElementById('btn-save').addEventListener('click', () => {
   URL.revokeObjectURL(url);
 });
 
+document.getElementById('btn-save-to-game').addEventListener('click', () => {
+  window.saveToGame('assets/gameflow.json', serialize());
+});
+
 document.getElementById('btn-add-map').addEventListener('click', () => {
   addNode('map');
 });

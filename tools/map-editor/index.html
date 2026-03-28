@@ -322,7 +322,7 @@
     </style>
 </head>
 <body>
-    <h1>RPG Map Editor</h1>
+    <h1><a href="../" style="color:#a6adc8; text-decoration:none; font-size:0.75rem; opacity:0.6; margin-right:10px;">← ハブ</a>RPG Map Editor</h1>
 
     <div class="controls">
         <div class="control-group">
@@ -346,6 +346,12 @@
             <button class="primary" onclick="exportMap()">JSONエクスポート</button>
             <button onclick="document.getElementById('fileInput').click()">JSONインポート</button>
             <input type="file" id="fileInput" accept=".json" style="display:none" onchange="importMap(event)">
+        </div>
+        <div class="control-group">
+            <label>マップID:</label>
+            <input type="text" id="mapId" value="map1" placeholder="例: map1" style="width:140px;">
+            <button class="primary" onclick="saveMapToGame()" style="margin-left:8px;">ゲームに保存</button>
+            <span style="color:#6c7086; font-size:0.8rem; margin-left:6px;">→ assets/maps/{mapId}.json</span>
         </div>
     </div>
 
@@ -1028,6 +1034,9 @@
                 portals = (j.portals || []).map(p => ({ x: p.x, y: p.y }))
                 document.getElementById('cols').value = cols
                 document.getElementById('rows').value = rows
+                // ファイル名からmapIdを自動設定（拡張子を除く）
+                const inferredId = file.name.replace(/\.json$/, '')
+                document.getElementById('mapId').value = inferredId
                 canvas.width = cols * TILE_SIZE
                 canvas.height = rows * TILE_SIZE
                 loadEnemyDefs()
@@ -1039,6 +1048,14 @@
         }
         reader.readAsText(file)
     }
+
+    function saveMapToGame() {
+        const mapId = document.getElementById('mapId').value.trim()
+        if (!mapId) { alert('マップIDを入力してください'); return }
+        const mapJSON = { cols, rows, tiles: mapData, enemySpawns, portals }
+        window.saveToGame(`assets/maps/${mapId}.json`, mapJSON)
+    }
     </script>
+    <script src="../shared/save-api.js"></script>
 </body>
 </html>

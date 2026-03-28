@@ -69,6 +69,10 @@ function bindEvents() {
   })
   document.getElementById('fileInput').addEventListener('change', onImport)
   document.getElementById('btnExport').addEventListener('click', onExport)
+  document.getElementById('btnSaveToGame').addEventListener('click', () => {
+    collectCurrentDef()
+    window.saveToGame('assets/enemies/enemy-defs.json', defs)
+  })
 
   // アニメ切替ボタン
   document.querySelectorAll('.anim-btn').forEach(btn => {

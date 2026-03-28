@@ -62,6 +62,10 @@ function initEventListeners() {
   });
   document.getElementById('file-input').addEventListener('change', importJSON);
   document.getElementById('btn-export').addEventListener('click', exportJSON);
+  document.getElementById('btn-save-to-game').addEventListener('click', () => {
+    const data = { id: state.storyId, script: state.script };
+    window.saveToGame(`assets/story/scripts/${state.storyId}.json`, data);
+  });
 
   // コマンド追加
   document.getElementById('btn-add-command').addEventListener('click', showAddModal);

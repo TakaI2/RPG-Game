@@ -10,10 +10,11 @@
   <div id="app">
     <!-- Header -->
     <header class="header">
-      <h1>Gameflow Editor</h1>
+      <h1><a href="../" style="color:inherit; text-decoration:none; font-size:0.75rem; opacity:0.6; margin-right:10px;">← ハブ</a>Gameflow Editor</h1>
       <div class="header-actions">
         <button id="btn-open" title="JSONを読み込み">Open JSON</button>
         <button id="btn-save" title="JSONを保存">Save JSON</button>
+        <button id="btn-save-to-game" title="public/assets/gameflow.json に直接書き込む">ゲームに保存</button>
         <input type="file" id="file-input" accept=".json" hidden>
         <div class="separator"></div>
         <button id="btn-add-map" class="btn-node-map">+ Map</button>
@@ -56,6 +57,7 @@
     </footer>
   </div>
 
+  <script src="../shared/save-api.js"></script>
   <script src="editor.js"></script>
 </body>
 </html>
