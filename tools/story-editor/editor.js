@@ -140,7 +140,8 @@ function initPortraitDrag() {
   portrait.addEventListener('mousedown', (e) => {
     if (state.selectedIndex < 0) return;
     const cmd = state.script[state.selectedIndex];
-    if (cmd.op !== 'say' || !cmd.portrait) return;
+    const isPortraitCmd = cmd.op === 'portrait.show' || (cmd.op === 'say' && cmd.portrait);
+    if (!isPortraitCmd) return;
 
     isDragging = true;
     portrait.classList.add('dragging');
@@ -148,8 +149,13 @@ function initPortraitDrag() {
     startMouseY = e.clientY;
 
     // 現在のゲーム座標を保存
-    startGameX = cmd.portraitX ?? (GAME_W / 2);
-    startGameY = cmd.portraitY ?? (GAME_H / 2);
+    if (cmd.op === 'portrait.show') {
+      startGameX = cmd.x ?? (GAME_W / 2);
+      startGameY = cmd.y ?? (GAME_H / 2);
+    } else {
+      startGameX = cmd.portraitX ?? (GAME_W / 2);
+      startGameY = cmd.portraitY ?? (GAME_H / 2);
+    }
 
     elements.positionIndicator.style.display = 'block';
     e.preventDefault();
@@ -170,20 +176,25 @@ function initPortraitDrag() {
     const newX = Math.round(startGameX + gameDx);
     const newY = Math.round(startGameY + gameDy);
 
-    // 現在のコマンドを更新
     const cmd = state.script[state.selectedIndex];
-    cmd.portraitX = newX;
-    cmd.portraitY = newY;
-
-    // プレビューを更新
-    updatePreviewPortrait(cmd);
+    if (cmd.op === 'portrait.show') {
+      cmd.x = newX;
+      cmd.y = newY;
+      updatePreviewPortrait({ portrait: cmd.portrait, portraitX: newX, portraitY: newY, portraitScale: cmd.scale });
+      const xInput = document.getElementById('prop-x');
+      const yInput = document.getElementById('prop-y');
+      if (xInput) xInput.value = newX;
+      if (yInput) yInput.value = newY;
+    } else {
+      cmd.portraitX = newX;
+      cmd.portraitY = newY;
+      updatePreviewPortrait(cmd);
+      const xInput = document.getElementById('prop-portraitX');
+      const yInput = document.getElementById('prop-portraitY');
+      if (xInput) xInput.value = newX;
+      if (yInput) yInput.value = newY;
+    }
     elements.positionIndicator.textContent = `X: ${newX}, Y: ${newY}`;
-
-    // プロパティパネルを更新
-    const xInput = document.getElementById('prop-portraitX');
-    const yInput = document.getElementById('prop-portraitY');
-    if (xInput) xInput.value = newX;
-    if (yInput) yInput.value = newY;
   });
 
   document.addEventListener('mouseup', () => {
@@ -301,6 +312,18 @@ function addCommand(type) {
         name: 'sound.mp3'
       };
       break;
+    case 'portrait.show':
+      newCmd = {
+        op: 'portrait.show',
+        portrait: 'character.png',
+        x: 960,
+        y: 800,
+        scale: 1.0
+      };
+      break;
+    case 'portrait.hide':
+      newCmd = { op: 'portrait.hide' };
+      break;
     case 'end':
       newCmd = {
         op: 'end',
@@ -397,6 +420,8 @@ function getCommandLabel(op) {
     'bgm.stop': '⏹️ BGM停止',
     'bgm.cross': '🔀 BGMクロス',
     'se': '🔊 効果音',
+    'portrait.show': '🧍 立ち絵表示',
+    'portrait.hide': '🚫 立ち絵非表示',
     'end': '🏁 終了'
   };
   return labels[op] || op;
@@ -414,6 +439,10 @@ function getCommandPreview(cmd) {
       return `フェード: ${cmd.fade || 0}ms`;
     case 'se':
       return cmd.name || '(未設定)';
+    case 'portrait.show':
+      return `${cmd.portrait || '(未設定)'} (${cmd.x ?? 960}, ${cmd.y ?? 540}) ×${cmd.scale ?? 1.0}`;
+    case 'portrait.hide':
+      return '立ち絵を消す';
     case 'end':
       return `→ ${cmd.returnTo || 'MainScene'}`;
     default:
@@ -443,13 +472,19 @@ function updatePreview() {
     if (cmd.op === 'bg') {
       currentBgCmd = cmd;
     }
+    if (cmd.op === 'portrait.show') {
+      currentPortrait = cmd;
+    }
+    if (cmd.op === 'portrait.hide') {
+      currentPortrait = null;
+    }
     if (cmd.op === 'say') {
       currentSay = cmd;
       if (cmd.portrait) {
+        // sayにportrait指定があれば上書き
         currentPortrait = cmd;
-      } else {
-        currentPortrait = null;
       }
+      // portrait指定なしは現在のcurrentPortraitを維持
     }
   }
 
@@ -464,7 +499,11 @@ function updatePreview() {
 
   // 立ち絵
   if (currentPortrait && currentPortrait.portrait) {
-    updatePreviewPortrait(currentPortrait);
+    // portrait.show と say(legacy) で座標フィールド名が違うので正規化
+    const portraitDisplay = currentPortrait.op === 'portrait.show'
+      ? { portrait: currentPortrait.portrait, portraitX: currentPortrait.x, portraitY: currentPortrait.y, portraitScale: currentPortrait.scale }
+      : currentPortrait;
+    updatePreviewPortrait(portraitDisplay);
     elements.previewPortrait.style.display = 'block';
   } else {
     elements.previewPortrait.style.display = 'none';
@@ -610,6 +649,12 @@ function renderProperties() {
     case 'se':
       html = renderSeProperties(cmd);
       break;
+    case 'portrait.show':
+      html = renderPortraitShowProperties(cmd);
+      break;
+    case 'portrait.hide':
+      html = '<p class="placeholder">立ち絵を非表示にします。プロパティはありません。</p>';
+      break;
     case 'end':
       html = renderEndProperties(cmd);
       break;
@@ -731,6 +776,31 @@ function renderSeProperties(cmd) {
       <label>効果音ファイル</label>
       <input type="text" id="prop-name" value="${escapeHtml(cmd.name || '')}" data-prop="name" placeholder="例: footstep.mp3">
     </div>
+  `;
+}
+
+function renderPortraitShowProperties(cmd) {
+  return `
+    <div class="prop-group">
+      <label>立ち絵ファイル</label>
+      <input type="text" id="prop-portrait" value="${escapeHtml(cmd.portrait || '')}" data-prop="portrait" placeholder="例: priest.png">
+      <div class="prop-hint">portraits/ フォルダのファイル名</div>
+    </div>
+    <div class="prop-row">
+      <div class="prop-group">
+        <label>X座標</label>
+        <input type="number" id="prop-x" value="${cmd.x ?? 960}" data-prop="x">
+      </div>
+      <div class="prop-group">
+        <label>Y座標</label>
+        <input type="number" id="prop-y" value="${cmd.y ?? 540}" data-prop="y">
+      </div>
+    </div>
+    <div class="prop-group">
+      <label>スケール</label>
+      <input type="number" id="prop-scale" value="${cmd.scale ?? 1.0}" data-prop="scale" step="0.1" min="0.1" max="3">
+    </div>
+    <div class="prop-hint">設定後はportrait.hideまで表示し続けます。プレビューでドラッグして位置を調整できます。</div>
   `;
 }
 

@@ -104,6 +104,12 @@ export default class StoryScene extends Phaser.Scene {
       onBg: async (payload) => {
         await this.showBg(payload)
       },
+      onPortraitShow: async (payload) => {
+        await this.showPortrait(payload)
+      },
+      onPortraitHide: async () => {
+        this.hidePortrait()
+      },
       onEnd: (_returnTo) => {
         this.endStory()
       }
@@ -141,7 +147,7 @@ export default class StoryScene extends Phaser.Scene {
       if (op.op === 'bg' && op.name) {
         bgSet.add(op.name as string)
       }
-      if (op.op === 'say' && op.portrait) {
+      if ((op.op === 'say' || op.op === 'portrait.show') && op.portrait) {
         portraitSet.add(op.portrait as string)
       }
       if (op.op === 'bgm.play' && op.name) {
@@ -263,6 +269,34 @@ export default class StoryScene extends Phaser.Scene {
     }
   }
 
+  private async showPortrait(payload: { portrait: string; x?: number; y?: number; scale?: number }): Promise<void> {
+    const key = `story_portrait_${payload.portrait}`
+    if (!this.textures.exists(key)) {
+      console.warn(`[StoryScene] Portrait not found: ${key}`)
+      return
+    }
+
+    if (this.portraitImage) {
+      this.portraitImage.destroy()
+    }
+
+    const x = payload.x ?? GAME_W / 2
+    const y = payload.y ?? GAME_H / 2
+    const scale = payload.scale ?? 1.0
+
+    this.portraitImage = this.add.image(x, y, key).setOrigin(0.5, 0.5).setDepth(-500)
+    this.portraitImage.setScale(scale)
+    this.portraitImage.setAlpha(0)
+    this.tweens.add({ targets: this.portraitImage, alpha: 1, duration: 300 })
+  }
+
+  private hidePortrait(): void {
+    if (this.portraitImage) {
+      this.portraitImage.destroy()
+      this.portraitImage = undefined
+    }
+  }
+
   private async showSay(payload: {
     name: string
     lines: string[]
@@ -273,41 +307,14 @@ export default class StoryScene extends Phaser.Scene {
   }): Promise<void> {
     console.log('[StoryScene] showSay START:', { name: payload.name, lines: payload.lines })
 
-    // 立ち絵の更新
+    // sayにportrait指定がある場合のみ立ち絵を更新（なければ現在の立ち絵を維持）
     if (payload.portrait) {
-      const key = `story_portrait_${payload.portrait}`
-
-      if (!this.textures.exists(key)) {
-        console.warn(`[StoryScene] Portrait not found: ${key}`)
-      } else {
-        // 既存の立ち絵を削除
-        if (this.portraitImage) {
-          this.portraitImage.destroy()
-        }
-
-        // デフォルト: 画面中央
-        const x = payload.portraitX ?? GAME_W / 2
-        const y = payload.portraitY ?? GAME_H / 2
-        const scale = payload.portraitScale ?? 1.0
-
-        // 新しい立ち絵を作成
-        this.portraitImage = this.add.image(x, y, key).setOrigin(0.5, 0.5).setDepth(-500)
-        this.portraitImage.setScale(scale)
-
-        // フェードイン
-        this.portraitImage.setAlpha(0)
-        this.tweens.add({
-          targets: this.portraitImage,
-          alpha: 1,
-          duration: 300
-        })
-      }
-    } else {
-      // portrait指定がない場合は立ち絵を非表示
-      if (this.portraitImage) {
-        this.portraitImage.destroy()
-        this.portraitImage = undefined
-      }
+      await this.showPortrait({
+        portrait: payload.portrait,
+        x: payload.portraitX,
+        y: payload.portraitY,
+        scale: payload.portraitScale
+      })
     }
 
     // ダイアログ表示

@@ -29,6 +29,13 @@ type BgPayload = {
   fade?: number
 }
 
+type PortraitPayload = {
+  portrait: string
+  x?: number
+  y?: number
+  scale?: number
+}
+
 export class StoryRunner {
   private scene: Phaser.Scene
   private audio: AudioBus
@@ -36,6 +43,8 @@ export class StoryRunner {
   private pc = 0 // Program Counter
   private onSay!: (payload: SayPayload) => Promise<void>
   private onBg!: (payload: BgPayload) => Promise<void>
+  private onPortraitShow!: (payload: PortraitPayload) => Promise<void>
+  private onPortraitHide!: () => Promise<void>
   private onEnd!: (returnTo: string) => void
 
   constructor(scene: Phaser.Scene, audio: AudioBus) {
@@ -57,10 +66,14 @@ export class StoryRunner {
   hooks(h: {
     onSay: (p: SayPayload) => Promise<void>
     onBg: (p: BgPayload) => Promise<void>
+    onPortraitShow: (p: PortraitPayload) => Promise<void>
+    onPortraitHide: () => Promise<void>
     onEnd: (rtn: string) => void
   }) {
     this.onSay = h.onSay
     this.onBg = h.onBg
+    this.onPortraitShow = h.onPortraitShow
+    this.onPortraitHide = h.onPortraitHide
     this.onEnd = h.onEnd
   }
 
@@ -100,6 +113,21 @@ export class StoryRunner {
           })
           console.log('[StoryRunner] say completed, returning to wait for next step()')
           return // 次のSpaceキーまで待機
+        }
+
+        case 'portrait.show': {
+          await this.onPortraitShow({
+            portrait: op.portrait as string,
+            x: op.x as number | undefined,
+            y: op.y as number | undefined,
+            scale: op.scale as number | undefined
+          })
+          break
+        }
+
+        case 'portrait.hide': {
+          await this.onPortraitHide()
+          break
         }
 
         case 'bgm.play': {
