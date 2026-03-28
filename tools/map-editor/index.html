@@ -344,8 +344,7 @@
         </div>
         <div class="control-group">
             <button class="primary" onclick="exportMap()">JSONエクスポート</button>
-            <button onclick="document.getElementById('fileInput').click()">JSONインポート</button>
-            <input type="file" id="fileInput" accept=".json" style="display:none" onchange="importMap(event)">
+            <button onclick="openFileBrowser('assets/maps', importMapFromAPI)">JSONインポート</button>
         </div>
         <div class="control-group">
             <label>マップID:</label>
@@ -1047,6 +1046,27 @@
             }
         }
         reader.readAsText(file)
+    }
+
+    function importMapFromAPI(j, filename) {
+        try {
+            cols = j.cols; rows = j.rows
+            mapData = j.tiles
+            enemySpawns = (j.enemySpawns || []).map(s => ({
+                x: s.x, y: s.y,
+                ...(s.enemyDefId ? { enemyDefId: s.enemyDefId } : {})
+            }))
+            portals = (j.portals || []).map(p => ({ x: p.x, y: p.y }))
+            document.getElementById('cols').value = cols
+            document.getElementById('rows').value = rows
+            document.getElementById('mapId').value = filename.replace(/\.json$/, '')
+            canvas.width = cols * TILE_SIZE
+            canvas.height = rows * TILE_SIZE
+            loadEnemyDefs()
+            drawMap()
+        } catch (err) {
+            alert('インポートエラー: ' + err.message)
+        }
     }
 
     function saveMapToGame() {

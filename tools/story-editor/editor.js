@@ -58,9 +58,8 @@ function initEventListeners() {
   // ファイル操作
   document.getElementById('btn-new').addEventListener('click', newStory);
   document.getElementById('btn-import').addEventListener('click', () => {
-    document.getElementById('file-input').click();
+    openFileBrowser('assets/story/scripts', loadStoryData);
   });
-  document.getElementById('file-input').addEventListener('change', importJSON);
   document.getElementById('btn-export').addEventListener('click', exportJSON);
   document.getElementById('btn-save-to-game').addEventListener('click', () => {
     const data = { id: state.storyId, script: state.script };
@@ -111,7 +110,7 @@ function initEventListeners() {
     }
     if (e.ctrlKey && e.key === 'o') {
       e.preventDefault();
-      document.getElementById('file-input').click();
+      openFileBrowser('assets/story/scripts', loadStoryData);
     }
     if (e.key === 'ArrowUp' && state.selectedIndex > 0) {
       selectCommand(state.selectedIndex - 1);
@@ -220,7 +219,19 @@ function newStory() {
   renderProperties();
 }
 
-// JSONインポート
+// ストーリーデータ読み込み（APIファイルブラウザ用）
+function loadStoryData(data, filename) {
+  state.storyId = data.id || filename.replace('.json', '');
+  state.script = data.script || [];
+  state.selectedIndex = state.script.length > 0 ? 0 : -1;
+  elements.storyIdInput.value = state.storyId;
+  renderTimeline();
+  updatePreview();
+  renderProperties();
+  console.log('Loaded:', state.storyId, state.script.length, 'commands');
+}
+
+// JSONインポート（ローカルファイル fallback）
 function importJSON(e) {
   const file = e.target.files[0];
   if (!file) return;
@@ -229,14 +240,7 @@ function importJSON(e) {
   reader.onload = (event) => {
     try {
       const data = JSON.parse(event.target.result);
-      state.storyId = data.id || file.name.replace('.json', '');
-      state.script = data.script || [];
-      state.selectedIndex = state.script.length > 0 ? 0 : -1;
-      elements.storyIdInput.value = state.storyId;
-      renderTimeline();
-      updatePreview();
-      renderProperties();
-      console.log('Imported:', state.storyId, state.script.length, 'commands');
+      loadStoryData(data, file.name);
     } catch (err) {
       alert('JSONの読み込みに失敗しました: ' + err.message);
     }

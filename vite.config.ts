@@ -6,6 +6,49 @@ function saveAssetPlugin() {
   return {
     name: 'save-asset',
     configureServer(server: { middlewares: { use: Function } }) {
+
+      // GET /api/list-assets?folder=assets/story/scripts
+      server.middlewares.use((req: any, res: any, next: any) => {
+        if (req.method !== 'GET' || !req.url?.startsWith('/api/list-assets')) return next()
+        try {
+          const folder = new URL(req.url, 'http://localhost').searchParams.get('folder') ?? ''
+          if (!folder.startsWith('assets/')) {
+            res.statusCode = 400
+            res.setHeader('Content-Type', 'application/json')
+            res.end(JSON.stringify({ ok: false, error: 'path must start with assets/' }))
+            return
+          }
+          const fullPath = path.join(process.cwd(), 'public', folder)
+          const files = fs.readdirSync(fullPath).filter((f: string) => f.endsWith('.json')).sort()
+          res.setHeader('Content-Type', 'application/json')
+          res.end(JSON.stringify({ ok: true, files }))
+        } catch (err) {
+          res.setHeader('Content-Type', 'application/json')
+          res.end(JSON.stringify({ ok: false, error: String(err) }))
+        }
+      })
+
+      // GET /api/load-asset?path=assets/story/scripts/foo.json
+      server.middlewares.use((req: any, res: any, next: any) => {
+        if (req.method !== 'GET' || !req.url?.startsWith('/api/load-asset')) return next()
+        try {
+          const assetPath = new URL(req.url, 'http://localhost').searchParams.get('path') ?? ''
+          if (!assetPath.startsWith('assets/')) {
+            res.statusCode = 400
+            res.setHeader('Content-Type', 'application/json')
+            res.end(JSON.stringify({ ok: false, error: 'path must start with assets/' }))
+            return
+          }
+          const fullPath = path.join(process.cwd(), 'public', assetPath)
+          const content = fs.readFileSync(fullPath, 'utf-8')
+          res.setHeader('Content-Type', 'application/json')
+          res.end(JSON.stringify({ ok: true, content }))
+        } catch (err) {
+          res.setHeader('Content-Type', 'application/json')
+          res.end(JSON.stringify({ ok: false, error: String(err) }))
+        }
+      })
+
       server.middlewares.use('/api/save-asset', (req: any, res: any) => {
         if (req.method !== 'POST') {
           res.statusCode = 405

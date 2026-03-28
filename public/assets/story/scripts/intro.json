@@ -11,10 +11,7 @@
     {
       "op": "bg",
       "name": "bad1.png",
-      "fade": 500,
-      "scaleX": 1,
-      "scaleY": 1,
-      "y": -300
+      "fade": 500
     },
     {
       "op": "say",
@@ -33,40 +30,35 @@
       ]
     },
     {
+      "op": "portrait.show",
+      "portrait": "priest.png",
+      "x": 913,
+      "y": 1217,
+      "scale": 0.7
+    },
+    {
       "op": "say",
       "name": "神父",
-      "portrait": "priest.png",
       "lines": [
         "あなたが...噂の勇者か。",
         "話を聞いてほしい。"
-      ],
-      "portraitX": 920,
-      "portraitY": 1053,
-      "portraitScale": 0.6
+      ]
     },
     {
       "op": "say",
       "name": "神父",
-      "portrait": "priest.png",
       "lines": [
         "魔女の力は日に日に強くなっている。",
         "このままでは、世界は完全に闇に飲まれてしまう。"
-      ],
-      "portraitX": 920,
-      "portraitY": 1053,
-      "portraitScale": 0.6
+      ]
     },
     {
       "op": "say",
       "name": "神父",
-      "portrait": "priest.png",
       "lines": [
         "どうか、魔女を倒し、",
         "この世界に光を取り戻してほしい。"
-      ],
-      "portraitX": 920,
-      "portraitY": 1053,
-      "portraitScale": 0.6
+      ]
     },
     {
       "op": "bg",
@@ -74,9 +66,15 @@
       "fade": 800
     },
     {
+      "op": "portrait.show",
+      "portrait": "witch.png",
+      "x": 894,
+      "y": 841,
+      "scale": 0.8
+    },
+    {
       "op": "say",
       "name": "魔女",
-      "portrait": "witch.png",
       "lines": [
         "ふふふ...勇者だって？",
         "笑わせてくれるわね。"
@@ -85,29 +83,26 @@
     {
       "op": "say",
       "name": "魔女",
-      "portrait": "witch.png",
       "lines": [
         "この世界は私のもの。",
         "誰にも渡さないわ。"
-      ],
-      "portraitX": 920,
-      "portraitY": 940
+      ]
     },
     {
       "op": "say",
       "name": "魔女",
-      "portrait": "witch.png",
       "lines": [
         "来るがいいわ、勇者。",
         "絶望の中で朽ち果てるがいい！"
-      ],
-      "portraitX": 920,
-      "portraitY": 940
+      ]
     },
     {
       "op": "bg",
       "name": "bad1.png",
       "fade": 500
+    },
+    {
+      "op": "portrait.hide"
     },
     {
       "op": "say",
@@ -118,9 +113,15 @@
       ]
     },
     {
+      "op": "portrait.show",
+      "portrait": "priest.png",
+      "x": 946,
+      "y": 1296,
+      "scale": 0.8
+    },
+    {
       "op": "say",
       "name": "神父",
-      "portrait": "priest.png",
       "lines": [
         "ありがとう、勇者よ。",
         "神の加護があらんことを...！"
@@ -134,7 +135,8 @@
       ]
     },
     {
-      "op": "end"
+      "op": "end",
+      "returnTo": "game"
     }
   ]
 }
