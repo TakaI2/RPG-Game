@@ -3,6 +3,7 @@ import { GAME_W, GAME_H, TILE } from '../config'
 import type { GameFlowConfig } from '../types/GameFlowTypes'
 import type { TileDef } from '../types/tileset'
 import type { BossConfig } from '../types/BossTypes'
+import type { NPCDef } from '../types/NPCTypes'
 
 /**
  * ローディング画面
@@ -50,9 +51,28 @@ export default class LoadingScene extends Phaser.Scene {
     this.load.image('arrow', 'assets/images/arrow.png')
     this.load.image('orb', 'assets/images/magic_orb.png')
 
-    // NPCスプライト（64x64）
-    this.load.image('npc_villager', 'assets/images/npc_villager.png')
-    this.load.image('npc_merchant', 'assets/images/npc_merchant.png')
+    // NPC定義JSON（同期XHRで先行取得 → スプライト画像を直接ロード）
+    this.load.json('npc-defs', 'assets/npcs/npc-defs.json')
+    try {
+      const xhr = new XMLHttpRequest()
+      xhr.open('GET', 'assets/npcs/npc-defs.json', false)
+      xhr.send()
+      if (xhr.status === 200) {
+        const npcDefs = JSON.parse(xhr.responseText) as NPCDef[]
+        npcDefs.forEach(def => {
+          if (def.animated) {
+            this.load.spritesheet(def.spriteKey, `assets/images/npc/${def.spriteKey}.png`, {
+              frameWidth: 64,
+              frameHeight: 64,
+            })
+          } else {
+            this.load.image(def.spriteKey, `assets/images/npc/${def.spriteKey}.png`)
+          }
+        })
+      }
+    } catch (e) {
+      console.warn('[LoadingScene] Could not sync-load npc-defs.json:', e)
+    }
 
     // ゲームフロー設定JSON（最初にロードして、完了後に BGM・ボスJSONを動的追加）
     this.load.json('gameflow', 'assets/gameflow.json')
@@ -112,15 +132,8 @@ export default class LoadingScene extends Phaser.Scene {
     this.load.json('boss_map', 'assets/maps/boss_map.json')
     this.load.json('first_map', 'assets/maps/first_map.json')
 
-    // NPC設定JSON
-    this.load.json('npc_config', 'assets/npcs/npcs.json')
-
     // 敵定義JSON
     this.load.json('enemy-defs', 'assets/enemies/enemy-defs.json')
-
-    // NPCダイアログファイル
-    this.load.json('dialog_npc1', 'assets/dialog/npc1.json')
-    this.load.json('dialog_merchant', 'assets/dialog/merchant.json')
 
     // ボスカットイン用画像（オプション：画像がない場合はプレースホルダー表示）
     this.load.image('boss_face', 'assets/images/boss_face.png')

@@ -1,0 +1,383 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>NPC Editor</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div id="app">
+    <header class="header">
+      <h1><a href="../" style="color:inherit; text-decoration:none; font-size:0.75rem; opacity:0.6; margin-right:10px;">← ハブ</a>NPC Editor</h1>
+      <div class="header-actions">
+        <button id="btnOpen" class="btn-primary">開く</button>
+        <button id="btnExport">Export JSON</button>
+        <div class="separator"></div>
+        <button id="btnSaveToGame" class="btn-success">ゲームに保存</button>
+      </div>
+    </header>
+
+    <div class="main-content">
+      <aside class="sidebar">
+        <div class="sidebar-header">
+          <span>NPC一覧</span>
+          <button id="btnNew" class="btn-new">+ 新規作成</button>
+        </div>
+        <div class="char-list" id="charList"></div>
+      </aside>
+
+      <main class="right-panel" id="rightPanel">
+        <div class="empty-state" id="emptyState">NPCを選択するか、「+ 新規作成」でNPCを追加してください</div>
+
+        <div id="editorContent" style="display:none; flex-direction:column; gap:14px;">
+
+          <!-- 基本情報 -->
+          <div class="section-card">
+            <div class="section-title">基本情報</div>
+            <div class="section-body">
+              <div class="form-grid">
+                <div class="form-field">
+                  <label>ID</label>
+                  <input type="text" id="fieldId" placeholder="npc_villager_001">
+                </div>
+                <div class="form-field">
+                  <label>名前</label>
+                  <input type="text" id="fieldName" placeholder="村人">
+                </div>
+                <div class="form-field full-width">
+                  <label>スプライトキー（assets/images/{key}.png）</label>
+                  <input type="text" id="fieldSpriteKey" placeholder="npc_villager">
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- スプライト設定 -->
+          <div class="section-card">
+            <div class="section-title">スプライト設定</div>
+            <div class="section-body">
+              <div class="sprite-preview">
+                <canvas id="spriteCanvas" width="64" height="64"></canvas>
+              </div>
+              <div class="form-grid">
+                <div class="form-field">
+                  <label>アニメーション</label>
+                  <select id="fieldAnimated">
+                    <option value="false">なし（静止画）</option>
+                    <option value="true">あり（256×64、4コマ横並び）</option>
+                  </select>
+                </div>
+                <div class="form-field" id="frameRateField">
+                  <label>フレームレート</label>
+                  <input type="number" id="fieldFrameRate" value="6" min="1" max="30">
+                </div>
+                <div class="form-field" id="frameCountField">
+                  <label>フレーム数</label>
+                  <input type="number" id="fieldFrameCount" value="4" min="1" max="16">
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- 移動設定 -->
+          <div class="section-card">
+            <div class="section-title">移動設定</div>
+            <div class="section-body">
+              <div class="form-grid">
+                <div class="form-field">
+                  <label>移動タイプ</label>
+                  <select id="fieldMovement">
+                    <option value="fixed">固定（動かない）</option>
+                    <option value="patrol">パトロール（往復）</option>
+                  </select>
+                </div>
+                <div class="form-field" id="patrolSpeedField">
+                  <label>移動速度 (px/s)</label>
+                  <input type="number" id="fieldPatrolSpeed" value="60" min="10" max="300">
+                </div>
+                <div class="form-field" id="patrolRangeField">
+                  <label>移動範囲 (タイル数)</label>
+                  <input type="number" id="fieldPatrolRange" value="3" min="1" max="20">
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- 吹き出しセリフ -->
+          <div class="section-card">
+            <div class="section-title">吹き出しセリフ（自動ループ）</div>
+            <div class="section-body">
+              <div class="form-grid" style="margin-bottom:10px;">
+                <div class="form-field">
+                  <label>表示間隔 (ms)</label>
+                  <input type="number" id="fieldSpeechInterval" value="5000" min="1000" max="30000">
+                </div>
+              </div>
+              <div class="lines-section" id="speechLines"></div>
+              <button class="btn-add-line" onclick="addSpeechLine()">+ セリフを追加</button>
+            </div>
+          </div>
+
+          <!-- 会話ウィンドウ -->
+          <div class="section-card">
+            <div class="section-title">会話ウィンドウ（話しかけた時）</div>
+            <div class="section-body">
+              <div class="lines-section" id="dialogLines"></div>
+              <button class="btn-add-line" onclick="addDialogLine()">+ セリフを追加</button>
+            </div>
+          </div>
+
+        </div>
+      </main>
+    </div>
+  </div>
+
+  <script src="../shared/save-api.js"></script>
+  <script>
+  const NPC_DEFS_PATH = 'assets/npcs/npc-defs.json'
+  const NPC_DEFS_URL = '../../public/assets/npcs/npc-defs.json'
+
+  let npcDefs = []
+  let selectedIdx = -1
+  let spriteCache = {}
+
+  // ---- Init ----
+  window.addEventListener('DOMContentLoaded', () => {
+    loadDefsFromAPI()
+
+    document.getElementById('btnNew').addEventListener('click', createNew)
+    document.getElementById('btnOpen').addEventListener('click', () => {
+      openFileBrowser('assets/npcs', (data, filename) => {
+        if (!Array.isArray(data)) { alert('npc-defs.json はJSON配列である必要があります'); return }
+        npcDefs = data
+        selectedIdx = -1
+        renderList()
+        showEmpty()
+      })
+    })
+    document.getElementById('btnExport').addEventListener('click', exportJSON)
+    document.getElementById('btnSaveToGame').addEventListener('click', () => {
+      saveToGame(NPC_DEFS_PATH, npcDefs)
+    })
+    document.getElementById('fieldSpriteKey').addEventListener('input', () => {
+      saveCurrentField('spriteKey', document.getElementById('fieldSpriteKey').value)
+      loadSpritePreview(document.getElementById('fieldSpriteKey').value)
+    })
+    document.getElementById('fieldId').addEventListener('input', () => {
+      saveCurrentField('id', document.getElementById('fieldId').value)
+      renderList()
+    })
+    document.getElementById('fieldName').addEventListener('input', () => {
+      saveCurrentField('name', document.getElementById('fieldName').value)
+      renderList()
+    })
+    document.getElementById('fieldAnimated').addEventListener('change', () => {
+      const animated = document.getElementById('fieldAnimated').value === 'true'
+      saveCurrentField('animated', animated)
+      toggleAnimFields(animated)
+    })
+    document.getElementById('fieldFrameRate').addEventListener('input', () =>
+      saveCurrentField('frameRate', parseInt(document.getElementById('fieldFrameRate').value)))
+    document.getElementById('fieldFrameCount').addEventListener('input', () =>
+      saveCurrentField('frameCount', parseInt(document.getElementById('fieldFrameCount').value)))
+    document.getElementById('fieldMovement').addEventListener('change', () => {
+      const val = document.getElementById('fieldMovement').value
+      saveCurrentField('movement', val)
+      togglePatrolFields(val === 'patrol')
+    })
+    document.getElementById('fieldPatrolSpeed').addEventListener('input', () =>
+      saveCurrentField('patrolSpeed', parseInt(document.getElementById('fieldPatrolSpeed').value)))
+    document.getElementById('fieldPatrolRange').addEventListener('input', () =>
+      saveCurrentField('patrolRange', parseInt(document.getElementById('fieldPatrolRange').value)))
+    document.getElementById('fieldSpeechInterval').addEventListener('input', () =>
+      saveCurrentField('speechIntervalMs', parseInt(document.getElementById('fieldSpeechInterval').value)))
+  })
+
+  async function loadDefsFromAPI() {
+    try {
+      const res = await fetch(NPC_DEFS_URL)
+      if (res.ok) { npcDefs = await res.json(); renderList() }
+    } catch { /* no defs yet */ }
+  }
+
+  // ---- List ----
+  function renderList() {
+    const list = document.getElementById('charList')
+    list.innerHTML = ''
+    npcDefs.forEach((def, i) => {
+      const item = document.createElement('div')
+      item.className = 'char-item' + (i === selectedIdx ? ' selected' : '')
+      item.innerHTML = `
+        <span class="char-name">${def.name || def.id || '(未設定)'}</span>
+        <span style="font-size:0.7rem; color:#6c7086; margin-left:auto; margin-right:4px;">${def.movement}</span>
+        <button class="btn-delete" title="削除">✕</button>
+      `
+      item.querySelector('.btn-delete').addEventListener('click', (e) => {
+        e.stopPropagation()
+        if (confirm(`「${def.name || def.id}」を削除しますか？`)) {
+          npcDefs.splice(i, 1)
+          selectedIdx = -1
+          renderList()
+          showEmpty()
+        }
+      })
+      item.addEventListener('click', () => selectNPC(i))
+      list.appendChild(item)
+    })
+  }
+
+  function showEmpty() {
+    document.getElementById('emptyState').style.display = 'flex'
+    document.getElementById('editorContent').style.display = 'none'
+  }
+
+  function selectNPC(idx) {
+    selectedIdx = idx
+    renderList()
+    populateEditor(npcDefs[idx])
+  }
+
+  // ---- Editor Population ----
+  function populateEditor(def) {
+    document.getElementById('emptyState').style.display = 'none'
+    document.getElementById('editorContent').style.display = 'flex'
+
+    document.getElementById('fieldId').value = def.id || ''
+    document.getElementById('fieldName').value = def.name || ''
+    document.getElementById('fieldSpriteKey').value = def.spriteKey || ''
+    document.getElementById('fieldAnimated').value = def.animated ? 'true' : 'false'
+    document.getElementById('fieldFrameRate').value = def.frameRate ?? 6
+    document.getElementById('fieldFrameCount').value = def.frameCount ?? 4
+    document.getElementById('fieldMovement').value = def.movement || 'fixed'
+    document.getElementById('fieldPatrolSpeed').value = def.patrolSpeed ?? 60
+    document.getElementById('fieldPatrolRange').value = def.patrolRange ?? 3
+    document.getElementById('fieldSpeechInterval').value = def.speechIntervalMs ?? 5000
+
+    toggleAnimFields(def.animated)
+    togglePatrolFields(def.movement === 'patrol')
+    renderSpeechLines(def.speechLines || [])
+    renderDialogLines(def.dialogLines || [])
+    loadSpritePreview(def.spriteKey)
+  }
+
+  function toggleAnimFields(animated) {
+    document.getElementById('frameRateField').style.display = animated ? '' : 'none'
+    document.getElementById('frameCountField').style.display = animated ? '' : 'none'
+  }
+
+  function togglePatrolFields(patrol) {
+    document.getElementById('patrolSpeedField').style.display = patrol ? '' : 'none'
+    document.getElementById('patrolRangeField').style.display = patrol ? '' : 'none'
+  }
+
+  // ---- Speech Lines ----
+  function renderSpeechLines(lines) {
+    const container = document.getElementById('speechLines')
+    container.innerHTML = ''
+    lines.forEach((line, i) => addLineRow(container, line, i, 'speech'))
+  }
+
+  function addSpeechLine() {
+    if (selectedIdx < 0) return
+    const def = npcDefs[selectedIdx]
+    if (!def.speechLines) def.speechLines = []
+    def.speechLines.push('')
+    renderSpeechLines(def.speechLines)
+  }
+
+  // ---- Dialog Lines ----
+  function renderDialogLines(lines) {
+    const container = document.getElementById('dialogLines')
+    container.innerHTML = ''
+    lines.forEach((line, i) => addLineRow(container, line, i, 'dialog'))
+  }
+
+  function addDialogLine() {
+    if (selectedIdx < 0) return
+    const def = npcDefs[selectedIdx]
+    if (!def.dialogLines) def.dialogLines = []
+    def.dialogLines.push('')
+    renderDialogLines(def.dialogLines)
+  }
+
+  function addLineRow(container, value, idx, type) {
+    const row = document.createElement('div')
+    row.className = 'line-row'
+    const input = document.createElement('input')
+    input.type = 'text'
+    input.value = value
+    input.placeholder = 'セリフを入力...'
+    input.addEventListener('input', () => {
+      const def = npcDefs[selectedIdx]
+      if (type === 'speech') { if (!def.speechLines) def.speechLines = []; def.speechLines[idx] = input.value }
+      else { if (!def.dialogLines) def.dialogLines = []; def.dialogLines[idx] = input.value }
+    })
+    const del = document.createElement('button')
+    del.className = 'btn-del-line'
+    del.textContent = '✕'
+    del.addEventListener('click', () => {
+      const def = npcDefs[selectedIdx]
+      if (type === 'speech') { def.speechLines.splice(idx, 1); renderSpeechLines(def.speechLines) }
+      else { def.dialogLines.splice(idx, 1); renderDialogLines(def.dialogLines) }
+    })
+    row.appendChild(input)
+    row.appendChild(del)
+    container.appendChild(row)
+  }
+
+  // ---- Sprite Preview ----
+  function loadSpritePreview(spriteKey) {
+    if (!spriteKey) return
+    const canvas = document.getElementById('spriteCanvas')
+    const ctx = canvas.getContext('2d')
+    ctx.clearRect(0, 0, 64, 64)
+
+    if (spriteCache[spriteKey]) {
+      ctx.drawImage(spriteCache[spriteKey], 0, 0, 64, 64, 0, 0, 64, 64)
+      return
+    }
+    const img = new Image()
+    img.onload = () => {
+      spriteCache[spriteKey] = img
+      ctx.drawImage(img, 0, 0, 64, 64, 0, 0, 64, 64)
+    }
+    img.src = `../../public/assets/images/npc/${spriteKey}.png`
+  }
+
+  // ---- Helpers ----
+  function saveCurrentField(key, value) {
+    if (selectedIdx < 0) return
+    npcDefs[selectedIdx][key] = value
+  }
+
+  function createNew() {
+    const id = `npc_${Date.now()}`
+    npcDefs.push({
+      id,
+      name: '新しいNPC',
+      spriteKey: '',
+      animated: false,
+      movement: 'fixed',
+      speechLines: [],
+      speechIntervalMs: 5000,
+      dialogLines: []
+    })
+    selectedIdx = npcDefs.length - 1
+    renderList()
+    populateEditor(npcDefs[selectedIdx])
+  }
+
+  function exportJSON() {
+    const content = JSON.stringify(npcDefs, null, 2)
+    const blob = new Blob([content], { type: 'application/json' })
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = 'npc-defs.json'
+    a.click()
+    URL.revokeObjectURL(url)
+  }
+  </script>
+</body>
+</html>

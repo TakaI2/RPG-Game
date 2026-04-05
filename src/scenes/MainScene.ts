@@ -25,7 +25,8 @@ import {
   createEnemyAnimations,
   getDirectionFromVelocity
 } from '../systems/AnimationManager'
-import { NPCManager } from '../systems/NPCManager'
+import { createNPCManager, NPCManagerHandle } from '../systems/NPCManager'
+import type { NPCDef, NPCSpawn } from '../types/NPCTypes'
 import { updateHomingOrbs, FireBall, type Projectile } from '../systems/Projectile'
 import { events } from '../systems/Events'
 import { EventTriggerManager } from '../systems/EventTriggerManager'
@@ -49,7 +50,7 @@ export default class MainScene extends Phaser.Scene {
   private cursors!: Phaser.Types.Input.Keyboard.CursorKeys
   private spaceKey!: Phaser.Input.Keyboard.Key
   private player!: Phaser.Types.Physics.Arcade.SpriteWithDynamicBody
-  private npcManager!: NPCManager
+  private npcManager!: NPCManagerHandle
   private enemies: EnemyWithAI[] = []
   private archers: Archer[] = []
   private mages: Mage[] = []
@@ -180,7 +181,7 @@ export default class MainScene extends Phaser.Scene {
     this.ui = new DialogUI(this)
 
     // NPCマネージャー初期化（マップロード時にNPCを読み込む）
-    this.npcManager = new NPCManager(this, this.ui)
+    this.npcManager = createNPCManager(this, this.ui)
 
     // HP表示を先に作成
     this.createHPDisplay()
@@ -677,6 +678,7 @@ export default class MainScene extends Phaser.Scene {
       updateBruteAI(this, brute, this.player)
       brute.speech?.update(brute)
 
+
       if (brute.state === 'dash') {
         const dir = getDirectionFromVelocity(brute.body.velocity.x, brute.body.velocity.y)
         const targetAnim = `${brute.animKey}-atk-${dir}`
@@ -694,6 +696,9 @@ export default class MainScene extends Phaser.Scene {
         }
       }
     })
+
+    // NPC更新（移動・吹き出し）
+    this.npcManager.update()
   }
 
   /**
@@ -1312,7 +1317,9 @@ export default class MainScene extends Phaser.Scene {
     this.initializeEnemiesAndTriggers(mapData)
 
     // NPCを再初期化
-    this.npcManager.loadNPCs('npc_config', mapId)
+    const npcDefs = (this.cache.json.get('npc-defs') as NPCDef[]) || []
+    const npcSpawns = (mapData.npcSpawns as NPCSpawn[]) || []
+    this.npcManager.loadFromSpawns(npcSpawns, npcDefs)
     const npcColliders = this.npcManager.setupCollisions(this.player)
     this.colliders.push(...npcColliders)
 

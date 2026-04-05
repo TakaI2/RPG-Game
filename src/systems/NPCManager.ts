@@ -1,105 +1,126 @@
 import Phaser from 'phaser'
 import { TILE } from '../config'
-import DialogUI from './Dialog'
+import { EnemySpeech } from './EnemySpeech'
+import type DialogUI from './Dialog'
+import type { DialogData } from './Dialog'
+import type { NPCDef, NPCSpawn } from '../types/NPCTypes'
 
-export interface NPCData {
-  id: string
-  name: string
-  sprite: string
-  position: { x: number, y: number }
-  dialogFile: string
-  map?: string // どのマップに属するか（オプション、指定がない場合は全マップに表示）
+interface NPCInstance {
+  sprite: Phaser.Physics.Arcade.Sprite
+  def: NPCDef
+  speech: EnemySpeech
+  patrolStartX: number
+  patrolDir: number
 }
 
-export interface NPCConfig {
-  npcs: NPCData[]
+export type NPCManagerHandle = {
+  loadFromSpawns: (spawns: NPCSpawn[], defs: NPCDef[]) => void
+  update: () => void
+  tryInteract: (player: Phaser.Types.Physics.Arcade.SpriteWithDynamicBody, maxDistance?: number) => boolean
+  setupCollisions: (player: Phaser.Types.Physics.Arcade.SpriteWithDynamicBody) => Phaser.Physics.Arcade.Collider[]
+  destroy: () => void
 }
 
-export interface NPCSprite extends Phaser.Physics.Arcade.Sprite {
-  npcData: NPCData
-  dialogData?: any
-}
+export function createNPCManager(scene: Phaser.Scene, ui: DialogUI): NPCManagerHandle {
+  const instances: NPCInstance[] = []
 
-/**
- * NPCマネージャー
- * 外部JSONファイルからNPCを読み込み、管理する
- */
-export class NPCManager {
-  private scene: Phaser.Scene
-  private npcs: NPCSprite[] = []
-  private ui: DialogUI
-
-  constructor(scene: Phaser.Scene, ui: DialogUI) {
-    this.scene = scene
-    this.ui = ui
+  function destroyAll(): void {
+    instances.forEach(inst => {
+      inst.speech.destroy()
+      if (inst.sprite.active) inst.sprite.destroy()
+    })
+    instances.length = 0
   }
 
-  /**
-   * NPCデータを読み込み、スプライトを生成する
-   * @param configKey preloadで読み込んだNPC設定JSONのキー
-   * @param mapId 現在のマップID（指定した場合、そのマップに属するNPCのみをロード）
-   */
-  loadNPCs(configKey: string, mapId?: string) {
-    const config = this.scene.cache.json.get(configKey) as NPCConfig
+  function loadFromSpawns(spawns: NPCSpawn[], defs: NPCDef[]): void {
+    destroyAll()
+    const defMap = new Map(defs.map(d => [d.id, d]))
 
-    if (!config || !config.npcs) {
-      console.warn(`NPC config not found: ${configKey}`)
-      return
-    }
-
-    config.npcs.forEach(npcData => {
-      // マップIDが指定されている場合、そのマップに属するNPCのみをロード
-      if (mapId && npcData.map && npcData.map !== mapId) {
-        return // スキップ
+    spawns.forEach(spawn => {
+      const def = defMap.get(spawn.npcDefId)
+      if (!def) {
+        console.warn(`[NPCManager] NPC def not found: ${spawn.npcDefId}`)
+        return
       }
-      this.createNPC(npcData)
+
+      const x = spawn.x * TILE + TILE / 2
+      const y = spawn.y * TILE + TILE / 2
+
+      const sprite = scene.physics.add.sprite(x, y, def.spriteKey)
+      sprite.setImmovable(true)
+      ;(sprite.body as Phaser.Physics.Arcade.Body).allowGravity = false
+
+      if (def.animated) {
+        const animKey = `npc_anim_${def.id}`
+        if (!scene.anims.exists(animKey)) {
+          scene.anims.create({
+            key: animKey,
+            frames: scene.anims.generateFrameNumbers(def.spriteKey, {
+              start: 0,
+              end: (def.frameCount ?? 4) - 1,
+            }),
+            frameRate: def.frameRate ?? 6,
+            repeat: -1,
+          })
+        }
+        sprite.play(animKey)
+      }
+
+      const speech = new EnemySpeech(scene)
+      if (def.speechLines && def.speechLines.length > 0) {
+        speech.startLoop(
+          sprite as unknown as Phaser.GameObjects.Sprite,
+          def.speechLines,
+          2000,
+          def.speechIntervalMs ?? 5000
+        )
+      }
+
+      instances.push({
+        sprite,
+        def,
+        speech,
+        patrolStartX: x,
+        patrolDir: 1,
+      })
     })
   }
 
-  /**
-   * 個別のNPCを生成
-   */
-  private createNPC(npcData: NPCData) {
-    const x = npcData.position.x * TILE
-    const y = npcData.position.y * TILE
+  function update(): void {
+    instances.forEach(inst => {
+      if (!inst.sprite.active) return
 
-    // スプライトを生成（64x64を想定）
-    const sprite = this.scene.physics.add.staticSprite(x, y, npcData.sprite) as NPCSprite
-    sprite.npcData = npcData
+      if (inst.def.movement === 'patrol') {
+        const speed = inst.def.patrolSpeed ?? 60
+        const rangePx = (inst.def.patrolRange ?? 3) * TILE
+        const dist = inst.sprite.x - inst.patrolStartX
 
-    // セリフデータを読み込む
-    const dialogKey = this.getDialogKey(npcData.dialogFile)
-    if (this.scene.cache.json.exists(dialogKey)) {
-      sprite.dialogData = this.scene.cache.json.get(dialogKey)
-    } else {
-      console.warn(`Dialog data not found for NPC ${npcData.id}: ${dialogKey}`)
-    }
+        if (dist >= rangePx) inst.patrolDir = -1
+        else if (dist <= -rangePx) inst.patrolDir = 1
 
-    this.npcs.push(sprite)
+        inst.sprite.setVelocityX(speed * inst.patrolDir)
+        inst.sprite.setFlipX(inst.patrolDir < 0)
+      } else {
+        inst.sprite.setVelocity(0, 0)
+      }
+
+      inst.speech.update(inst.sprite as unknown as Phaser.GameObjects.Sprite)
+    })
   }
 
-  /**
-   * ダイアログファイルパスからキャッシュキーを生成
-   */
-  private getDialogKey(filePath: string): string {
-    // "src/assets/dialog/npc1.json" -> "dialog_npc1"
-    const match = filePath.match(/dialog\/(.+)\.json$/)
-    return match ? `dialog_${match[1]}` : filePath
-  }
-
-  /**
-   * プレイヤーと近いNPCを検出して会話を開始
-   * @param player プレイヤースプライト
-   * @param maxDistance 最大距離（ピクセル）
-   * @returns 会話を開始したかどうか
-   */
-  tryInteract(player: Phaser.Types.Physics.Arcade.SpriteWithDynamicBody, maxDistance: number = 80): boolean {
-    for (const npc of this.npcs) {
-      const distance = Phaser.Math.Distance.Between(player.x, player.y, npc.x, npc.y)
-
-      if (distance < maxDistance) {
-        if (npc.dialogData) {
-          this.ui.show(npc.npcData.name, npc.dialogData)
+  function tryInteract(
+    player: Phaser.Types.Physics.Arcade.SpriteWithDynamicBody,
+    maxDistance = 80
+  ): boolean {
+    for (const inst of instances) {
+      const dist = Phaser.Math.Distance.Between(
+        player.x, player.y, inst.sprite.x, inst.sprite.y
+      )
+      if (dist < maxDistance) {
+        const lines = inst.def.dialogLines
+        if (lines && lines.length > 0) {
+          const data: DialogData = { lines }
+          ui.show(inst.def.name, data)
           return true
         }
       }
@@ -107,42 +128,11 @@ export class NPCManager {
     return false
   }
 
-  /**
-   * プレイヤーとの衝突判定を設定
-   * @returns 作成された衝突判定の配列
-   */
-  setupCollisions(player: Phaser.Types.Physics.Arcade.SpriteWithDynamicBody): Phaser.Physics.Arcade.Collider[] {
-    const colliders: Phaser.Physics.Arcade.Collider[] = []
-    this.npcs.forEach(npc => {
-      const collider = this.scene.physics.add.collider(player, npc)
-      colliders.push(collider)
-    })
-    return colliders
+  function setupCollisions(
+    player: Phaser.Types.Physics.Arcade.SpriteWithDynamicBody
+  ): Phaser.Physics.Arcade.Collider[] {
+    return instances.map(inst => scene.physics.add.collider(player, inst.sprite))
   }
 
-  /**
-   * すべてのNPCスプライトを取得
-   */
-  getNPCs(): NPCSprite[] {
-    return this.npcs
-  }
-
-  /**
-   * IDでNPCを検索
-   */
-  getNPCById(id: string): NPCSprite | undefined {
-    return this.npcs.find(npc => npc.npcData.id === id)
-  }
-
-  /**
-   * すべてのNPCを破棄
-   */
-  destroy() {
-    this.npcs.forEach(npc => {
-      if (npc && npc.active) {
-        npc.destroy()
-      }
-    })
-    this.npcs = []
-  }
+  return { loadFromSpawns, update, tryInteract, setupCollisions, destroy: destroyAll }
 }

@@ -1,0 +1,29 @@
+[
+  {
+    "id": "npc_villager_001",
+    "name": "村人",
+    "spriteKey": "npc_villager",
+    "animated": false,
+    "movement": "fixed",
+    "speechLines": [
+      "こんにちは！",
+      "気をつけてね"
+    ],
+    "speechIntervalMs": 5000,
+    "dialogLines": [
+      "この先には魔物がいるから気をつけて！"
+    ]
+  },
+  {
+    "id": "npc_1775354231905",
+    "name": "生贄",
+    "spriteKey": "victhim1",
+    "animated": true,
+    "movement": "fixed",
+    "speechLines": [
+      "うううぅ・・・・"
+    ],
+    "speechIntervalMs": 5000,
+    "dialogLines": []
+  }
+]

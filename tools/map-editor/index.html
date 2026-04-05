@@ -90,6 +90,7 @@
         .tile-option.floor { background: #143d2a; color: #a6e3a1; }
         .tile-option.wall  { background: #3a3a4a; color: #cdd6f4; border-color: #45475a; }
         .tile-option.spawn-tile { background: #3a1f35; color: #f5c2e7; border-color: #45475a; }
+        .tile-option.npc-tile { background: #1a3a2a; color: #a6e3a1; border-color: #45475a; }
         .tile-option.portal-tile { background: #1a1a3a; color: #cba6f7; border-color: #45475a; }
 
         .canvas-container {
@@ -417,6 +418,23 @@
         </div>
     </div>
 
+    <!-- NPC選択モーダル -->
+    <div id="npcModal">
+        <div class="modal-box">
+            <div class="modal-header">
+                <h3>NPCを選択</h3>
+                <button onclick="closeNPCModal()">✕</button>
+            </div>
+            <div class="modal-body">
+                <div class="enemy-grid" id="npcGrid"></div>
+            </div>
+            <div class="modal-footer">
+                <a href="../npc-editor/" target="_blank" style="padding:5px 10px; background:#313244; color:#a6adc8; border:1px solid #45475a; border-radius:6px; cursor:pointer; font-size:0.82rem; text-decoration:none;">+ NPC Editor</a>
+                <button class="btn-confirm" onclick="confirmNPCSelection()">決定</button>
+            </div>
+        </div>
+    </div>
+
     <!-- 敵選択モーダル -->
     <div id="enemyModal">
         <div class="modal-box">
@@ -443,6 +461,8 @@
     const SHEET_COLS = 16
     const FRAME_SIZE = 64
     const STORAGE_KEY = 'rpg-enemy-defs'
+    const NPC_STORAGE_KEY = 'rpg-npc-defs'
+    const NPC_DEFS_URL = '../../public/assets/npcs/npc-defs.json'
     const CUSTOM_TILES_KEY = 'rpg-custom-tiles'
     const BASE_DEFS_KEY = 'rpg-base-tiles'
     const TILESET_URL = '../../public/assets/maps/tilesets.json'
@@ -452,6 +472,7 @@
     let cols = 80, rows = 80
     let mapData = []
     let enemySpawns = []   // { x, y, enemyDefId?: string }
+    let npcSpawns = []     // { x, y, npcDefId: string }
     let portals = []       // { x, y }
     let selectedTile = 0
     let isDrawing = false
@@ -462,10 +483,16 @@
     let allDefs = []     // baseDefs + customDefs のマージ
     let tileImageCache = {}  // id → HTMLImageElement（またはnull）
 
-    // モーダル用
+    // モーダル用（敵）
     let pendingSpawnPos = null   // { x, y } – モーダルを開いた際の仮位置
     let selectedEnemyDefId = null  // null = ランダム
     let enemyDefs = []
+
+    // モーダル用（NPC）
+    let pendingNPCPos = null
+    let selectedNPCDefId = null
+    let npcDefs = []
+    let npcImageCache = {}  // spriteKey → HTMLImageElement | null
     let spriteCache = {}  // spriteKey → HTMLImageElement
 
     // ---- Init ----
@@ -480,6 +507,7 @@
         canvas.addEventListener('contextmenu', e => e.preventDefault())
 
         loadEnemyDefs()
+        loadNPCDefs()
         loadTilesets()  // パレットを動的生成（完了後に createNewMap を呼ぶ）
     }
 
@@ -583,6 +611,14 @@
         spawnEl.addEventListener('click', () => selectTile(spawnEl, 'spawn'))
         container.appendChild(spawnEl)
 
+        const npcEl = document.createElement('div')
+        npcEl.className = 'tile-option npc-tile'
+        npcEl.setAttribute('data-tile', 'npc-spawn')
+        npcEl.title = 'NPCスポーン（左クリックで配置→NPC選択）'
+        npcEl.textContent = 'NPC'
+        npcEl.addEventListener('click', () => selectTile(npcEl, 'npc-spawn'))
+        container.appendChild(npcEl)
+
         const portalEl = document.createElement('div')
         portalEl.className = 'tile-option portal-tile'
         portalEl.setAttribute('data-tile', 'portal')
@@ -600,7 +636,7 @@
     function selectTile(el, value) {
         document.querySelectorAll('.tile-option').forEach(o => o.classList.remove('selected'))
         el.classList.add('selected')
-        selectedTile = (value === 'spawn' || value === 'portal') ? value : parseInt(value)
+        selectedTile = (value === 'spawn' || value === 'npc-spawn' || value === 'portal') ? value : parseInt(value)
     }
 
     // ---- カスタムタイル追加/削除 ----
@@ -701,6 +737,72 @@
         enemyDefs = []
     }
 
+    async function loadNPCDefs() {
+        try {
+            const raw = localStorage.getItem(NPC_STORAGE_KEY)
+            if (raw) { npcDefs = JSON.parse(raw); return }
+        } catch { /* fall through */ }
+        try {
+            const res = await fetch(NPC_DEFS_URL)
+            if (res.ok) {
+                npcDefs = await res.json()
+                localStorage.setItem(NPC_STORAGE_KEY, JSON.stringify(npcDefs))
+                return
+            }
+        } catch { /* fall through */ }
+        npcDefs = []
+    }
+
+    // ---- NPC Modal ----
+    async function openNPCModal(x, y) {
+        await loadNPCDefs()
+        pendingNPCPos = { x, y }
+        selectedNPCDefId = null
+        buildNPCGrid()
+        document.getElementById('npcModal').classList.add('show')
+    }
+
+    function closeNPCModal() {
+        document.getElementById('npcModal').classList.remove('show')
+        pendingNPCPos = null
+    }
+
+    function buildNPCGrid() {
+        const grid = document.getElementById('npcGrid')
+        grid.innerHTML = ''
+        if (npcDefs.length === 0) {
+            grid.innerHTML = '<div style="color:#6c7086; padding:16px;">NPCが未登録です。NPC Editorで追加してください。</div>'
+            return
+        }
+        npcDefs.forEach(def => {
+            const card = document.createElement('div')
+            card.className = 'enemy-card'
+            card.dataset.defId = def.id
+            const nameEl = document.createElement('div')
+            nameEl.className = 'ec-name'
+            nameEl.textContent = def.name || def.id
+            const typeEl = document.createElement('div')
+            typeEl.className = 'ec-type'
+            typeEl.textContent = def.movement
+            card.appendChild(nameEl)
+            card.appendChild(typeEl)
+            card.addEventListener('click', () => {
+                document.querySelectorAll('#npcGrid .enemy-card').forEach(c => c.classList.remove('selected'))
+                card.classList.add('selected')
+                selectedNPCDefId = def.id
+            })
+            grid.appendChild(card)
+        })
+    }
+
+    function confirmNPCSelection() {
+        if (!pendingNPCPos || !selectedNPCDefId) { closeNPCModal(); return }
+        const { x, y } = pendingNPCPos
+        npcSpawns.push({ x, y, npcDefId: selectedNPCDefId })
+        closeNPCModal()
+        drawMap()
+    }
+
     function loadEnemyDefsFromFile(event) {
         const file = event.target.files[0]
         if (!file) return
@@ -727,6 +829,7 @@
         rows = parseInt(document.getElementById('rows').value)
         mapData = Array(rows).fill(null).map(() => Array(cols).fill(0))
         enemySpawns = []
+        npcSpawns = []
         portals = []
         canvas.width = cols * TILE_SIZE
         canvas.height = rows * TILE_SIZE
@@ -737,6 +840,7 @@
         if (!confirm('マップをクリアしますか？')) return
         mapData = Array(rows).fill(null).map(() => Array(cols).fill(0))
         enemySpawns = []
+        npcSpawns = []
         portals = []
         drawMap()
     }
@@ -748,6 +852,7 @@
             for (let x = 0; x < cols; x++)
                 drawTile(x, y, mapData[y][x])
         enemySpawns.forEach(s => drawSpawn(s))
+        npcSpawns.forEach(s => drawNPCSpawn(s))
         portals.forEach(p => drawPortal(p))
         drawGrid()
     }
@@ -822,6 +927,58 @@
         }
     }
 
+    function getNPCImage(spriteKey) {
+        if (npcImageCache[spriteKey] !== undefined) return npcImageCache[spriteKey]
+        npcImageCache[spriteKey] = null
+        const img = new Image()
+        img.onload = () => { npcImageCache[spriteKey] = img; drawMap() }
+        img.onerror = () => { npcImageCache[spriteKey] = null }
+        img.src = `../../public/assets/images/npc/${spriteKey}.png`
+        return null
+    }
+
+    function drawNPCSpawn(spawn) {
+        const px = spawn.x * TILE_SIZE
+        const py = spawn.y * TILE_SIZE
+        const cx = px + TILE_SIZE / 2
+        const cy = py + TILE_SIZE / 2
+
+        const def = npcDefs.find(d => d.id === spawn.npcDefId)
+        if (def && def.spriteKey) {
+            const img = getNPCImage(def.spriteKey)
+            if (img) {
+                // 1コマ目（左上 64×64）を描画
+                ctx.imageSmoothingEnabled = false
+                ctx.drawImage(img, 0, 0, FRAME_SIZE, FRAME_SIZE, px, py, TILE_SIZE, TILE_SIZE)
+                // 名前ラベル
+                ctx.fillStyle = '#a6e3a188'
+                ctx.fillRect(px, py + TILE_SIZE - 16, TILE_SIZE, 16)
+                ctx.fillStyle = '#1e1e2e'
+                ctx.font = 'bold 10px sans-serif'
+                ctx.textAlign = 'center'
+                ctx.textBaseline = 'middle'
+                ctx.fillText(def.name || def.id, cx, py + TILE_SIZE - 8)
+                return
+            }
+        }
+
+        // フォールバック: 緑丸 + 名前
+        ctx.fillStyle = '#a6e3a199'
+        ctx.beginPath()
+        ctx.arc(cx, cy, TILE_SIZE / 3, 0, Math.PI * 2)
+        ctx.fill()
+        ctx.fillStyle = '#1e1e2e'
+        ctx.font = 'bold 14px sans-serif'
+        ctx.textAlign = 'center'
+        ctx.textBaseline = 'middle'
+        ctx.fillText('NPC', cx, cy)
+        if (def) {
+            ctx.font = 'bold 10px sans-serif'
+            ctx.fillStyle = '#a6e3a1'
+            ctx.fillText(def.name || spawn.npcDefId, cx, cy + 18)
+        }
+    }
+
     function drawPortal(portal) {
         const px = portal.x * TILE_SIZE
         const py = portal.y * TILE_SIZE
@@ -892,6 +1049,7 @@
             // 右クリック: 削除（タイル・敵スポーン・ポータル）
             mapData[y][x] = 0
             enemySpawns = enemySpawns.filter(s => !(s.x === x && s.y === y))
+            npcSpawns = npcSpawns.filter(s => !(s.x === x && s.y === y))
             portals = portals.filter(p => !(p.x === x && p.y === y))
             drawMap()
         } else if (selectedTile === 'portal') {
@@ -903,11 +1061,18 @@
                 drawMap()
             }
         } else if (selectedTile === 'spawn') {
-            // 左クリック: スポーン → モーダルを開く
+            // 左クリック: 敵スポーン → モーダルを開く
             const exists = enemySpawns.some(s => s.x === x && s.y === y)
             if (!exists) {
                 isDrawing = false
                 openEnemyModal(x, y)
+            }
+        } else if (selectedTile === 'npc-spawn') {
+            // 左クリック: NPCスポーン → モーダルを開く
+            const exists = npcSpawns.some(s => s.x === x && s.y === y)
+            if (!exists) {
+                isDrawing = false
+                openNPCModal(x, y)
             }
         } else {
             mapData[y][x] = selectedTile
@@ -1007,7 +1172,7 @@
 
     // ---- Export / Import ----
     function exportMap() {
-        const mapJSON = { cols, rows, tiles: mapData, enemySpawns, portals }
+        const mapJSON = { cols, rows, tiles: mapData, enemySpawns, npcSpawns, portals }
         const json = JSON.stringify(mapJSON, null, 2)
         const blob = new Blob([json], { type: 'application/json' })
         const url = URL.createObjectURL(blob)
@@ -1030,6 +1195,7 @@
                     x: s.x, y: s.y,
                     ...(s.enemyDefId ? { enemyDefId: s.enemyDefId } : {})
                 }))
+                npcSpawns = (j.npcSpawns || []).map(s => ({ x: s.x, y: s.y, npcDefId: s.npcDefId }))
                 portals = (j.portals || []).map(p => ({ x: p.x, y: p.y }))
                 document.getElementById('cols').value = cols
                 document.getElementById('rows').value = rows
@@ -1056,6 +1222,7 @@
                 x: s.x, y: s.y,
                 ...(s.enemyDefId ? { enemyDefId: s.enemyDefId } : {})
             }))
+            npcSpawns = (j.npcSpawns || []).map(s => ({ x: s.x, y: s.y, npcDefId: s.npcDefId }))
             portals = (j.portals || []).map(p => ({ x: p.x, y: p.y }))
             document.getElementById('cols').value = cols
             document.getElementById('rows').value = rows
@@ -1072,7 +1239,7 @@
     function saveMapToGame() {
         const mapId = document.getElementById('mapId').value.trim()
         if (!mapId) { alert('マップIDを入力してください'); return }
-        const mapJSON = { cols, rows, tiles: mapData, enemySpawns, portals }
+        const mapJSON = { cols, rows, tiles: mapData, enemySpawns, npcSpawns, portals }
         window.saveToGame(`assets/maps/${mapId}.json`, mapJSON)
     }
     </script>
