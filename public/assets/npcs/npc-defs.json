@@ -17,7 +17,7 @@
   {
     "id": "npc_1775354231905",
     "name": "生贄",
-    "spriteKey": "victhim1",
+    "spriteKey": "victhim2",
     "animated": true,
     "movement": "fixed",
     "speechLines": [
@@ -25,5 +25,71 @@
     ],
     "speechIntervalMs": 5000,
     "dialogLines": []
+  },
+  {
+    "id": "npc_1775505028741",
+    "name": "フェンス1",
+    "spriteKey": "fens_v",
+    "animated": false,
+    "movement": "fixed",
+    "speechLines": [],
+    "speechIntervalMs": 5000,
+    "dialogLines": []
+  },
+  {
+    "id": "npc_1775505100822",
+    "name": "フェンス2",
+    "spriteKey": "fens_h",
+    "animated": false,
+    "movement": "fixed",
+    "speechLines": [],
+    "speechIntervalMs": 5000,
+    "dialogLines": []
+  },
+  {
+    "id": "npc_1775505147169",
+    "name": "がれき1",
+    "spriteKey": "reck1",
+    "animated": false,
+    "movement": "fixed",
+    "speechLines": [],
+    "speechIntervalMs": 5000,
+    "dialogLines": []
+  },
+  {
+    "id": "npc_1775505198958",
+    "name": "がれき2",
+    "spriteKey": "reck2",
+    "animated": false,
+    "movement": "fixed",
+    "speechLines": [],
+    "speechIntervalMs": 5000,
+    "dialogLines": []
+  },
+  {
+    "id": "npc_1775505218431",
+    "name": "がれき３",
+    "spriteKey": "reck3",
+    "animated": false,
+    "movement": "fixed",
+    "speechLines": [],
+    "speechIntervalMs": 5000,
+    "dialogLines": []
+  },
+  {
+    "id": "npc_1775505244856",
+    "name": "犠牲者1",
+    "spriteKey": "victhim3_l",
+    "animated": true,
+    "movement": "fixed",
+    "speechLines": [
+      "あ・・・、あぁ・・・",
+      "すって・・・、もっと・・・、もっと・・・"
+    ],
+    "speechIntervalMs": 5000,
+    "dialogLines": [
+      "あ～あ、サキュバスに襲われたのね、すっかり壊れてる・・・。"
+    ],
+    "frameRate": 4
   }
 ]

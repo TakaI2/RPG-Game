@@ -13,5 +13,27 @@
   <body>
     <div id="app"></div>
     <script type="module" src="/src/main.ts"></script>
+    <script>
+      if (location.hostname === 'localhost' || location.hostname === '127.0.0.1') {
+        const btn = document.createElement('a')
+        btn.href = 'tools/'
+        btn.target = '_blank'
+        btn.title = 'エディタを開く'
+        btn.textContent = '🛠'
+        btn.style.cssText = [
+          'position:fixed', 'bottom:16px', 'right:16px', 'z-index:99999',
+          'width:36px', 'height:36px', 'border-radius:50%',
+          'background:rgba(49,50,68,0.75)', 'color:#cba6f7',
+          'font-size:18px', 'line-height:36px', 'text-align:center',
+          'text-decoration:none', 'backdrop-filter:blur(4px)',
+          'border:1px solid rgba(203,166,247,0.3)',
+          'transition:background 0.2s, transform 0.15s',
+          'user-select:none'
+        ].join(';')
+        btn.onmouseenter = () => { btn.style.background = 'rgba(69,71,90,0.9)'; btn.style.transform = 'scale(1.1)' }
+        btn.onmouseleave = () => { btn.style.background = 'rgba(49,50,68,0.75)'; btn.style.transform = '' }
+        document.body.appendChild(btn)
+      }
+    </script>
   </body>
 </html>

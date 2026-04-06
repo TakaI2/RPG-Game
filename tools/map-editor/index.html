@@ -126,6 +126,8 @@
         }
 
         #enemyModal.show { display: flex; }
+        #npcModal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.7); align-items: center; justify-content: center; z-index: 1000; }
+        #npcModal.show { display: flex; }
 
         .modal-box {
             background: #1e1e2e;
@@ -755,7 +757,14 @@
 
     // ---- NPC Modal ----
     async function openNPCModal(x, y) {
-        await loadNPCDefs()
+        // 常に最新ファイルを取得（キャッシュを使わない）
+        try {
+            const res = await fetch(NPC_DEFS_URL + '?t=' + Date.now())
+            if (res.ok) {
+                npcDefs = await res.json()
+                localStorage.setItem(NPC_STORAGE_KEY, JSON.stringify(npcDefs))
+            }
+        } catch { /* fallback to existing npcDefs */ }
         pendingNPCPos = { x, y }
         selectedNPCDefId = null
         buildNPCGrid()

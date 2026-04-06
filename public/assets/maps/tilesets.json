@@ -58,5 +58,97 @@
     "textureKey": "capet",
     "label": "capet",
     "color": "#2a3a2a"
+  },
+  {
+    "id": 9,
+    "role": "floor",
+    "textureKey": "oos",
+    "label": "oos",
+    "color": "#2a3a2a",
+    "animated": true,
+    "fps": 8
+  },
+  {
+    "id": 10,
+    "role": "wall",
+    "textureKey": "brick2",
+    "label": "brick2",
+    "color": "#3a3a4a"
+  },
+  {
+    "id": 11,
+    "role": "floor",
+    "textureKey": "oos_edge1",
+    "label": "oos_edge1",
+    "color": "#2a3a2a",
+    "animated": true,
+    "fps": 8
+  },
+  {
+    "id": 12,
+    "role": "floor",
+    "textureKey": "oos_edge2",
+    "label": "oos_edge2",
+    "color": "#2a3a2a",
+    "animated": true,
+    "fps": 8
+  },
+  {
+    "id": 14,
+    "role": "floor",
+    "textureKey": "tile_ooz",
+    "label": "tile_ooz",
+    "color": "#2a3a2a",
+    "animated": true,
+    "fps": 8
+  },
+  {
+    "id": 15,
+    "role": "floor",
+    "textureKey": "stone",
+    "label": "stone",
+    "color": "#2a3a2a"
+  },
+  {
+    "id": 16,
+    "role": "floor",
+    "textureKey": "land1",
+    "label": "land1",
+    "color": "#2a3a2a"
+  },
+  {
+    "id": 17,
+    "role": "wall",
+    "textureKey": "roof",
+    "label": "roof",
+    "color": "#3a3a4a"
+  },
+  {
+    "id": 18,
+    "role": "wall",
+    "textureKey": "window1",
+    "label": "window1",
+    "color": "#3a3a4a"
+  },
+  {
+    "id": 19,
+    "role": "wall",
+    "textureKey": "window2",
+    "label": "window2",
+    "color": "#3a3a4a"
+  },
+  {
+    "id": 20,
+    "role": "wall",
+    "textureKey": "window3",
+    "label": "window3",
+    "color": "#3a3a4a"
+  },
+  {
+    "id": 21,
+    "role": "wall",
+    "textureKey": "window4",
+    "label": "window4",
+    "color": "#3a3a4a"
   }
 ]

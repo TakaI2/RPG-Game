@@ -855,6 +855,15 @@ export default class MainScene extends Phaser.Scene {
   private updateFireBalls(now: number): void {
     // 発射ループ
     if (this.isSpecialAttacking && this.isRightMouseHeld) {
+      // マウス方向にキャラの向きを更新
+      const ptr = this.input.activePointer
+      const worldMouse = this.cameras.main.getWorldPoint(ptr.x, ptr.y)
+      const newDir = getDirectionFromVelocity(worldMouse.x - this.player.x, worldMouse.y - this.player.y)
+      if (newDir !== this.playerDirection) {
+        this.playerDirection = newDir
+        this.player.play(`hero-special-${this.playerDirection}`, true)
+      }
+
       if (now - this.lastFireTime >= this.FIRE_INTERVAL) {
         this.lastFireTime = now
         this.spawnFireBall()

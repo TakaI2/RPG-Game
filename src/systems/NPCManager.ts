@@ -48,6 +48,7 @@ export function createNPCManager(scene: Phaser.Scene, ui: DialogUI): NPCManagerH
 
       const sprite = scene.physics.add.sprite(x, y, def.spriteKey)
       sprite.setImmovable(true)
+      sprite.setDepth(2)
       ;(sprite.body as Phaser.Physics.Arcade.Body).allowGravity = false
 
       if (def.animated) {
