@@ -1082,12 +1082,24 @@ export default class MainScene extends Phaser.Scene {
 
     // PortalManager を初期化（map JSON の portals と gameflow.json の portals をインデックス突合）
     const gameflowPortals = this.gameFlowManager.getPortals(this.currentMapId)
-    const mapPortalPositions = ((this.currentMapData as Record<string, unknown>).portals as Array<{ x: number; y: number }> | undefined) ?? []
+    const portalDefs = (this.cache.json.get('portal-defs') as Array<{ key: string; animated: boolean; frameCount: number; frameRate: number }> | null) ?? []
+    const mapPortalPositions = ((this.currentMapData as Record<string, unknown>).portals as Array<{ x: number; y: number; spriteKey?: string; rotation?: number }> | undefined) ?? []
     const fullPortals: FullPortalData[] = mapPortalPositions
       .map((pos, i) => {
         const dest = gameflowPortals[i]
         if (!dest) return null
-        return { x: pos.x, y: pos.y, targetMap: dest.targetMap, targetX: dest.targetX, targetY: dest.targetY }
+        const entry: FullPortalData = { x: pos.x, y: pos.y, targetMap: dest.targetMap, targetX: dest.targetX, targetY: dest.targetY }
+        if (pos.spriteKey) {
+          entry.spriteKey = pos.spriteKey
+          const def = portalDefs.find(d => d.key === pos.spriteKey)
+          if (def) {
+            entry.animated = def.animated
+            entry.frameCount = def.frameCount
+            entry.frameRate = def.frameRate
+          }
+        }
+        if (pos.rotation) entry.rotation = pos.rotation
+        return entry
       })
       .filter((p): p is FullPortalData => p !== null)
 

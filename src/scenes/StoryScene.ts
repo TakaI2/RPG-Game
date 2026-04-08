@@ -20,10 +20,12 @@ export default class StoryScene extends Phaser.Scene {
   private scriptId!: string
   private thenAction!: ThenAction
   private waitingForSpace = false
+  private isSkipping = false
 
   // 背景・立ち絵
   private bgImage?: Phaser.GameObjects.Image
   private portraitImage?: Phaser.GameObjects.Image
+  private skipBtn?: Phaser.GameObjects.Image
 
   // クリーンアップ用
   private checkInterval?: Phaser.Time.TimerEvent
@@ -129,6 +131,15 @@ export default class StoryScene extends Phaser.Scene {
       }
     })
 
+    // スキップボタン（右下）
+    this.skipBtn = this.add.image(GAME_W - 120, GAME_H - 60, 'btn_skip')
+      .setDepth(1000)
+      .setScrollFactor(0)
+      .setInteractive({ useHandCursor: true })
+    this.skipBtn.on('pointerdown', () => this.skipStory())
+    this.skipBtn.on('pointerover', () => this.skipBtn?.setAlpha(0.75))
+    this.skipBtn.on('pointerout', () => this.skipBtn?.setAlpha(1))
+
     // シーン終了時のクリーンアップ
     this.events.once('shutdown', this.cleanup, this)
 
@@ -219,6 +230,10 @@ export default class StoryScene extends Phaser.Scene {
     if (this.portraitImage) {
       this.portraitImage.destroy()
       this.portraitImage = undefined
+    }
+    if (this.skipBtn) {
+      this.skipBtn.destroy()
+      this.skipBtn = undefined
     }
 
     // Spaceキーリスナーを削除
@@ -345,6 +360,20 @@ export default class StoryScene extends Phaser.Scene {
         }
       })
     })
+  }
+
+  /**
+   * ストーリーをスキップして即終了
+   */
+  private skipStory() {
+    if (this.isSkipping) return
+    this.isSkipping = true
+    // 待機中のタイマーを即座に停止（showSay のPromiseは未解決のまま放置、scene.stop で破棄される）
+    if (this.checkInterval) {
+      this.checkInterval.remove()
+      this.checkInterval = undefined
+    }
+    this.endStory()
   }
 
   /**

@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Portal Editor</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div id="app">
+    <header class="header">
+      <h1><a href="../" style="color:inherit; text-decoration:none; font-size:0.75rem; opacity:0.6; margin-right:10px;">← ハブ</a>Portal Editor</h1>
+      <div class="header-actions">
+        <button id="btnOpen" class="btn-primary">開く</button>
+        <button id="btnExport">Export JSON</button>
+        <div class="separator"></div>
+        <button id="btnSaveToGame" class="btn-success">ゲームに保存</button>
+      </div>
+    </header>
+
+    <div class="main-content">
+      <aside class="sidebar">
+        <div class="sidebar-header">
+          <span>ポータル一覧</span>
+          <button id="btnNew" class="btn-new">+ 新規作成</button>
+        </div>
+        <div class="portal-list" id="portalList"></div>
+      </aside>
+
+      <main class="right-panel" id="rightPanel">
+        <div class="empty-state" id="emptyState">ポータルを選択するか、「+ 新規作成」でポータルを追加してください</div>
+
+        <div id="editorContent" style="display:none; flex-direction:column; gap:14px;">
+
+          <!-- 基本情報 -->
+          <div class="section-card">
+            <div class="section-title">基本情報</div>
+            <div class="section-body">
+              <div class="form-grid">
+                <div class="form-field">
+                  <label>キー（assets/images/portal/{key}.png）</label>
+                  <input type="text" id="fieldKey" placeholder="portal_gate">
+                </div>
+                <div class="form-field">
+                  <label>ラベル（表示名）</label>
+                  <input type="text" id="fieldLabel" placeholder="ゲート">
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- スプライト設定 -->
+          <div class="section-card">
+            <div class="section-title">スプライト・アニメーション</div>
+            <div class="section-body" style="display:flex; flex-direction:column; gap:10px;">
+              <div class="sprite-preview">
+                <canvas id="spriteCanvas" width="64" height="64"></canvas>
+              </div>
+              <button id="btnLoadPreview" style="
+                padding:4px 12px; background:#313244; color:#89b4fa;
+                border:1px solid #45475a; border-radius:4px; cursor:pointer; font-size:0.8rem; width:fit-content;
+              ">プレビュー更新</button>
+
+              <div class="checkbox-row">
+                <input type="checkbox" id="fieldAnimated">
+                <label for="fieldAnimated">アニメーションあり（256×64px / 4コマ横並び）</label>
+              </div>
+
+              <div id="animFields" style="display:none;">
+                <div class="form-grid">
+                  <div class="form-field">
+                    <label>フレーム数</label>
+                    <input type="number" id="fieldFrameCount" value="4" min="1" max="32">
+                  </div>
+                  <div class="form-field">
+                    <label>フレームレート（fps）</label>
+                    <input type="number" id="fieldFrameRate" value="8" min="1" max="60">
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </main>
+    </div>
+  </div>
+
+  <script src="../shared/save-api.js"></script>
+  <script>
+    const PORTAL_DEFS_PATH = 'assets/images/portal/portal-defs.json'
+    const PORTAL_IMG_BASE = '../../public/assets/images/portal/'
+
+    let portals = []
+    let selectedIndex = -1
+
+    // ─── DOM refs ───
+    const portalList     = document.getElementById('portalList')
+    const emptyState     = document.getElementById('emptyState')
+    const editorContent  = document.getElementById('editorContent')
+    const fieldKey       = document.getElementById('fieldKey')
+    const fieldLabel     = document.getElementById('fieldLabel')
+    const fieldAnimated  = document.getElementById('fieldAnimated')
+    const fieldFrameCount= document.getElementById('fieldFrameCount')
+    const fieldFrameRate = document.getElementById('fieldFrameRate')
+    const animFields     = document.getElementById('animFields')
+    const spriteCanvas   = document.getElementById('spriteCanvas')
+    const ctx            = spriteCanvas.getContext('2d')
+
+    // ─── Auto-load on startup ───
+    async function autoLoad() {
+      try {
+        const data = await window.loadAsset(PORTAL_DEFS_PATH)
+        portals = typeof data === 'string' ? JSON.parse(data) : data
+        renderList()
+      } catch (e) {
+        console.warn('[PortalEditor] Could not auto-load:', e)
+      }
+    }
+    autoLoad()
+
+    // ─── Sidebar ───
+    function renderList() {
+      portalList.innerHTML = ''
+      portals.forEach((p, i) => {
+        const div = document.createElement('div')
+        div.className = 'portal-item' + (i === selectedIndex ? ' selected' : '')
+        div.innerHTML = `
+          <span class="portal-name">${p.label || p.key}</span>
+          <button class="btn-delete" data-i="${i}" title="削除">✕</button>
+        `
+        div.addEventListener('click', e => {
+          if (e.target.closest('.btn-delete')) return
+          selectPortal(i)
+        })
+        div.querySelector('.btn-delete').addEventListener('click', e => {
+          e.stopPropagation()
+          portals.splice(i, 1)
+          if (selectedIndex >= portals.length) selectedIndex = portals.length - 1
+          renderList()
+          if (selectedIndex >= 0) selectPortal(selectedIndex)
+          else showEmpty()
+        })
+        portalList.appendChild(div)
+      })
+    }
+
+    function showEmpty() {
+      selectedIndex = -1
+      emptyState.style.display = 'flex'
+      editorContent.style.display = 'none'
+    }
+
+    function selectPortal(i) {
+      selectedIndex = i
+      renderList()
+      const p = portals[i]
+      emptyState.style.display = 'none'
+      editorContent.style.display = 'flex'
+
+      fieldKey.value         = p.key ?? ''
+      fieldLabel.value       = p.label ?? ''
+      fieldAnimated.checked  = !!p.animated
+      fieldFrameCount.value  = p.frameCount ?? 4
+      fieldFrameRate.value   = p.frameRate ?? 8
+      animFields.style.display = p.animated ? 'block' : 'none'
+
+      loadPreview(p.key)
+    }
+
+    function getCurrentValues() {
+      return {
+        key:        fieldKey.value.trim(),
+        label:      fieldLabel.value.trim(),
+        animated:   fieldAnimated.checked,
+        frameCount: parseInt(fieldFrameCount.value) || 4,
+        frameRate:  parseInt(fieldFrameRate.value) || 8,
+      }
+    }
+
+    function saveCurrentToArray() {
+      if (selectedIndex < 0) return
+      portals[selectedIndex] = getCurrentValues()
+      renderList()
+    }
+
+    // ─── Inputs ───
+    [fieldKey, fieldLabel, fieldFrameCount, fieldFrameRate].forEach(el =>
+      el.addEventListener('input', saveCurrentToArray)
+    )
+
+    // ─── Sprite preview ───
+    let previewRafId = null
+    let previewImg = null
+
+    function stopPreview() {
+      if (previewRafId !== null) { cancelAnimationFrame(previewRafId); previewRafId = null }
+    }
+
+    function startAnimatedPreview(img, frameCount, frameRate) {
+      const frameDuration = 1000 / frameRate
+      let lastTime = 0
+      let frame = 0
+      function tick(now) {
+        if (now - lastTime >= frameDuration) {
+          lastTime = now
+          ctx.clearRect(0, 0, 64, 64)
+          ctx.drawImage(img, frame * 64, 0, 64, 64, 0, 0, 64, 64)
+          frame = (frame + 1) % frameCount
+        }
+        previewRafId = requestAnimationFrame(tick)
+      }
+      previewRafId = requestAnimationFrame(tick)
+    }
+
+    async function loadPreview(key) {
+      stopPreview()
+      ctx.clearRect(0, 0, 64, 64)
+      if (!key) return
+      try {
+        const img = new Image()
+        img.src = `${PORTAL_IMG_BASE}${key}.png?t=${Date.now()}`
+        await new Promise((res, rej) => { img.onload = res; img.onerror = rej })
+        previewImg = img
+        const animated = fieldAnimated.checked
+        const frameCount = parseInt(fieldFrameCount.value) || 4
+        const frameRate = parseInt(fieldFrameRate.value) || 8
+        if (animated) {
+          startAnimatedPreview(img, frameCount, frameRate)
+        } else {
+          ctx.drawImage(img, 0, 0, 64, 64, 0, 0, 64, 64)
+        }
+      } catch {
+        ctx.fillStyle = '#f38ba8'
+        ctx.font = '10px monospace'
+        ctx.fillText('Not found', 4, 36)
+      }
+    }
+
+    // アニメチェックボックス変更時にプレビューも再起動
+    fieldAnimated.addEventListener('change', () => {
+      animFields.style.display = fieldAnimated.checked ? 'block' : 'none'
+      saveCurrentToArray()
+      if (previewImg) {
+        stopPreview()
+        if (fieldAnimated.checked) {
+          startAnimatedPreview(previewImg, parseInt(fieldFrameCount.value) || 4, parseInt(fieldFrameRate.value) || 8)
+        } else {
+          ctx.clearRect(0, 0, 64, 64)
+          ctx.drawImage(previewImg, 0, 0, 64, 64, 0, 0, 64, 64)
+        }
+      }
+    })
+
+    document.getElementById('btnLoadPreview').addEventListener('click', () => {
+      loadPreview(fieldKey.value.trim())
+    })
+
+    // ─── Buttons ───
+    document.getElementById('btnNew').addEventListener('click', () => {
+      portals.push({ key: 'new_portal', label: '新ポータル', animated: false, frameCount: 4, frameRate: 8 })
+      renderList()
+      selectPortal(portals.length - 1)
+    })
+
+    document.getElementById('btnOpen').addEventListener('click', () => {
+      window.loadAsset(PORTAL_DEFS_PATH).then(data => {
+        portals = typeof data === 'string' ? JSON.parse(data) : data
+        renderList()
+        showEmpty()
+      }).catch(e => alert('読み込み失敗: ' + e.message))
+    })
+
+    document.getElementById('btnExport').addEventListener('click', () => {
+      const blob = new Blob([JSON.stringify(portals, null, 2)], { type: 'application/json' })
+      const a = document.createElement('a')
+      a.href = URL.createObjectURL(blob)
+      a.download = 'portal-defs.json'
+      a.click()
+    })
+
+    document.getElementById('btnSaveToGame').addEventListener('click', async () => {
+      try {
+        await window.saveToGame(PORTAL_DEFS_PATH, portals)
+        alert('保存しました')
+      } catch (e) {
+        alert('保存失敗: ' + e.message)
+      }
+    })
+  </script>
+</body>
+</html>

@@ -141,20 +141,44 @@ export default class LoadingScene extends Phaser.Scene {
     // タイトル画面用アセット
     this.load.image('title', 'assets/images/title.png')
 
-    // ボタン画像
-    this.load.image('btn_play', 'assets/images/Play_button.png')
-    this.load.image('btn_resume', 'assets/images/Resume_Button.png')
-    this.load.image('btn_backtotitle', 'assets/images/BacktoTitle_Button.png')
+    // ボタン画像（ui/フォルダ）
+    this.load.image('btn_play', 'assets/images/ui/Play_button.png')
+    this.load.image('btn_resume', 'assets/images/ui/Resume_Button.png')
+    this.load.image('btn_backtotitle', 'assets/images/ui/BacktoTitle_Button.png')
+    this.load.image('btn_skip', 'assets/images/ui/skip_button.png')
 
-    // ポータルスプライト（チョロマキー処理のため raw で読み込む）
+    // ポータルスプライト（door は chromaKey処理、その他は直接ロード）
     this.load.image('door_raw', 'assets/images/door.png')
+    this.load.json('portal-defs', 'assets/images/portal/portal-defs.json')
+    try {
+      const xhr = new XMLHttpRequest()
+      xhr.open('GET', 'assets/images/portal/portal-defs.json', false)
+      xhr.send()
+      if (xhr.status === 200) {
+        const defs = JSON.parse(xhr.responseText) as Array<{ key: string; animated: boolean; frameCount: number; frameRate: number }>
+        defs.forEach(def => {
+          if (def.key !== 'door') {
+            if (def.animated) {
+              this.load.spritesheet(def.key, `assets/images/portal/${def.key}.png`, {
+                frameWidth: 64,
+                frameHeight: 64,
+              })
+            } else {
+              this.load.image(def.key, `assets/images/portal/${def.key}.png`)
+            }
+          }
+        })
+      }
+    } catch (e) {
+      console.warn('[LoadingScene] Could not sync-load portal-defs.json:', e)
+    }
 
     // 飛び道具（プレイヤー用）
     this.load.image('magic_fire', 'assets/images/magic_fire.png')
     this.load.image('witch_orb', 'assets/images/witch_orb.png')
 
     // UIボタン
-    this.load.image('btn_config', 'assets/images/Se_config_Button.png')
+    this.load.image('btn_config', 'assets/images/ui/Se_config_Button.png')
 
     // ゲームSE（ファイルが存在しない場合は loaderror で警告のみ）
     this.load.audio('se_player_attack', 'assets/sounds/se/player_attack.ogg')

@@ -91,5 +91,16 @@
       "あ～あ、サキュバスに襲われたのね、すっかり壊れてる・・・。"
     ],
     "frameRate": 4
+  },
+  {
+    "id": "npc_1775560019184",
+    "name": "炎",
+    "spriteKey": "fire",
+    "animated": true,
+    "movement": "fixed",
+    "speechLines": [],
+    "speechIntervalMs": 5000,
+    "dialogLines": [],
+    "frameCount": 7
   }
 ]

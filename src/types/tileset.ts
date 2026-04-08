@@ -19,6 +19,7 @@ export interface EnemySpawn {
 export interface Portal {
   x: number
   y: number
+  spriteKey?: string
   targetMap?: string
   targetX?: number
   targetY?: number

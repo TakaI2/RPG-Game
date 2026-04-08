@@ -128,6 +128,8 @@
         #enemyModal.show { display: flex; }
         #npcModal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.7); align-items: center; justify-content: center; z-index: 1000; }
         #npcModal.show { display: flex; }
+        #portalModal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.7); align-items: center; justify-content: center; z-index: 1000; }
+        #portalModal.show { display: flex; }
 
         .modal-box {
             background: #1e1e2e;
@@ -263,6 +265,18 @@
         }
 
         .btn-confirm:hover { background: #2a5080; }
+
+        .rot-btn {
+            padding: 4px 10px;
+            background: #313244;
+            color: #cdd6f4;
+            border: 1px solid #45475a;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.8rem;
+        }
+        .rot-btn:hover { background: #45475a; }
+        .rot-btn.selected { background: #2d1f4a; color: #cba6f7; border-color: #cba6f7; }
 
         ::-webkit-scrollbar { width: 6px; }
         ::-webkit-scrollbar-track { background: #181825; }
@@ -420,6 +434,31 @@
         </div>
     </div>
 
+    <!-- ポータル選択モーダル -->
+    <div id="portalModal">
+        <div class="modal-box">
+            <div class="modal-header">
+                <h3>ポータルデザインを選択</h3>
+                <button onclick="closePortalModal()">✕</button>
+            </div>
+            <div class="modal-body">
+                <div class="enemy-grid" id="portalGrid"></div>
+                <div style="margin-top:12px; display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
+                    <span style="font-size:0.8rem; color:#a6adc8;">向き:</span>
+                    <div id="rotationBtns" style="display:flex; gap:4px;">
+                        <button class="rot-btn selected" data-rot="0"   onclick="selectPortalRotation(0)">↑ 0°</button>
+                        <button class="rot-btn"          data-rot="90"  onclick="selectPortalRotation(90)">→ 90°</button>
+                        <button class="rot-btn"          data-rot="180" onclick="selectPortalRotation(180)">↓ 180°</button>
+                        <button class="rot-btn"          data-rot="270" onclick="selectPortalRotation(270)">← 270°</button>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn-confirm" onclick="confirmPortalSelection()">決定</button>
+            </div>
+        </div>
+    </div>
+
     <!-- NPC選択モーダル -->
     <div id="npcModal">
         <div class="modal-box">
@@ -465,6 +504,7 @@
     const STORAGE_KEY = 'rpg-enemy-defs'
     const NPC_STORAGE_KEY = 'rpg-npc-defs'
     const NPC_DEFS_URL = '../../public/assets/npcs/npc-defs.json'
+    const PORTAL_DEFS_URL = '../../public/assets/images/portal/portal-defs.json'
     const CUSTOM_TILES_KEY = 'rpg-custom-tiles'
     const BASE_DEFS_KEY = 'rpg-base-tiles'
     const TILESET_URL = '../../public/assets/maps/tilesets.json'
@@ -490,6 +530,13 @@
     let selectedEnemyDefId = null  // null = ランダム
     let enemyDefs = []
 
+    // モーダル用（ポータル）
+    let pendingPortalPos = null
+    let selectedPortalKey = 'door'
+    let selectedPortalRotation = 0
+    let portalDefs = []
+    let portalImageCache = {}
+
     // モーダル用（NPC）
     let pendingNPCPos = null
     let selectedNPCDefId = null
@@ -510,6 +557,7 @@
 
         loadEnemyDefs()
         loadNPCDefs()
+        loadPortalDefs()
         loadTilesets()  // パレットを動的生成（完了後に createNewMap を呼ぶ）
     }
 
@@ -737,6 +785,86 @@
         } catch { /* fall through */ }
 
         enemyDefs = []
+    }
+
+    async function loadPortalDefs() {
+        try {
+            const res = await fetch(PORTAL_DEFS_URL + '?t=' + Date.now())
+            if (res.ok) { portalDefs = await res.json(); return }
+        } catch { /* fall through */ }
+        portalDefs = [{ key: 'door' }]
+    }
+
+    function getPortalImage(key) {
+        if (portalImageCache[key] !== undefined) return portalImageCache[key]
+        portalImageCache[key] = null
+        const img = new Image()
+        img.onload = () => { portalImageCache[key] = img; drawMap() }
+        img.onerror = () => { portalImageCache[key] = null }
+        img.src = `../../public/assets/images/portal/${key}.png`
+        return null
+    }
+
+    async function openPortalModal(x, y) {
+        await loadPortalDefs()
+        pendingPortalPos = { x, y }
+        selectedPortalKey = portalDefs[0]?.key ?? 'door'
+        selectedPortalRotation = 0
+        buildPortalGrid()
+        document.querySelectorAll('.rot-btn').forEach(b => b.classList.toggle('selected', b.dataset.rot === '0'))
+        document.getElementById('portalModal').classList.add('show')
+    }
+
+    function selectPortalRotation(deg) {
+        selectedPortalRotation = deg
+        document.querySelectorAll('.rot-btn').forEach(b => b.classList.toggle('selected', parseInt(b.dataset.rot) === deg))
+    }
+
+    function closePortalModal() {
+        document.getElementById('portalModal').classList.remove('show')
+        pendingPortalPos = null
+    }
+
+    function buildPortalGrid() {
+        const grid = document.getElementById('portalGrid')
+        grid.innerHTML = ''
+        portalDefs.forEach((def, i) => {
+            const card = document.createElement('div')
+            card.className = 'enemy-card' + (i === 0 ? ' selected' : '')
+            card.dataset.key = def.key
+
+            const miniCanvas = document.createElement('canvas')
+            miniCanvas.width = 64; miniCanvas.height = 64
+            miniCanvas.style.imageRendering = 'pixelated'
+            const img = new Image()
+            img.onload = () => {
+                const ctx = miniCanvas.getContext('2d')
+                ctx.clearRect(0, 0, 64, 64)
+                ctx.drawImage(img, 0, 0, 64, 64, 0, 0, 64, 64)
+            }
+            img.src = `../../public/assets/images/portal/${def.key}.png`
+
+            const nameEl = document.createElement('div')
+            nameEl.className = 'ec-name'
+            nameEl.textContent = def.key
+
+            card.appendChild(miniCanvas)
+            card.appendChild(nameEl)
+            card.addEventListener('click', () => {
+                document.querySelectorAll('#portalGrid .enemy-card').forEach(c => c.classList.remove('selected'))
+                card.classList.add('selected')
+                selectedPortalKey = def.key
+            })
+            grid.appendChild(card)
+        })
+    }
+
+    function confirmPortalSelection() {
+        if (!pendingPortalPos) { closePortalModal(); return }
+        const { x, y } = pendingPortalPos
+        portals.push({ x, y, spriteKey: selectedPortalKey, rotation: selectedPortalRotation })
+        closePortalModal()
+        drawMap()
     }
 
     async function loadNPCDefs() {
@@ -993,13 +1121,24 @@
         const py = portal.y * TILE_SIZE
         const cx = px + TILE_SIZE / 2
         const cy = py + TILE_SIZE / 2
-        const img = getChromaCanvas('door')
-        if (img) {
+        const key = portal.spriteKey || 'door'
+        const rot = (portal.rotation ?? 0) * Math.PI / 180
+
+        const drawImg = (img) => {
+            ctx.save()
             ctx.imageSmoothingEnabled = false
-            ctx.drawImage(img, 0, 0, FRAME_SIZE, FRAME_SIZE, px, py, TILE_SIZE, TILE_SIZE)
-            return
+            ctx.translate(cx, cy)
+            ctx.rotate(rot)
+            ctx.drawImage(img, 0, 0, FRAME_SIZE, FRAME_SIZE, -TILE_SIZE / 2, -TILE_SIZE / 2, TILE_SIZE, TILE_SIZE)
+            ctx.restore()
         }
-        // フォールバック: 絵文字（未ロード時）
+
+        // portal/フォルダの画像を優先、なければ chroma canvas にフォールバック
+        const portalImg = getPortalImage(key)
+        if (portalImg) { drawImg(portalImg); return }
+        const chromaImg = getChromaCanvas(key)
+        if (chromaImg) { drawImg(chromaImg); return }
+        // フォールバック
         ctx.fillStyle = '#1a1a3a99'
         ctx.fillRect(px, py, TILE_SIZE, TILE_SIZE)
         ctx.font = `${Math.floor(TILE_SIZE * 0.65)}px sans-serif`
@@ -1062,12 +1201,11 @@
             portals = portals.filter(p => !(p.x === x && p.y === y))
             drawMap()
         } else if (selectedTile === 'portal') {
-            // ポータル配置（重複不可）
+            // ポータル配置 → デザイン選択モーダル
             const exists = portals.some(p => p.x === x && p.y === y)
             if (!exists) {
-                portals.push({ x, y })
                 isDrawing = false
-                drawMap()
+                openPortalModal(x, y)
             }
         } else if (selectedTile === 'spawn') {
             // 左クリック: 敵スポーン → モーダルを開く
@@ -1205,7 +1343,7 @@
                     ...(s.enemyDefId ? { enemyDefId: s.enemyDefId } : {})
                 }))
                 npcSpawns = (j.npcSpawns || []).map(s => ({ x: s.x, y: s.y, npcDefId: s.npcDefId }))
-                portals = (j.portals || []).map(p => ({ x: p.x, y: p.y }))
+                portals = (j.portals || []).map(p => ({ x: p.x, y: p.y, ...(p.spriteKey ? { spriteKey: p.spriteKey } : {}), ...(p.rotation ? { rotation: p.rotation } : {}) }))
                 document.getElementById('cols').value = cols
                 document.getElementById('rows').value = rows
                 // ファイル名からmapIdを自動設定（拡張子を除く）
@@ -1232,7 +1370,7 @@
                 ...(s.enemyDefId ? { enemyDefId: s.enemyDefId } : {})
             }))
             npcSpawns = (j.npcSpawns || []).map(s => ({ x: s.x, y: s.y, npcDefId: s.npcDefId }))
-            portals = (j.portals || []).map(p => ({ x: p.x, y: p.y }))
+            portals = (j.portals || []).map(p => ({ x: p.x, y: p.y, ...(p.spriteKey ? { spriteKey: p.spriteKey } : {}), ...(p.rotation ? { rotation: p.rotation } : {}) }))
             document.getElementById('cols').value = cols
             document.getElementById('rows').value = rows
             document.getElementById('mapId').value = filename.replace(/\.json$/, '')

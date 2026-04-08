@@ -926,27 +926,12 @@ function onCanvasWheel(e) {
 
 // ─── Toolbar Buttons ──────────────────────────────────────────────────────────
 document.getElementById('btn-open').addEventListener('click', () => {
-  document.getElementById('file-input').click();
-});
-
-document.getElementById('file-input').addEventListener('change', e => {
-  const file = e.target.files[0];
-  if (!file) return;
-  state.fileName = file.name;
-  const reader = new FileReader();
-  reader.onload = ev => {
-    try {
-      const json = JSON.parse(ev.target.result);
-      deserialize(json);
-      renderAll();
-      renderProperties();
-    } catch (err) {
-      alert('JSONの読み込みに失敗しました: ' + err.message);
-    }
-  };
-  reader.readAsText(file);
-  // Reset so same file can be re-loaded
-  e.target.value = '';
+  window.loadAsset('assets/gameflow.json').then(json => {
+    deserialize(json);
+    renderAll();
+    renderProperties();
+    window.showToast('読み込みました: assets/gameflow.json', 'success');
+  }).catch(err => alert('JSONの読み込みに失敗しました: ' + err.message));
 });
 
 document.getElementById('btn-save').addEventListener('click', () => {

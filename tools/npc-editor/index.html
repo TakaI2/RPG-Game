@@ -148,13 +148,14 @@
 
     document.getElementById('btnNew').addEventListener('click', createNew)
     document.getElementById('btnOpen').addEventListener('click', () => {
-      openFileBrowser('assets/npcs', (data, filename) => {
+      loadAsset(NPC_DEFS_PATH).then(data => {
         if (!Array.isArray(data)) { alert('npc-defs.json はJSON配列である必要があります'); return }
         npcDefs = data
         selectedIdx = -1
         renderList()
         showEmpty()
-      })
+        showToast('読み込みました: ' + NPC_DEFS_PATH, 'success')
+      }).catch(err => alert('読み込みエラー: ' + err.message))
     })
     document.getElementById('btnExport').addEventListener('click', exportJSON)
     document.getElementById('btnSaveToGame').addEventListener('click', () => {
