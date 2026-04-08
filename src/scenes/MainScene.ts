@@ -56,6 +56,7 @@ export default class MainScene extends Phaser.Scene {
   private mages: Mage[] = []
   private brutes: Brute[] = []
   private walls?: Phaser.Physics.Arcade.StaticGroup
+  private mapAnimSprites: Phaser.GameObjects.Sprite[] = []
   private hitbox!: Phaser.GameObjects.Rectangle & { body: Phaser.Physics.Arcade.Body }
   private ui!: DialogUI
   private playerDirection: string = 'down'
@@ -1248,6 +1249,10 @@ export default class MainScene extends Phaser.Scene {
       this.walls.destroy()
     }
 
+    // アニメタイルスプライトを破棄（前マップの残留防止）
+    this.mapAnimSprites.forEach(s => s.destroy())
+    this.mapAnimSprites = []
+
     // イベントトリガーマネージャーを破棄
     if (this.eventTriggerManager) {
       this.eventTriggerManager.destroy()
@@ -1319,6 +1324,7 @@ export default class MainScene extends Phaser.Scene {
     const tileDefMap = new Map(tileDefArray.map(d => [d.id, d]))
     const result = buildMapFromJSON(this, mapData as unknown as MapData, tileDefMap)
     this.walls = result.walls
+    this.mapAnimSprites = result.animSprites
 
     // カメラと物理世界の境界を更新
     this.cameras.main.setBounds(0, 0, result.worldW, result.worldH)

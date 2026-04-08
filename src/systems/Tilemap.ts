@@ -16,13 +16,16 @@ export function buildMapFromJSON(
   scene: Phaser.Scene,
   data: MapData,
   tileDefMap: Map<number, TileDef>
-): { worldW: number; worldH: number; walls: Phaser.Physics.Arcade.StaticGroup } {
+): { worldW: number; worldH: number; walls: Phaser.Physics.Arcade.StaticGroup; animSprites: Phaser.GameObjects.Sprite[] } {
   const { cols, rows, tiles } = data
   const worldW = cols * TILE
   const worldH = rows * TILE
 
   // 壁の物理グループ
   const walls = scene.physics.add.staticGroup()
+
+  // アニメーションスプライトの追跡（マップ遷移時に破棄するため）
+  const animSprites: Phaser.GameObjects.Sprite[] = []
 
   // 床タイルを HTML Canvas に描画してから単一テクスチャとして登録
   const floorCanvas = document.createElement('canvas')
@@ -51,6 +54,7 @@ export function buildMapFromJSON(
         if (hasValidAnim) {
           // 有効なスプライトシート: アニメーションスプライトとして配置
           const sprite = scene.add.sprite(cx, cy, def.textureKey)
+          animSprites.push(sprite)
           sprite.setDisplaySize(TILE, TILE)
 
           if (animFrames !== null && animFrames.length > 0) {
@@ -115,5 +119,5 @@ export function buildMapFromJSON(
     `[Tilemap] buildMapFromJSON: ${cols}x${rows}, floor=${floorTileCount}, worldSize=${worldW}x${worldH}`
   )
 
-  return { worldW, worldH, walls }
+  return { worldW, worldH, walls, animSprites }
 }
