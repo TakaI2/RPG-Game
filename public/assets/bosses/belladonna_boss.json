@@ -13,20 +13,38 @@
   },
   "cutin": {
     "image": "boss_face",
-    "position": "left"
+    "position": "left",
+    "x": 910,
+    "y": 864,
+    "scale": 0.9
   },
   "phases": [
     {
       "phase": 1,
-      "hpRange": [16, 30],
+      "hpRange": [
+        16,
+        30
+      ],
       "attackCooldown": 0.8,
-      "patterns": ["orb_spread", "cursed_circle", "blink_dash"]
+      "patterns": [
+        "orb_spread",
+        "cursed_circle",
+        "blink_dash"
+      ]
     },
     {
       "phase": 2,
-      "hpRange": [0, 15],
+      "hpRange": [
+        0,
+        15
+      ],
       "attackCooldown": 0.5,
-      "patterns": ["orb_spread", "cursed_circle", "blink_dash", "witch_calamity"]
+      "patterns": [
+        "orb_spread",
+        "cursed_circle",
+        "blink_dash",
+        "witch_calamity"
+      ]
     }
   ],
   "attacks": [
@@ -131,7 +149,11 @@
         "flash": {
           "enabled": true,
           "duration": 200,
-          "color": [170, 0, 255]
+          "color": [
+            170,
+            0,
+            255
+          ]
         }
       },
       "bgmControl": {

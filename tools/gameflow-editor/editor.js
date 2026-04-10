@@ -924,14 +924,45 @@ function onCanvasWheel(e) {
   updateStatus();
 }
 
+// ─── ファイル名入力と state.fileName の同期 ───────────────────────────────────
+const fileNameInput = document.getElementById('file-name-input');
+fileNameInput.addEventListener('input', () => {
+  state.fileName = fileNameInput.value.trim() || 'gameflow.json';
+});
+
+function setFileName(name) {
+  state.fileName = name;
+  fileNameInput.value = name;
+}
+
 // ─── Toolbar Buttons ──────────────────────────────────────────────────────────
+document.getElementById('btn-new').addEventListener('click', () => {
+  if (state.nodes.length > 0 && !confirm('現在の内容を破棄して新規作成しますか？')) return;
+  state.nodes = [];
+  state.edges = [];
+  state.selectedId = null;
+  state._nextId = 1;
+  setFileName('gameflow.json');
+  // start ノードを追加
+  const startNode = { id: 'start', type: 'start', x: 100, y: 200, data: { label: 'START' } };
+  state.nodes.push(startNode);
+  renderAll();
+  renderProperties();
+  window.showToast('新規作成しました', 'success');
+});
+
 document.getElementById('btn-open').addEventListener('click', () => {
-  window.loadAsset('assets/gameflow.json').then(json => {
-    deserialize(json);
-    renderAll();
-    renderProperties();
-    window.showToast('読み込みました: assets/gameflow.json', 'success');
-  }).catch(err => alert('JSONの読み込みに失敗しました: ' + err.message));
+  const path = `assets/${state.fileName}`;
+  fetch(`/api/load-asset?path=${encodeURIComponent(path)}&_t=${Date.now()}`, { cache: 'no-store' })
+    .then(r => r.json())
+    .then(res => {
+      if (!res.ok) throw new Error(res.error);
+      deserialize(JSON.parse(res.content));
+      renderAll();
+      renderProperties();
+      window.showToast(`読み込みました: ${path}`, 'success');
+    })
+    .catch(err => alert('読み込みに失敗しました: ' + err.message));
 });
 
 document.getElementById('btn-save').addEventListener('click', () => {
@@ -946,7 +977,8 @@ document.getElementById('btn-save').addEventListener('click', () => {
 });
 
 document.getElementById('btn-save-to-game').addEventListener('click', () => {
-  window.saveToGame('assets/gameflow.json', serialize());
+  const path = `assets/${state.fileName}`;
+  window.saveToGame(path, serialize());
 });
 
 document.getElementById('btn-add-map').addEventListener('click', () => {

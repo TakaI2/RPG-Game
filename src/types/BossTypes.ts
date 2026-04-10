@@ -188,6 +188,9 @@ export type SpriteConfig = {
 export type CutinImageConfig = {
   image: string
   position: 'left' | 'right'
+  x?: number      // 最終X座標（省略時はpositionで決定）
+  y?: number      // Y座標（省略時は画面中央）
+  scale?: number  // スケール（省略時は2.5）
 }
 
 /**

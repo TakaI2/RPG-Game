@@ -455,7 +455,7 @@ function executeUltimateAttack(
         } else {
           executeUltimateFire(scene, boss, player, projectiles, audioBus, cfg, attackConfig)
         }
-      })
+      }, boss.config.cutin)
     }
 
     boss.lastAttackTime = time + (attackConfig.cutin?.duration || 0) + (attackConfig.speech?.duration || 0) + 2000

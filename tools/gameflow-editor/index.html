@@ -12,9 +12,14 @@
     <header class="header">
       <h1><a href="../" style="color:inherit; text-decoration:none; font-size:0.75rem; opacity:0.6; margin-right:10px;">← ハブ</a>Gameflow Editor</h1>
       <div class="header-actions">
-        <button id="btn-open" title="JSONを読み込み">Open JSON</button>
-        <button id="btn-save" title="JSONを保存">Save JSON</button>
-        <button id="btn-save-to-game" title="public/assets/gameflow.json に直接書き込む">ゲームに保存</button>
+        <button id="btn-new" class="btn-new-file">新規</button>
+        <div class="file-name-wrap">
+          <span class="file-prefix">assets/</span>
+          <input id="file-name-input" type="text" value="gameflow.json" spellcheck="false">
+        </div>
+        <button id="btn-open" title="assets/ から読み込み">開く</button>
+        <button id="btn-save" title="ローカルにダウンロード">DL</button>
+        <button id="btn-save-to-game" title="assets/{ファイル名} に直接書き込む">ゲームに保存</button>
         <div class="separator"></div>
         <button id="btn-add-map" class="btn-node-map">+ Map</button>
         <button id="btn-add-story" class="btn-node-story">+ Story</button>

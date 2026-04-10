@@ -99,6 +99,11 @@ export default class LoadingScene extends Phaser.Scene {
           seKeys.forEach(seKey => {
             this.load.audio(seKey, `assets/sounds/se/${seKey}.ogg`)
           })
+          // カットイン画像を assets/images/boss/ から動的ロード
+          const cutinImg = bossConfig.cutin?.image
+          if (cutinImg && !this.textures.exists(cutinImg)) {
+            this.load.image(cutinImg, `assets/images/boss/${cutinImg}.png`)
+          }
           this.load.start()
         })
       })
@@ -134,9 +139,6 @@ export default class LoadingScene extends Phaser.Scene {
 
     // 敵定義JSON
     this.load.json('enemy-defs', 'assets/enemies/enemy-defs.json')
-
-    // ボスカットイン用画像（オプション：画像がない場合はプレースホルダー表示）
-    this.load.image('boss_face', 'assets/images/boss_face.png')
 
     // タイトル画面用アセット
     this.load.image('title', 'assets/images/title.png')
@@ -175,7 +177,7 @@ export default class LoadingScene extends Phaser.Scene {
 
     // 飛び道具（プレイヤー用）
     this.load.image('magic_fire', 'assets/images/magic_fire.png')
-    this.load.image('witch_orb', 'assets/images/witch_orb.png')
+    this.load.image('witch_orb', 'assets/images/boss/witch_orb.png')
 
     // UIボタン
     this.load.image('btn_config', 'assets/images/ui/Se_config_Button.png')

@@ -13,20 +13,36 @@
   },
   "cutin": {
     "image": "boss_face",
-    "position": "right"
+    "position": "right",
+    "scale": 1.1
   },
   "phases": [
     {
       "phase": 1,
-      "hpRange": [13, 25],
-      "attackCooldown": 1.0,
-      "patterns": ["radial", "circle", "teleport_dash"]
+      "hpRange": [
+        13,
+        25
+      ],
+      "attackCooldown": 1,
+      "patterns": [
+        "radial",
+        "circle",
+        "teleport_dash"
+      ]
     },
     {
       "phase": 2,
-      "hpRange": [0, 12],
+      "hpRange": [
+        0,
+        12
+      ],
       "attackCooldown": 0.66,
-      "patterns": ["radial", "circle", "teleport_dash", "ultimate"]
+      "patterns": [
+        "radial",
+        "circle",
+        "teleport_dash",
+        "ultimate"
+      ]
     }
   ],
   "attacks": [
@@ -124,7 +140,11 @@
         "flash": {
           "enabled": true,
           "duration": 200,
-          "color": [255, 100, 100]
+          "color": [
+            255,
+            100,
+            100
+          ]
         }
       },
       "bgmControl": {
