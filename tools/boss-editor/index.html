@@ -80,6 +80,19 @@
                 <div class="form-field"><label>アニメキー（省略可）</label><input type="text" id="fAnimKey" placeholder="belladonna"></div>
                 <div class="form-field full-width"><label>ティント（例: 0xff0000、省略可）</label><input type="text" id="fTint" placeholder=""></div>
               </div>
+              <div style="display:flex;align-items:flex-start;gap:16px;margin-top:12px;">
+                <div>
+                  <canvas id="bossSpriteCanvas" width="128" height="128" style="display:block;border:1px solid #45475a;border-radius:4px;image-rendering:pixelated;background:#11111b;"></canvas>
+                  <div style="display:flex;gap:4px;margin-top:6px;">
+                    <button class="boss-anim-btn active" data-anim="idle">Idle</button>
+                    <button class="boss-anim-btn" data-anim="walk">Walk</button>
+                    <button class="boss-anim-btn" data-anim="atk">Atk</button>
+                  </div>
+                </div>
+                <div style="font-size:0.75rem;color:#6c7086;line-height:1.8;margin-top:4px;">
+                  スプライトキーを入力すると<br>アニメーションを確認できます
+                </div>
+              </div>
             </div>
           </div>
 
@@ -87,8 +100,8 @@
             <div class="section-title">SE（全体）</div>
             <div class="section-body">
               <div class="form-grid">
-                <div class="form-field"><label>被ダメージ SE キー</label><input type="text" id="fSeDamage" placeholder="boss_belladonna_damage"></div>
-                <div class="form-field"><label>撃破 SE キー</label><input type="text" id="fSeDefeat" placeholder="boss_belladonna_defeat"></div>
+                <div class="form-field"><label>被ダメージ SE キー</label><div class="se-input-row"><input type="text" list="se-options" id="fSeDamage" placeholder="boss_belladonna_damage"><button class="btn-se-play" type="button" title="テスト再生">▶</button></div></div>
+                <div class="form-field"><label>撃破 SE キー</label><div class="se-input-row"><input type="text" list="se-options" id="fSeDefeat" placeholder="boss_belladonna_defeat"><button class="btn-se-play" type="button" title="テスト再生">▶</button></div></div>
               </div>
             </div>
           </div>
@@ -97,7 +110,7 @@
         <!-- Tab: カットイン -->
         <div class="tab-content" id="tab-cutin">
           <div class="section-card">
-            <div class="section-title">カットイン画像（assets/images/boss/{key}.png）</div>
+            <div class="section-title">カットイン画像（assets/images/boss/{bossId}/{key}.png）</div>
             <div class="section-body" style="display:flex;flex-direction:column;gap:10px;">
               <!-- ゲーム画面プレビュー（1920×1080 スケール） -->
               <div id="cutinScreen" style="
@@ -160,15 +173,55 @@
   </div>
 </div>
 
+<datalist id="se-options"></datalist>
+
 <script src="../shared/save-api.js"></script>
 <script>
 const BOSSES_FOLDER = 'assets/bosses'
 const BOSS_IMG_BASE = '../../public/assets/images/boss/'
+const SE_FOLDER = 'assets/sounds/se'
 
 // ─── State ───
 let bossFiles = []     // [{filename, configKey}]
 let currentFile = null // 現在開いているファイル名
 let boss = null        // 現在編集中のBossConfig
+let seFiles = []       // ['boss_belladonna_damage.ogg', ...]
+
+// ─── SE ファイル一覧取得 ───
+async function loadSeFiles() {
+  try {
+    const res = await fetch(`/api/list-assets?folder=${SE_FOLDER}`)
+    const json = await res.json()
+    if (json.ok) {
+      seFiles = json.files
+      const datalist = document.getElementById('se-options')
+      datalist.innerHTML = ''
+      seFiles.forEach(f => {
+        const key = f.replace(/\.(ogg|mp3|wav)$/, '')
+        const opt = document.createElement('option')
+        opt.value = key
+        datalist.appendChild(opt)
+      })
+    }
+  } catch (e) {
+    seFiles = []
+  }
+}
+loadSeFiles()
+
+function playSePreview(key) {
+  if (!key) return
+  const file = seFiles.find(f => f.replace(/\.(ogg|mp3|wav)$/, '') === key)
+  const src = file
+    ? `../../public/assets/sounds/se/${file}`
+    : `../../public/assets/sounds/se/${key}.ogg`
+  const audio = new Audio(src)
+  audio.play().catch(() => {
+    if (!file) {
+      new Audio(`../../public/assets/sounds/se/${key}.mp3`).play().catch(() => {})
+    }
+  })
+}
 
 // ─── Startup: ファイル一覧取得 ───
 async function loadBossList() {
@@ -284,6 +337,7 @@ function loadBossToForm() {
   document.getElementById('fCutinY').value     = boss.cutin?.y     != null ? boss.cutin.y     : ''
   document.getElementById('fCutinScale').value = boss.cutin?.scale != null ? boss.cutin.scale : ''
   renderCutinPreview()
+  loadBossSprite(boss.sprite?.key ?? '')
   renderPhases()
   renderAttacks()
   showEditor()
@@ -339,7 +393,8 @@ function renderCutinPreview() {
     cutinPreviewImg.style.display   = 'block'
   }
   cutinPreviewImg.onerror = () => { cutinPreviewImg.style.display = 'none' }
-  cutinPreviewImg.src = `${BOSS_IMG_BASE}${key}.png?t=${Date.now()}`
+  const bossSubfolder = currentFile ? currentFile.replace('.json', '') : (boss?.id || 'unknown')
+  cutinPreviewImg.src = `../../public/assets/images/boss/${bossSubfolder}/${key}.png?t=${Date.now()}`
 }
 
 // ─── ドラッグで位置調整 ───
@@ -657,7 +712,7 @@ function buildConfigFields(type, cfg, ai) {
 }
 
 function buildSeFields(type, se, ai) {
-  const f = (key, label) => `<div class="form-field"><label>${label}</label><input type="text" data-ai="${ai}" data-key="se.${key}" value="${esc(se[key])}"></div>`
+  const f = (key, label) => `<div class="form-field"><label>${label}</label><div class="se-input-row"><input type="text" list="se-options" data-ai="${ai}" data-key="se.${key}" value="${esc(se[key])}"><button class="btn-se-play" type="button" title="テスト再生">▶</button></div></div>`
   switch (type) {
     case 'projectile_radial': return f('windup','予備動作SE') + f('fire','発射SE')
     case 'projectile_circle': return f('setup','展開SE') + f('fire','発射SE')
@@ -790,6 +845,22 @@ document.getElementById('btnAddAttack').addEventListener('click', () => {
   toggleAttackCard(last)
 })
 
+// ─── SE 再生ボタン（攻撃パターンリスト 委譲） ───
+document.getElementById('attackList').addEventListener('click', e => {
+  const btn = e.target.closest('.btn-se-play')
+  if (!btn) return
+  const input = btn.closest('.se-input-row').querySelector('input')
+  playSePreview(input.value.trim())
+})
+
+// ─── SE 再生ボタン（全体 SE フィールド） ───
+document.getElementById('tab-basic').addEventListener('click', e => {
+  const btn = e.target.closest('.btn-se-play')
+  if (!btn) return
+  const input = btn.closest('.se-input-row').querySelector('input')
+  playSePreview(input.value.trim())
+})
+
 // ─── Tabs ───
 document.querySelectorAll('.tab-btn').forEach(btn => {
   btn.addEventListener('click', () => {
@@ -798,7 +869,7 @@ document.querySelectorAll('.tab-btn').forEach(btn => {
     btn.classList.add('active')
     document.getElementById(`tab-${btn.dataset.tab}`).classList.add('active')
   })
-})
+});
 
 // 基本情報タブのフィールド変更を監視
 ['fId','fName','fHp','fSpeed','fScale','fDamage','fSpriteKey','fAnimKey','fTint',
@@ -810,14 +881,17 @@ document.querySelectorAll('.tab-btn').forEach(btn => {
 })
 
 // ─── Buttons ───
-document.getElementById('btnNew').addEventListener('click', () => {
+document.getElementById('btnNew').addEventListener('click', async () => {
+  // 現在のボスを自動保存してから新規作成
+  if (currentFile && boss) await saveCurrentBoss()
+
   currentFile = null
   boss = {
     id: 'new_boss',
     name: '新しいボス',
     stats: { hp: 30, speed: 100, scale: 1, damage: 3 },
     sprite: { key: 'new_boss', animKey: 'new_boss' },
-    cutin: { image: 'boss_face', position: 'right' },
+    cutin: { image: '', position: 'right' },
     phases: [
       { phase: 1, hpRange: [11, 30], attackCooldown: 1.0, patterns: [] },
       { phase: 2, hpRange: [0, 10],  attackCooldown: 0.7, patterns: [] }
@@ -827,6 +901,9 @@ document.getElementById('btnNew').addEventListener('click', () => {
     se: { damage: '', defeat: '' }
   }
   loadBossToForm()
+  // IDフィールドにフォーカスして選択状態にする
+  const fId = document.getElementById('fId')
+  if (fId) { fId.focus(); fId.select() }
 })
 
 document.getElementById('btnOpen').addEventListener('click', async () => {
@@ -864,6 +941,90 @@ document.getElementById('btnSaveToGame').addEventListener('click', async () => {
   await saveCurrentBoss()
   renderBossList()
 })
+
+// ─── Sprite Preview ───
+const BOSS_SPRITE_ANIM_DEFS = {
+  idle: { row: 2, colStart: 0,  colEnd: 3  },
+  walk: { row: 2, colStart: 4,  colEnd: 7  },
+  atk:  { row: 2, colStart: 8,  colEnd: 11 },
+}
+const BOSS_SHEET_COLS = 16
+const BOSS_FRAME_SIZE = 64
+let bossSpriteImage = null
+let bossSpriteAnimInterval = null
+let bossSpriteAnimFrame = 0
+let bossSpriteCurrentAnim = 'idle'
+
+document.querySelectorAll('.boss-anim-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.boss-anim-btn').forEach(b => b.classList.remove('active'))
+    btn.classList.add('active')
+    bossSpriteCurrentAnim = btn.dataset.anim
+    bossSpriteAnimFrame = 0
+    startBossSprite()
+  })
+})
+
+document.getElementById('fSpriteKey').addEventListener('input', () => {
+  loadBossSprite(document.getElementById('fSpriteKey').value.trim())
+})
+
+function loadBossSprite(spriteKey) {
+  stopBossSprite()
+  if (!spriteKey) { clearBossSpriteCanvas(); return }
+  const img = new Image()
+  img.src = `../../public/assets/images/${spriteKey}.png`
+  img.onload = () => {
+    bossSpriteImage = img
+    bossSpriteAnimFrame = 0
+    startBossSprite()
+  }
+  img.onerror = () => {
+    bossSpriteImage = null
+    clearBossSpriteCanvas()
+  }
+}
+
+function clearBossSpriteCanvas() {
+  const canvas = document.getElementById('bossSpriteCanvas')
+  if (!canvas) return
+  const ctx = canvas.getContext('2d')
+  ctx.clearRect(0, 0, canvas.width, canvas.height)
+  ctx.fillStyle = '#11111b'
+  ctx.fillRect(0, 0, canvas.width, canvas.height)
+}
+
+function startBossSprite() {
+  stopBossSprite()
+  if (!bossSpriteImage) { clearBossSpriteCanvas(); return }
+  const animDef = BOSS_SPRITE_ANIM_DEFS[bossSpriteCurrentAnim] || BOSS_SPRITE_ANIM_DEFS.idle
+  const totalFrames = animDef.colEnd - animDef.colStart + 1
+  bossSpriteAnimFrame = 0
+  bossSpriteAnimInterval = setInterval(() => {
+    drawBossSpriteFrame(animDef, bossSpriteAnimFrame)
+    bossSpriteAnimFrame = (bossSpriteAnimFrame + 1) % totalFrames
+  }, 1000 / 8)
+}
+
+function stopBossSprite() {
+  if (bossSpriteAnimInterval) { clearInterval(bossSpriteAnimInterval); bossSpriteAnimInterval = null }
+}
+
+function drawBossSpriteFrame(animDef, frame) {
+  const canvas = document.getElementById('bossSpriteCanvas')
+  if (!canvas) return
+  const ctx = canvas.getContext('2d')
+  ctx.clearRect(0, 0, canvas.width, canvas.height)
+  ctx.fillStyle = '#11111b'
+  ctx.fillRect(0, 0, canvas.width, canvas.height)
+  if (!bossSpriteImage) return
+  const col = animDef.colStart + frame
+  const frameIndex = animDef.row * BOSS_SHEET_COLS + col
+  const srcX = (frameIndex % BOSS_SHEET_COLS) * BOSS_FRAME_SIZE
+  const srcY = Math.floor(frameIndex / BOSS_SHEET_COLS) * BOSS_FRAME_SIZE
+  ctx.imageSmoothingEnabled = false
+  ctx.drawImage(bossSpriteImage, srcX, srcY, BOSS_FRAME_SIZE, BOSS_FRAME_SIZE, 0, 0, canvas.width, canvas.height)
+}
 
 // ─── Helpers ───
 function v(id) { return document.getElementById(id)?.value ?? '' }

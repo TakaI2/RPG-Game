@@ -229,6 +229,39 @@ body {
 .pattern-tag.inactive { background: #313244; color: #6c7086; border-color: #313244; }
 .pattern-tag:hover { border-color: #cba6f7; }
 
+.se-input-row {
+  display: flex;
+  gap: 4px;
+  align-items: center;
+}
+.se-input-row input { flex: 1; }
+.btn-se-play {
+  flex-shrink: 0;
+  padding: 4px 8px;
+  background: #313244;
+  color: #a6e3a1;
+  border: 1px solid #a6e3a1;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.8rem;
+  line-height: 1;
+  transition: background 0.15s;
+}
+.btn-se-play:hover { background: #1e3a2f; }
+
+.boss-anim-btn {
+  padding: 3px 10px;
+  background: #313244;
+  color: #cdd6f4;
+  border: 1px solid #45475a;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.75rem;
+  transition: background 0.15s;
+}
+.boss-anim-btn:hover { background: #45475a; }
+.boss-anim-btn.active { background: #1e3a5f; color: #89b4fa; border-color: #89b4fa; }
+
 ::-webkit-scrollbar { width: 6px; }
 ::-webkit-scrollbar-track { background: #181825; }
 ::-webkit-scrollbar-thumb { background: #45475a; border-radius: 3px; }

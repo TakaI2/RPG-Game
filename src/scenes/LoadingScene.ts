@@ -99,11 +99,19 @@ export default class LoadingScene extends Phaser.Scene {
           seKeys.forEach(seKey => {
             this.load.audio(seKey, `assets/sounds/se/${seKey}.ogg`)
           })
-          // カットイン画像を assets/images/boss/ から動的ロード
+          // カットイン画像・飛び道具テクスチャを assets/images/boss/{configKey}/ から動的ロード
           const cutinImg = bossConfig.cutin?.image
           if (cutinImg && !this.textures.exists(cutinImg)) {
-            this.load.image(cutinImg, `assets/images/boss/${cutinImg}.png`)
+            this.load.image(cutinImg, `assets/images/boss/${key}/${cutinImg}.png`)
           }
+          bossConfig.attacks?.forEach(atk => {
+            if (atk.type === 'projectile_radial' || atk.type === 'projectile_circle' || atk.type === 'ultimate') {
+              const tex = atk.config.projectileTexture
+              if (tex && !this.textures.exists(tex)) {
+                this.load.image(tex, `assets/images/boss/${key}/${tex}.png`)
+              }
+            }
+          })
           this.load.start()
         })
       })
@@ -149,8 +157,7 @@ export default class LoadingScene extends Phaser.Scene {
     this.load.image('btn_backtotitle', 'assets/images/ui/BacktoTitle_Button.png')
     this.load.image('btn_skip', 'assets/images/ui/skip_button.png')
 
-    // ポータルスプライト（door は chromaKey処理、その他は直接ロード）
-    this.load.image('door_raw', 'assets/images/door.png')
+    // ポータルスプライト（portal-defs.json に基づき動的ロード）
     this.load.json('portal-defs', 'assets/images/portal/portal-defs.json')
     try {
       const xhr = new XMLHttpRequest()
@@ -159,15 +166,13 @@ export default class LoadingScene extends Phaser.Scene {
       if (xhr.status === 200) {
         const defs = JSON.parse(xhr.responseText) as Array<{ key: string; animated: boolean; frameCount: number; frameRate: number }>
         defs.forEach(def => {
-          if (def.key !== 'door') {
-            if (def.animated) {
-              this.load.spritesheet(def.key, `assets/images/portal/${def.key}.png`, {
-                frameWidth: 64,
-                frameHeight: 64,
-              })
-            } else {
-              this.load.image(def.key, `assets/images/portal/${def.key}.png`)
-            }
+          if (def.animated) {
+            this.load.spritesheet(def.key, `assets/images/portal/${def.key}.png`, {
+              frameWidth: 64,
+              frameHeight: 64,
+            })
+          } else {
+            this.load.image(def.key, `assets/images/portal/${def.key}.png`)
           }
         })
       }
@@ -177,7 +182,6 @@ export default class LoadingScene extends Phaser.Scene {
 
     // 飛び道具（プレイヤー用）
     this.load.image('magic_fire', 'assets/images/magic_fire.png')
-    this.load.image('witch_orb', 'assets/images/boss/witch_orb.png')
 
     // UIボタン
     this.load.image('btn_config', 'assets/images/ui/Se_config_Button.png')
@@ -295,7 +299,6 @@ export default class LoadingScene extends Phaser.Scene {
     this.applyChromaKey('vamp2_raw',    'vamp2',    0, 254, 0, 64, 64)
     this.applyChromaKey('succubus_raw', 'succubus', 0, 254, 0, 64, 64)
     this.applyChromaKey('mage_raw',     'mage',     0, 254, 0, 64, 64)
-    this.applyChromaKey('door_raw',     'door',     0, 254, 0, 64, 64)
     this.applyChromaKey('belladonna_raw', 'belladonna', 0, 254, 0, 64, 64)
 
     // タイル用のテクスチャを生成

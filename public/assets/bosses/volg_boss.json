@@ -8,7 +8,7 @@
     "damage": 1
   },
   "sprite": {
-    "key": "brute",
+    "key": "vamp1",
     "tint": "0xff6666"
   },
   "cutin": {

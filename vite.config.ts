@@ -19,7 +19,10 @@ function saveAssetPlugin() {
             return
           }
           const fullPath = path.join(process.cwd(), 'public', folder)
-          const files = fs.readdirSync(fullPath).filter((f: string) => f.endsWith('.json')).sort()
+          const ALLOWED_EXT = ['.json', '.ogg', '.mp3', '.wav', '.png']
+          const files = fs.readdirSync(fullPath)
+            .filter((f: string) => ALLOWED_EXT.some(ext => f.endsWith(ext)))
+            .sort()
           res.setHeader('Content-Type', 'application/json')
           res.end(JSON.stringify({ ok: true, files }))
         } catch (err) {
