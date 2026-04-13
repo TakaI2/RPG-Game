@@ -91,6 +91,18 @@ npm run dev
 - **ポータル配置モード**：🚪ボタンで選択、クリックで配置、右クリックで削除
 - JSONエクスポートで `public/assets/maps/` に配置
 
+### ボスエディタ（`tools/boss-editor/`）
+- ボスごとの JSON（`public/assets/bosses/{id}.json`）を GUI 編集
+- **基本情報タブ**：スプライトプレビュー（idle / walk / atk アニメーション切替）
+- **カットインタブ**：カットイン画像のドラッグ配置・スケール調整プレビュー
+- **攻撃パターンタブ**：
+  - 弾テクスチャキーをボス固有フォルダ（`assets/images/boss/{id}/`）からドロップダウン選択
+  - 弾テクスチャプレビュー：128×64px（横2コマ）アニメ自動再生・FPS調整・停止切替
+  - SEキーを `assets/sounds/se/` から datalist で選択、▶ ボタンでテスト再生
+- **テストタブ**：マップ・出現位置を指定してエディタ内でボス戦を直接プレイ可能
+- ボス画像はボスIDごとのサブフォルダ（`assets/images/boss/{bossId}/`）で管理
+- 「ゲームに保存」でイメージフォルダも自動生成
+
 ### アニメーションシステム
 - 64×64px スプライトシート対応（16列×4行）
 - 歩行・攻撃・ひんし・死亡アニメーション（4方向）
@@ -111,7 +123,10 @@ RPGGame/
 │       ├── maps/             # マップデータ（JSON）
 │       ├── npcs/             # NPC設定（JSON）
 │       ├── bosses/           # ボス設定（JSON）
-│       ├── images/           # スプライト画像
+│       ├── images/
+│       │   ├── boss/         # ボス関連画像（ボスIDごとにサブフォルダ）
+│       │   │   └── {bossId}/ # カットイン画像・弾テクスチャ
+│       │   └── ...           # その他スプライト
 │       └── story/            # ストーリーアセット
 │           ├── scripts/      # ストーリースクリプト（Git管理）
 │           ├── bg/           # 背景画像（Git除外）
@@ -136,37 +151,53 @@ RPGGame/
 │   │   └── PortalManager.ts  # ポータルスプライト管理・物理オーバーラップ
 │   └── story/                # ストーリー管理
 └── tools/                    # 開発支援ツール（ブラウザGUI）
+    ├── boss-editor/          # ボスエディタ（テストプレイ機能付き）
     ├── enemy-editor/         # 敵キャラ定義エディタ
     ├── gameflow-editor/      # ゲームフローエディタ
-    └── map-editor/           # マップエディタ
+    ├── map-editor/           # マップエディタ
+    ├── npc-editor/           # NPCエディタ
+    ├── portal-editor/        # ポータルエディタ
+    ├── story-editor/         # ストーリーエディタ
+    └── tileset-editor/       # タイルセットエディタ
 ```
 
 ## 開発ツールの使い方
 
-**エディタツール（マップ・エネミー）はサーバー不要**。`index.html` をブラウザで直接開けばOK。
-ゲームフローエディタは fetch API を使うため `npm run dev` 起動が必要。
+すべてのエディタは `npm run dev` 起動後、ブラウザでアクセスして使用します。
 
-| ツール | 起動方法 |
-|--------|----------|
-| ゲーム本体 | `npm run dev` → `http://localhost:5173/Game_RPG/` |
-| マップエディタ | `tools/map-editor/index.html` をブラウザで直接開く |
-| エネミーエディタ | `tools/enemy-editor/index.html` をブラウザで直接開く |
-| ゲームフローエディタ | `npm run dev` → `http://localhost:5173/tools/gameflow-editor/` |
+| ツール | URL |
+|--------|-----|
+| ゲーム本体 | `http://localhost:5173/htdocs/Game_RPG/` |
+| ハブ（エディタ一覧） | `http://localhost:5173/tools/` |
+| ボスエディタ | `http://localhost:5173/tools/boss-editor/` |
+| マップエディタ | `http://localhost:5173/tools/map-editor/` |
+| エネミーエディタ | `http://localhost:5173/tools/enemy-editor/` |
+| NPCエディタ | `http://localhost:5173/tools/npc-editor/` |
+| ゲームフローエディタ | `http://localhost:5173/tools/gameflow-editor/` |
+| ストーリーエディタ | `http://localhost:5173/tools/story-editor/` |
+| タイルセットエディタ | `http://localhost:5173/tools/tileset-editor/` |
+| ポータルエディタ | `http://localhost:5173/tools/portal-editor/` |
 
-> マップエディタとエネミーエディタは LocalStorage でデータを共有します。
-> 同じブラウザ・同じ起動方法（どちらもファイル直開き）で使用してください。
+> すべてのエディタは `/api/save-asset` 経由でゲームアセットに直接書き込みます。`npm run dev` が必要です。
 
 ### 敵キャラ追加の流れ
 
-1. **エネミーエディタ** でキャラを作成 → Export → `public/assets/enemies/enemy-defs.json` に配置
-2. **マップエディタ** で敵スポーンを配置 → キャラ選択モーダルで対象キャラを選択 → Export → `public/assets/maps/` に配置
+1. **エネミーエディタ** でキャラを作成 → 「ゲームに保存」
+2. **マップエディタ** で敵スポーンを配置 → キャラ選択モーダルで対象キャラを選択 → 「ゲームに保存」
 3. ゲームをリロードすると指定キャラが固定位置にスポーン
+
+### ボス追加の流れ
+
+1. **ボスエディタ** で「+ 新規」→ ID・ステータス・スプライトキー・攻撃パターンを設定
+2. ボス画像（スプライト・カットイン・弾テクスチャ）を `public/assets/images/boss/{bossId}/` に配置
+3. 「ゲームに保存」→ `public/assets/bosses/{id}.json` が生成、イメージフォルダも自動作成
+4. **ゲームフローエディタ** でマップノードにボスを設定（`boss.configKey` を指定）
+5. **テストタブ** でマップ・出現位置を選んで即テストプレイ
 
 ### ポータル追加の流れ
 
-1. **マップエディタ** で 🚪 ポータルを配置 → Export → `public/assets/maps/xxx.json` に配置
-2. **ゲームフローエディタ** でマップノードの `portal_N` ピンを接続先マップの `in` へ接続 → Save
-   - `gameflow.json` の `maps.xxx.portals[N]` に目的地情報が書き出される
+1. **マップエディタ** で 🚪 ポータルを配置 → 「ゲームに保存」
+2. **ゲームフローエディタ** でマップノードの `portal_N` ピンを接続先マップの `in` へ接続 → 「ゲームに保存」
 3. ゲームをリロードするとポータルスプライトが表示され、踏むとテレポート
 
 ## ビルド

@@ -40,6 +40,7 @@
           <button class="tab-btn" data-tab="speeches">セリフ</button>
           <button class="tab-btn" data-tab="phases">フェーズ</button>
           <button class="tab-btn" data-tab="attacks">攻撃パターン</button>
+          <button class="tab-btn" data-tab="test">▶ テスト</button>
         </div>
 
         <!-- Tab: 基本情報 -->
@@ -168,12 +169,42 @@
           <div class="attack-list" id="attackList"></div>
           <button class="btn-add-attack" id="btnAddAttack">+ 攻撃パターンを追加</button>
         </div>
+
+        <!-- Tab: テスト -->
+        <div class="tab-content" id="tab-test">
+          <div class="test-settings">
+            <div class="form-field">
+              <label>マップ</label>
+              <select id="testMapSelect"></select>
+            </div>
+            <div class="form-field">
+              <label>ボス出現位置（タイル座標）</label>
+              <div style="display:flex;gap:6px;align-items:center;">
+                X <input type="number" id="testBossX" value="20" min="1">
+                Y <input type="number" id="testBossY" value="15" min="1">
+              </div>
+            </div>
+            <div class="form-field">
+              <label>プレイヤー出現位置（タイル座標）</label>
+              <div style="display:flex;gap:6px;align-items:center;">
+                X <input type="number" id="testPlayerX" value="5" min="1">
+                Y <input type="number" id="testPlayerY" value="5" min="1">
+              </div>
+            </div>
+            <button id="btnStartTest" class="btn-primary">▶ テスト開始</button>
+            <button id="btnStopTest">■ 停止</button>
+          </div>
+          <div class="game-frame-container">
+            <iframe id="gameFrame" src="about:blank" allowfullscreen></iframe>
+          </div>
+        </div>
       </div>
     </div>
   </div>
 </div>
 
 <datalist id="se-options"></datalist>
+<datalist id="boss-img-options"></datalist>
 
 <script src="../shared/save-api.js"></script>
 <script>
@@ -264,6 +295,20 @@ async function saveCurrentBoss() {
   if (!boss || !currentFile) return
   formToBoss()
   await window.saveToGame(`${BOSSES_FOLDER}/${currentFile}`, boss)
+  // ボスIDに対応するイメージフォルダを自動生成
+  const bossId = currentFile.replace('.json', '')
+  await ensureBossImageFolder(bossId)
+}
+
+// イメージフォルダが存在しない場合は .gitkeep を置いて生成する
+async function ensureBossImageFolder(bossId) {
+  try {
+    await fetch('/api/save-asset', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ path: `assets/images/boss/${bossId}/.gitkeep`, content: '' })
+    })
+  } catch (e) {}
 }
 
 async function openBossFile(filename) {
@@ -338,6 +383,7 @@ function loadBossToForm() {
   document.getElementById('fCutinScale').value = boss.cutin?.scale != null ? boss.cutin.scale : ''
   renderCutinPreview()
   loadBossSprite(boss.sprite?.key ?? '')
+  loadBossImages()
   renderPhases()
   renderAttacks()
   showEditor()
@@ -666,7 +712,7 @@ function buildConfigFields(type, cfg, ai) {
         <option value="orb"${cfg.projectileType==='orb'?' selected':''}>orb</option>
         <option value="arrow"${cfg.projectileType==='arrow'?' selected':''}>arrow</option>
       </select></div>
-      <div class="form-field full-width"><label>弾テクスチャキー（省略可）</label><input type="text" data-ai="${ai}" data-key="cfg.projectileTexture" value="${esc(cfg.projectileTexture)}"></div>
+      ${buildProjTexField(ai, cfg)}
       ${f('projectileSpeed','弾速',cfg.projectileSpeed??220)}
       ${f('damage','ダメージ',cfg.damage??4)}
       ${f('angleOffset','角度オフセット',cfg.angleOffset??30)}
@@ -677,7 +723,7 @@ function buildConfigFields(type, cfg, ai) {
         <option value="orb"${cfg.projectileType==='orb'?' selected':''}>orb</option>
         <option value="arrow"${cfg.projectileType==='arrow'?' selected':''}>arrow</option>
       </select></div>
-      <div class="form-field full-width"><label>弾テクスチャキー（省略可）</label><input type="text" data-ai="${ai}" data-key="cfg.projectileTexture" value="${esc(cfg.projectileTexture)}"></div>
+      ${buildProjTexField(ai, cfg)}
       ${f('radius','半径(px)',cfg.radius??100)}
       ${f('waitDuration','展開待機(ms)',cfg.waitDuration??1200)}
       ${f('projectileSpeed','弾速',cfg.projectileSpeed??160)}
@@ -698,7 +744,7 @@ function buildConfigFields(type, cfg, ai) {
       <div class="form-field"><label>弾タイプ</label><select data-ai="${ai}" data-key="cfg.projectileType">
         <option value="orb"${cfg.projectileType==='orb'?' selected':''}>orb</option>
       </select></div>
-      <div class="form-field full-width"><label>弾テクスチャキー（省略可）</label><input type="text" data-ai="${ai}" data-key="cfg.projectileTexture" value="${esc(cfg.projectileTexture)}"></div>
+      ${buildProjTexField(ai, cfg)}
       ${f('spiralAngleStep','螺旋角度ステップ',cfg.spiralAngleStep??22)}
       ${f('spiralRadiusStep','螺旋半径ステップ',cfg.spiralRadiusStep??12)}
       ${f('spiralRadiusStart','螺旋初期半径',cfg.spiralRadiusStart??80)}
@@ -742,6 +788,26 @@ function bindAttackForm(ai) {
       }
     })
   })
+
+  // 弾テクスチャプレビュー: 再生/停止ボタン
+  const toggleBtn = body.querySelector(`.btn-proj-toggle[data-ai="${ai}"]`)
+  if (toggleBtn) toggleBtn.addEventListener('click', () => toggleProjAnim(ai))
+
+  // FPS スライダー
+  const fpsSlider = body.querySelector(`.proj-fps-slider[data-ai="${ai}"]`)
+  if (fpsSlider) {
+    fpsSlider.addEventListener('input', () => {
+      const fps = parseInt(fpsSlider.value)
+      const label = document.getElementById(`proj-fps-label-${ai}`)
+      if (label) label.textContent = fps
+      if (!projState[ai]) projState[ai] = { fps: 8, playing: false, frame: 0 }
+      projState[ai].fps = fps
+      if (projState[ai].playing) startProjAnim(ai)
+    })
+  }
+
+  // 初期プレビューロード
+  initProjPreview(ai)
 }
 
 function applyAttackField(ai, key, val) {
@@ -755,6 +821,7 @@ function applyAttackField(ai, key, val) {
     if (!atk.config) atk.config = {}
     const num = parseFloat(val)
     atk.config[k] = (val.trim() === '' || isNaN(num) || k === 'windupEffect' || k === 'projectileType' || k === 'tint' || k === 'projectileTexture') ? (val.trim()||undefined) : num
+    if (k === 'projectileTexture') loadProjTexture(ai, val.trim())
   }
   if (key.startsWith('se.')) { if (!atk.se) atk.se = {}; atk.se[key.slice(3)] = val || null }
 
@@ -843,6 +910,77 @@ document.getElementById('btnAddAttack').addEventListener('click', () => {
   // 最後のカードを開く
   const last = boss.attacks.length - 1
   toggleAttackCard(last)
+})
+
+// ─── Test Tab ───
+async function loadTestMapList() {
+  try {
+    const res = await fetch('/api/list-assets?folder=assets/maps')
+    const json = await res.json()
+    if (json.ok) {
+      const sel = document.getElementById('testMapSelect')
+      sel.innerHTML = json.files
+        .filter(f => f.endsWith('.json'))
+        .map(f => { const id = f.replace('.json', ''); return `<option value="${id}">${id}</option>` })
+        .join('')
+    }
+  } catch (e) {}
+}
+loadTestMapList()
+
+function scaleGameFrame() {
+  const container = document.querySelector('.game-frame-container')
+  const frame = document.getElementById('gameFrame')
+  if (!container || !frame) return
+  const w = container.clientWidth
+  const h = container.clientHeight
+  const scale = Math.min(w / 1920, h / 1080)
+  const scaledW = 1920 * scale
+  const scaledH = 1080 * scale
+  frame.style.transform = `scale(${scale})`
+  frame.style.left = `${(w - scaledW) / 2}px`
+  frame.style.top = `${(h - scaledH) / 2}px`
+}
+window.addEventListener('resize', scaleGameFrame)
+document.querySelector('.tab-btn[data-tab="test"]').addEventListener('click', () => requestAnimationFrame(scaleGameFrame))
+
+document.getElementById('btnStartTest').addEventListener('click', async () => {
+  if (!boss) { alert('ボスを選択してください'); return }
+  formToBoss()
+  if (currentFile && boss) await saveCurrentBoss()
+
+  const bossId = currentFile ? currentFile.replace('.json', '') : (boss.id || 'new_boss')
+  const mapId  = document.getElementById('testMapSelect').value
+  const bossX  = parseInt(document.getElementById('testBossX').value)  || 20
+  const bossY  = parseInt(document.getElementById('testBossY').value)  || 15
+  const playerX = parseInt(document.getElementById('testPlayerX').value) || 5
+  const playerY = parseInt(document.getElementById('testPlayerY').value) || 5
+
+  const testFlow = {
+    assets: {},
+    start: { then: { action: 'goto_map', mapId, x: playerX, y: playerY } },
+    maps: {
+      [mapId]: {
+        boss: { configKey: bossId, x: bossX, y: bossY },
+        onBossDefeat:   { then: { action: 'stay' } },
+        onPlayerDefeat: { then: { action: 'stay' } }
+      }
+    }
+  }
+
+  await fetch('/api/save-asset', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ path: 'assets/test_gameflow.json', content: JSON.stringify(testFlow, null, 2) })
+  })
+
+  const frame = document.getElementById('gameFrame')
+  frame.addEventListener('load', scaleGameFrame, { once: true })
+  frame.src = `http://localhost:5173/htdocs/Game_RPG/?testFlow=1&_t=${Date.now()}`
+})
+
+document.getElementById('btnStopTest').addEventListener('click', () => {
+  document.getElementById('gameFrame').src = 'about:blank'
 })
 
 // ─── SE 再生ボタン（攻撃パターンリスト 委譲） ───
@@ -941,6 +1079,149 @@ document.getElementById('btnSaveToGame').addEventListener('click', async () => {
   await saveCurrentBoss()
   renderBossList()
 })
+
+// ─── Projectile Preview ───
+const projState = {}
+
+async function loadBossImages() {
+  const bossId = currentFile ? currentFile.replace('.json', '') : ''
+  const datalist = document.getElementById('boss-img-options')
+  datalist.innerHTML = ''
+  if (!bossId) return
+  try {
+    const res = await fetch(`/api/list-assets?folder=assets/images/boss/${bossId}`)
+    const json = await res.json()
+    if (json.ok) {
+      json.files.forEach(f => {
+        if (!f.endsWith('.png')) return
+        const opt = document.createElement('option')
+        opt.value = f.replace('.png', '')
+        datalist.appendChild(opt)
+      })
+    }
+  } catch (e) {}
+}
+
+function buildProjTexField(ai, cfg) {
+  return `
+    <div class="form-field full-width">
+      <label>弾テクスチャキー（省略可）</label>
+      <input type="text" list="boss-img-options" data-ai="${ai}" data-key="cfg.projectileTexture" value="${esc(cfg.projectileTexture)}">
+    </div>
+    <div class="form-field full-width">
+      <div class="proj-preview-wrap">
+        <canvas id="proj-canvas-${ai}" width="96" height="96"></canvas>
+        <div class="proj-controls">
+          <button class="btn-proj-toggle" data-ai="${ai}" type="button">▶</button>
+          <div class="proj-fps-wrap">
+            <span>FPS</span>
+            <input type="range" class="proj-fps-slider" data-ai="${ai}" min="1" max="30" value="8">
+            <span class="proj-fps-label" id="proj-fps-label-${ai}">8</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  `
+}
+
+function initProjPreview(ai) {
+  const key = boss?.attacks?.[ai]?.config?.projectileTexture
+  loadProjTexture(ai, key || '')
+}
+
+function loadProjTexture(ai, key) {
+  stopProjAnim(ai)
+  const canvas = document.getElementById(`proj-canvas-${ai}`)
+  if (!canvas) return
+  if (!key) { clearProjCanvas(ai); return }
+  const bossId = currentFile ? currentFile.replace('.json', '') : ''
+  const img = new Image()
+  img.src = `../../public/assets/images/boss/${bossId}/${key}.png`
+  img.onload = () => {
+    const animated = img.width === img.height * 2  // 128×64px → 2コマ横並び判定
+    if (!projState[ai]) projState[ai] = { fps: 8, playing: true, frame: 0 }
+    projState[ai].img = img
+    projState[ai].animated = animated
+    projState[ai].playing = animated
+    updateProjToggleBtn(ai)
+    startProjAnim(ai)
+  }
+  img.onerror = () => {
+    if (projState[ai]) projState[ai].img = null
+    clearProjCanvas(ai)
+  }
+}
+
+function clearProjCanvas(ai) {
+  const canvas = document.getElementById(`proj-canvas-${ai}`)
+  if (!canvas) return
+  const ctx = canvas.getContext('2d')
+  ctx.fillStyle = '#11111b'
+  ctx.fillRect(0, 0, canvas.width, canvas.height)
+}
+
+function startProjAnim(ai) {
+  stopProjAnim(ai)
+  const state = projState[ai]
+  if (!state?.img) { clearProjCanvas(ai); return }
+  if (!state.animated) {
+    drawProjFrame(ai)  // 静止画: 1回だけ描画
+    return
+  }
+  state.frame = 0
+  state.interval = setInterval(() => {
+    drawProjFrame(ai)
+    state.frame = (state.frame + 1) % 2
+  }, 1000 / (state.fps || 8))
+}
+
+function stopProjAnim(ai) {
+  const state = projState[ai]
+  if (state?.interval) { clearInterval(state.interval); state.interval = null }
+}
+
+function toggleProjAnim(ai) {
+  const state = projState[ai]
+  if (!state?.img || !state.animated) return  // 静止画は操作不要
+  state.playing = !state.playing
+  if (state.playing) startProjAnim(ai)
+  else stopProjAnim(ai)
+  updateProjToggleBtn(ai)
+}
+
+function updateProjToggleBtn(ai) {
+  const body = document.getElementById(`atk-body-${ai}`)
+  const btn = body?.querySelector(`.btn-proj-toggle[data-ai="${ai}"]`)
+  if (!btn) return
+  const state = projState[ai]
+  if (!state?.animated) {
+    btn.textContent = '静止画'
+    btn.disabled = true
+    btn.style.opacity = '0.4'
+  } else {
+    btn.textContent = state.playing ? '⏸' : '▶'
+    btn.disabled = false
+    btn.style.opacity = '1'
+  }
+}
+
+function drawProjFrame(ai) {
+  const canvas = document.getElementById(`proj-canvas-${ai}`)
+  const state = projState[ai]
+  if (!canvas || !state?.img) return
+  const ctx = canvas.getContext('2d')
+  ctx.clearRect(0, 0, canvas.width, canvas.height)
+  ctx.fillStyle = '#11111b'
+  ctx.fillRect(0, 0, canvas.width, canvas.height)
+  ctx.imageSmoothingEnabled = false
+  if (state.animated) {
+    // 128×64px: 2フレーム横並び（frame 0=左, frame 1=右）
+    ctx.drawImage(state.img, state.frame * 64, 0, 64, 64, 0, 0, canvas.width, canvas.height)
+  } else {
+    // 静止画: 画像全体を表示
+    ctx.drawImage(state.img, 0, 0, state.img.width, state.img.height, 0, 0, canvas.width, canvas.height)
+  }
+}
 
 // ─── Sprite Preview ───
 const BOSS_SPRITE_ANIM_DEFS = {

@@ -74,8 +74,10 @@ export default class LoadingScene extends Phaser.Scene {
       console.warn('[LoadingScene] Could not sync-load npc-defs.json:', e)
     }
 
-    // ゲームフロー設定JSON（最初にロードして、完了後に BGM・ボスJSONを動的追加）
-    this.load.json('gameflow', 'assets/gameflow.json')
+    // ゲームフロー設定JSON（testFlow=1 の場合はテスト用を使用）
+    const isTestMode = new URLSearchParams(window.location.search).has('testFlow')
+    const gameflowUrl = isTestMode ? 'assets/test_gameflow.json' : 'assets/gameflow.json'
+    this.load.json('gameflow', gameflowUrl)
     this.load.once('filecomplete-json-gameflow', () => {
       const config = this.cache.json.get('gameflow') as GameFlowConfig
       config.assets?.bgm?.forEach(({ key, url }) => {
@@ -284,8 +286,8 @@ export default class LoadingScene extends Phaser.Scene {
       alpha: 0,
       duration: 500,
       onComplete: () => {
-        // TitleSceneへ遷移
-        this.scene.start('TitleScene')
+        const testMode = new URLSearchParams(window.location.search).has('testFlow')
+        this.scene.start(testMode ? 'MainScene' : 'TitleScene')
       }
     })
   }

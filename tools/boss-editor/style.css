@@ -229,6 +229,85 @@ body {
 .pattern-tag.inactive { background: #313244; color: #6c7086; border-color: #313244; }
 .pattern-tag:hover { border-color: #cba6f7; }
 
+/* ─── Test Tab ─── */
+#tab-test {
+  padding: 0;
+  overflow: hidden;
+}
+.test-settings {
+  display: flex;
+  align-items: flex-end;
+  gap: 20px;
+  padding: 10px 16px;
+  border-bottom: 1px solid #45475a;
+  background: #181825;
+  flex-shrink: 0;
+  flex-wrap: wrap;
+}
+.test-settings .form-field { margin: 0; }
+.test-settings .form-field label {
+  display: block;
+  font-size: 0.72rem;
+  color: #a6adc8;
+  margin-bottom: 4px;
+}
+.test-settings input[type=number] { width: 58px; }
+.game-frame-container {
+  flex: 1;
+  position: relative;
+  background: #000;
+  overflow: hidden;
+}
+#gameFrame {
+  position: absolute;
+  width: 1920px;
+  height: 1080px;
+  border: none;
+  transform-origin: top left;
+}
+
+.proj-preview-wrap {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+}
+.proj-preview-wrap canvas {
+  display: block;
+  border: 1px solid #45475a;
+  border-radius: 4px;
+  image-rendering: pixelated;
+  background: #11111b;
+  flex-shrink: 0;
+}
+.proj-controls {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding-top: 2px;
+}
+.btn-proj-toggle {
+  padding: 4px 12px;
+  background: #313244;
+  color: #cba6f7;
+  border: 1px solid #cba6f7;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.85rem;
+  transition: background 0.15s;
+}
+.btn-proj-toggle:hover { background: #2d1f4a; }
+.proj-fps-wrap {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.75rem;
+  color: #a6adc8;
+}
+.proj-fps-wrap input[type=range] {
+  width: 80px;
+  accent-color: #cba6f7;
+}
+
 .se-input-row {
   display: flex;
   gap: 4px;

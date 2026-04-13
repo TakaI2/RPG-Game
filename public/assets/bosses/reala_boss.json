@@ -43,7 +43,7 @@
       "config": {
         "projectileCount": 16,
         "projectileType": "orb",
-        "projectileTexture": "",
+        "projectileTexture": "bat",
         "spiralAngleStep": 22,
         "spiralRadiusStep": 12,
         "spiralRadiusStart": 80,
@@ -66,7 +66,7 @@
         "windupEffect": "blink_red",
         "projectileCount": 6,
         "projectileType": "orb",
-        "projectileTexture": "",
+        "projectileTexture": "hert",
         "projectileSpeed": 220,
         "damage": 4,
         "angleOffset": 30
@@ -97,23 +97,6 @@
       "speech": {
         "text": "ふふ、仲良くしましょうよ！"
       }
-    },
-    {
-      "id": "attack_4",
-      "name": "新しい攻撃",
-      "type": "projectile_radial",
-      "config": {
-        "windupDuration": 700,
-        "windupEffect": "blink_red",
-        "projectileCount": 6,
-        "projectileType": "orb",
-        "projectileTexture": "",
-        "projectileSpeed": 220,
-        "damage": 4,
-        "angleOffset": 30
-      },
-      "se": {},
-      "speech": null
     }
   ],
   "speeches": {
