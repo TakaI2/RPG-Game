@@ -11,7 +11,7 @@
   "maps": {
     "boss_map": {
       "boss": {
-        "configKey": "volg_boss",
+        "configKey": "reala_boss",
         "x": 20,
         "y": 15
       },

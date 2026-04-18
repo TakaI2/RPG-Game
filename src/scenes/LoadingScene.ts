@@ -110,7 +110,12 @@ export default class LoadingScene extends Phaser.Scene {
             if (atk.type === 'projectile_radial' || atk.type === 'projectile_circle' || atk.type === 'ultimate') {
               const tex = atk.config.projectileTexture
               if (tex && !this.textures.exists(tex)) {
-                this.load.image(tex, `assets/images/boss/${key}/${tex}.png`)
+                const frames = atk.type === 'ultimate' ? (atk.config.projectileFrames ?? 1) : 1
+                if (frames > 1) {
+                  this.load.spritesheet(tex, `assets/images/boss/${key}/${tex}.png`, { frameWidth: 64, frameHeight: 64 })
+                } else {
+                  this.load.image(tex, `assets/images/boss/${key}/${tex}.png`)
+                }
               }
             }
           })

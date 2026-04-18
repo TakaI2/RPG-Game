@@ -234,9 +234,19 @@ body {
   /* ゲームと同じく左上原点（x, y座標はJSで設定） */
   transform-origin: top left;
   display: none; /* デフォルトは非表示 */
+  cursor: move;
   /* 滑らかなスケーリング（ジャギ軽減） */
   image-rendering: smooth;
   image-rendering: -webkit-optimize-contrast;
+}
+
+.preview-bg:hover {
+  outline: 2px dashed #f9e2af;
+}
+
+.preview-bg.dragging {
+  outline: 2px solid #a6e3a1;
+  opacity: 0.8;
 }
 
 .preview-portrait {
@@ -519,6 +529,35 @@ body {
 
 .btn-cancel:hover {
   background: #585b70;
+}
+
+/* BGM試聴ボタン行 */
+.se-input-row {
+  display: flex;
+  gap: 4px;
+  align-items: center;
+}
+
+.se-input-row input,
+.se-input-row select {
+  flex: 1;
+  min-width: 0;
+}
+
+.se-input-row button {
+  padding: 4px 8px;
+  background: #313244;
+  border: 1px solid #45475a;
+  border-radius: 4px;
+  color: #cdd6f4;
+  cursor: pointer;
+  font-size: 0.8rem;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.se-input-row button:hover {
+  background: #45475a;
 }
 
 /* Scrollbar */

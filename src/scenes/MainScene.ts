@@ -27,7 +27,7 @@ import {
 } from '../systems/AnimationManager'
 import { createNPCManager, NPCManagerHandle } from '../systems/NPCManager'
 import type { NPCDef, NPCSpawn } from '../types/NPCTypes'
-import { updateHomingOrbs, FireBall, type Projectile } from '../systems/Projectile'
+import { updateHomingOrbs, updateRotatingProjectiles, FireBall, type Projectile } from '../systems/Projectile'
 import { events } from '../systems/Events'
 import { EventTriggerManager } from '../systems/EventTriggerManager'
 import { Boss } from '../types/BossTypes'
@@ -508,6 +508,7 @@ export default class MainScene extends Phaser.Scene {
 
     // 誘導魔法弾の更新
     updateHomingOrbs(this)
+    updateRotatingProjectiles(this)
 
     // 火炎放射の更新
     this.updateFireBalls(time)

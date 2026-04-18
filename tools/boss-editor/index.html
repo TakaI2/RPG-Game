@@ -946,8 +946,7 @@ document.querySelector('.tab-btn[data-tab="test"]').addEventListener('click', ()
 
 document.getElementById('btnStartTest').addEventListener('click', async () => {
   if (!boss) { alert('ボスを選択してください'); return }
-  formToBoss()
-  if (currentFile && boss) await saveCurrentBoss()
+  if (!currentFile) { alert('先に「ゲームに保存」でボスを保存してください'); return }
 
   const bossId = currentFile ? currentFile.replace('.json', '') : (boss.id || 'new_boss')
   const mapId  = document.getElementById('testMapSelect').value

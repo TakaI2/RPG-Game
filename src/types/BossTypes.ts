@@ -51,7 +51,7 @@ export type CutinConfig = {
  */
 export type SpeechConfig = {
   text: string
-  duration: number
+  duration?: number
   color?: string
 }
 
@@ -127,6 +127,7 @@ export type UltimateConfig = {
   projectileCount: number
   projectileType: 'orb'
   projectileTexture?: string
+  projectileFrames?: number   // 2以上でアニメーション（横並びフレーム数）
   spiralAngleStep: number
   spiralRadiusStep: number
   spiralRadiusStart: number
