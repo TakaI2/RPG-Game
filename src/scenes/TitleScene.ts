@@ -1,5 +1,6 @@
 import Phaser from 'phaser'
 import { loadSoundConfig, saveSoundConfig } from '../utils/SoundConfig'
+import { SUPPORTED_LOCALES, getLocale, setLocale } from '../utils/LocaleManager'
 
 export default class TitleScene extends Phaser.Scene {
   private background!: Phaser.GameObjects.Image
@@ -78,7 +79,7 @@ export default class TitleScene extends Phaser.Scene {
 
     const cfg = loadSoundConfig()
     const W = 600
-    const H = 400
+    const H = 520
     const cx = 960
     const cy = 540
 
@@ -114,6 +115,41 @@ export default class TitleScene extends Phaser.Scene {
 
     sliderDefs.forEach(({ label, key, y }) => {
       this.buildSlider(container, cfg, label, key, cx, y)
+    })
+
+    // 言語選択
+    const langLabel = this.add.text(cx - 240, cy + 155, 'LANGUAGE', {
+      fontSize: '20px', fontFamily: 'monospace', color: '#ffffff'
+    }).setOrigin(0, 0.5)
+    container.add(langLabel)
+
+    const currentLocale = getLocale()
+    const btnSpacing = 100
+    const btnStartX = cx - (SUPPORTED_LOCALES.length - 1) * btnSpacing / 2
+
+    SUPPORTED_LOCALES.forEach((locale, i) => {
+      const isActive = locale.code === currentLocale
+      const bx = btnStartX + i * btnSpacing
+      const by = cy + 200
+
+      const bg = this.add.graphics()
+      bg.fillStyle(isActive ? 0x6644aa : 0x333355, 1)
+      bg.fillRoundedRect(bx - 42, by - 16, 84, 32, 6)
+
+      const btn = this.add.text(bx, by, locale.label, {
+        fontSize: '16px', fontFamily: 'monospace',
+        color: isActive ? '#ffffff' : '#aaaacc'
+      }).setOrigin(0.5).setInteractive({ useHandCursor: true })
+
+      btn.on('pointerover', () => btn.setColor('#ffffff'))
+      btn.on('pointerout',  () => btn.setColor(locale.code === getLocale() ? '#ffffff' : '#aaaacc'))
+      btn.on('pointerup', () => {
+        setLocale(locale.code)
+        this.closeVolumeModal()
+        this.openVolumeModal()
+      })
+
+      container.add([bg, btn])
     })
 
     // 閉じるボタン

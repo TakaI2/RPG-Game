@@ -53,6 +53,7 @@ export type SpeechConfig = {
   text: string
   duration?: number
   color?: string
+  i18n?: Record<string, { text: string }>
 }
 
 /**
@@ -205,13 +206,17 @@ export type StatsConfig = {
 }
 
 /**
- * セリフ集
+ * セリフ集（各言語訳）
  */
-export type SpeechesConfig = {
+type SpeechesI18n = {
   intro?: string
   phase2?: string
   lowHp?: string
   defeat?: string
+}
+
+export type SpeechesConfig = SpeechesI18n & {
+  i18n?: Record<string, SpeechesI18n>
 }
 
 /**

@@ -14,6 +14,7 @@ import { CutinSystem } from './CutinSystem'
 import { BossSpeechBubble } from './BossSpeechBubble'
 import { createEnemyAnimations } from './AnimationManager'
 import { GAME_W, GAME_H } from '../config'
+import { resolveText } from '../utils/LocaleManager'
 
 /**
  * ボス設定をロード
@@ -157,7 +158,8 @@ function updatePhase(boss: Boss, speechBubble: BossSpeechBubble) {
 
         // フェーズ2突入時のセリフ
         if (boss.phase === 2 && !boss.phase2SpeechShown && config.speeches.phase2) {
-          speechBubble.show(boss, config.speeches.phase2, 1500)
+          const { phase2 } = resolveText({ phase2: config.speeches.phase2 }, config.speeches.i18n)
+          speechBubble.show(boss, phase2!, 1500)
           boss.phase2SpeechShown = true
         }
       }
@@ -167,7 +169,8 @@ function updatePhase(boss: Boss, speechBubble: BossSpeechBubble) {
 
   // 低HP時のセリフ
   if (boss.hp < 5 && !boss.lowHpSpeechShown && config.speeches.lowHp) {
-    speechBubble.show(boss, config.speeches.lowHp, 1500)
+    const { lowHp } = resolveText({ lowHp: config.speeches.lowHp }, config.speeches.i18n)
+    speechBubble.show(boss, lowHp!, 1500)
     boss.lowHpSpeechShown = true
   }
 }
@@ -375,7 +378,7 @@ function executeTeleportDashAttack(
   if (elapsed < cfg.fadeOutDuration && boss.state === 'attacking') {
     // セリフ表示（攻撃開始時）
     if (attackConfig.speech) {
-      speechBubble.show(boss, attackConfig.speech.text, attackConfig.speech.duration ?? 1500, attackConfig.speech.color)
+      speechBubble.show(boss, resolveText({ text: attackConfig.speech.text }, attackConfig.speech.i18n).text, attackConfig.speech.duration ?? 1500, attackConfig.speech.color)
     }
 
     if (attackConfig.se.teleport) {
@@ -454,7 +457,7 @@ function executeUltimateAttack(
       cutinSystem.show(cutinImage, attackConfig.cutin.skillName, attackConfig.cutin.duration, () => {
         // カットイン終了後、セリフ表示
         if (attackConfig.speech) {
-          speechBubble.show(boss, attackConfig.speech.text, attackConfig.speech.duration ?? 1500, attackConfig.speech.color, () => {
+          speechBubble.show(boss, resolveText({ text: attackConfig.speech.text }, attackConfig.speech.i18n).text, attackConfig.speech.duration ?? 1500, attackConfig.speech.color, () => {
             // セリフ終了後、攻撃実行
             executeUltimateFire(scene, boss, player, projectiles, audioBus, cfg, attackConfig)
           })
@@ -465,7 +468,7 @@ function executeUltimateAttack(
     } else {
       // カットインなし：セリフがあれば表示してから、なければ即発射
       if (attackConfig.speech) {
-        speechBubble.show(boss, attackConfig.speech.text, attackConfig.speech.duration ?? 1500, attackConfig.speech.color, () => {
+        speechBubble.show(boss, resolveText({ text: attackConfig.speech.text }, attackConfig.speech.i18n).text, attackConfig.speech.duration ?? 1500, attackConfig.speech.color, () => {
           executeUltimateFire(scene, boss, player, projectiles, audioBus, cfg, attackConfig)
         })
       } else {

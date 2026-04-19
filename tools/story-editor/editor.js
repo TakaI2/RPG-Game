@@ -6,6 +6,17 @@
 // アセットのベースパス（相対パス）
 const ASSET_BASE = '../../public/assets/story';
 
+// i18n対応言語リスト
+const I18N_LOCALES = [
+  { code: 'ja', label: '日本語' },
+  { code: 'en', label: 'English' },
+  { code: 'zh', label: '中文' },
+  { code: 'es', label: 'Español' },
+]
+
+// sayコマンドで現在編集中の言語
+let sayEditLocale = 'ja'
+
 // BGMファイル一覧（起動時に /api/list-assets から取得）
 let bgmFiles = []
 
@@ -850,6 +861,14 @@ function renderProperties() {
     el.addEventListener('change', (e) => updateProperty(e.target));
   });
 
+  // 言語タブ切り替え
+  elements.propertiesContent.querySelectorAll('.lang-tab').forEach(btn => {
+    btn.addEventListener('click', () => {
+      sayEditLocale = btn.dataset.lang
+      renderProperties()
+    })
+  });
+
   // BGM試聴ボタン
   const btnBgmPlay = document.getElementById('btn-bgm-play')
   const btnBgmStop = document.getElementById('btn-bgm-stop')
@@ -878,14 +897,30 @@ function renderProperties() {
 }
 
 function renderSayProperties(cmd) {
+  const tabs = I18N_LOCALES.map(l =>
+    `<button type="button" class="lang-tab ${l.code === sayEditLocale ? 'active' : ''}" data-lang="${l.code}">${l.label}</button>`
+  ).join('')
+
+  const isJa = sayEditLocale === 'ja'
+  const i18nEntry = cmd.i18n?.[sayEditLocale] ?? {}
+  const editName  = isJa ? (cmd.name  || '') : (i18nEntry.name  || '')
+  const editLines = isJa ? (cmd.lines || []) : (i18nEntry.lines || [])
+
+  const nameProp  = isJa ? 'name'     : 'i18n-name'
+  const linesProp = isJa ? 'lines'    : 'i18n-lines'
+
   return `
     <div class="prop-group">
+      <label>言語</label>
+      <div class="lang-tabs">${tabs}</div>
+    </div>
+    <div class="prop-group">
       <label>話者名</label>
-      <input type="text" id="prop-name" value="${escapeHtml(cmd.name || '')}" data-prop="name">
+      <input type="text" id="prop-name" value="${escapeHtml(editName)}" data-prop="${nameProp}">
     </div>
     <div class="prop-group">
       <label>セリフ（1行ずつ）</label>
-      <textarea id="prop-lines" data-prop="lines">${(cmd.lines || []).join('\n')}</textarea>
+      <textarea id="prop-lines" data-prop="${linesProp}">${editLines.join('\n')}</textarea>
       <div class="prop-hint">複数行で入力すると、ページ送りごとに表示されます</div>
     </div>
     <div class="prop-group">
@@ -1084,6 +1119,28 @@ function updateProperty(input) {
 
   const prop = input.dataset.prop;
   let value = input.value;
+  const cmd = state.script[state.selectedIndex];
+
+  // i18nフィールドの更新
+  if (prop === 'i18n-name' || prop === 'i18n-lines') {
+    const lang = sayEditLocale
+    if (!cmd.i18n) cmd.i18n = {}
+    if (!cmd.i18n[lang]) cmd.i18n[lang] = {}
+    if (prop === 'i18n-lines') {
+      const lines = value.split('\n').filter(line => line.trim() !== '')
+      if (lines.length === 0) delete cmd.i18n[lang].lines
+      else cmd.i18n[lang].lines = lines
+    } else {
+      if (value === '') delete cmd.i18n[lang].name
+      else cmd.i18n[lang].name = value
+    }
+    // i18nエントリが空になったら削除
+    if (Object.keys(cmd.i18n[lang]).length === 0) delete cmd.i18n[lang]
+    if (Object.keys(cmd.i18n).length === 0) delete cmd.i18n
+    renderTimeline();
+    updatePreview();
+    return;
+  }
 
   // 型変換
   if (input.type === 'number') {
@@ -1096,9 +1153,9 @@ function updateProperty(input) {
 
   // 空文字列の場合はプロパティを削除
   if (value === '' && prop !== 'lines') {
-    delete state.script[state.selectedIndex][prop];
+    delete cmd[prop];
   } else {
-    state.script[state.selectedIndex][prop] = value;
+    cmd[prop] = value;
   }
 
   renderTimeline();

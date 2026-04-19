@@ -4,6 +4,7 @@ import { EnemySpeech } from './EnemySpeech'
 import type DialogUI from './Dialog'
 import type { DialogData } from './Dialog'
 import type { NPCDef, NPCSpawn } from '../types/NPCTypes'
+import { resolveText } from '../utils/LocaleManager'
 
 interface NPCInstance {
   sprite: Phaser.Physics.Arcade.Sprite
@@ -68,10 +69,11 @@ export function createNPCManager(scene: Phaser.Scene, ui: DialogUI): NPCManagerH
       }
 
       const speech = new EnemySpeech(scene)
-      if (def.speechLines && def.speechLines.length > 0) {
+      const { speechLines } = resolveText({ speechLines: def.speechLines }, def.i18n)
+      if (speechLines && speechLines.length > 0) {
         speech.startLoop(
           sprite as unknown as Phaser.GameObjects.Sprite,
-          def.speechLines,
+          speechLines,
           2000,
           def.speechIntervalMs ?? 5000
         )
@@ -118,9 +120,9 @@ export function createNPCManager(scene: Phaser.Scene, ui: DialogUI): NPCManagerH
         player.x, player.y, inst.sprite.x, inst.sprite.y
       )
       if (dist < maxDistance) {
-        const lines = inst.def.dialogLines
-        if (lines && lines.length > 0) {
-          const data: DialogData = { lines }
+        const { dialogLines } = resolveText({ dialogLines: inst.def.dialogLines }, inst.def.i18n)
+        if (dialogLines && dialogLines.length > 0) {
+          const data: DialogData = { lines: dialogLines }
           ui.show(inst.def.name, data)
           return true
         }

@@ -11,6 +11,7 @@ export interface NPCDef {
   speechLines?: string[]
   speechIntervalMs?: number // default 5000
   dialogLines?: string[]
+  i18n?: Record<string, { speechLines?: string[]; dialogLines?: string[] }>
 }
 
 export interface NPCSpawn {

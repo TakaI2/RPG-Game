@@ -1,5 +1,6 @@
 import Phaser from 'phaser'
 import { AudioBus } from './AudioBus'
+import { resolveText } from '../utils/LocaleManager'
 
 /**
  * ストーリースクリプト実行エンジン（M2: 完全版）
@@ -102,10 +103,12 @@ export class StoryRunner {
 
         case 'say': {
           // セリフ表示（一時停止）
-          console.log('[StoryRunner] Executing say:', { name: op.name, lines: op.lines })
+          const i18n = op.i18n as Record<string, { name?: string; lines?: string[] }> | undefined
+          const resolved = resolveText({ name: op.name as string, lines: op.lines as string[] }, i18n)
+          console.log('[StoryRunner] Executing say:', { name: resolved.name, lines: resolved.lines })
           await this.onSay({
-            name: op.name as string,
-            lines: op.lines as string[],
+            name: resolved.name,
+            lines: resolved.lines,
             portrait: op.portrait as string | undefined,
             portraitX: op.portraitX as number | undefined,
             portraitY: op.portraitY as number | undefined,

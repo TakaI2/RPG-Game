@@ -1,8 +1,9 @@
 import Phaser from 'phaser'
 import { fireArrow, fireHomingOrb } from './Projectile'
 import { EnemySpeech } from './EnemySpeech'
+import { resolveText } from '../utils/LocaleManager'
 
-export type DialogEntry = { lines: string[]; intervalMs?: number }
+export type DialogEntry = { lines: string[]; intervalMs?: number; i18n?: Record<string, { lines: string[] }> }
 
 const DEFAULT_SPEECH_INTERVAL = 5000
 export type EnemyDialogs = Partial<Record<string, DialogEntry>>
@@ -222,7 +223,8 @@ export function updateEnemyAI(scene: Phaser.Scene, en: EnemyWithAI, player: Phas
     if (en.lastSpeechState !== stateStr) {
       const dialog = en.dialogs[stateStr]
       if (dialog && dialog.lines.length > 0) {
-        en.speech.startLoop(en, dialog.lines, 2000, dialog.intervalMs ?? DEFAULT_SPEECH_INTERVAL)
+        const { lines: resolvedLines } = resolveText({ lines: dialog.lines }, dialog.i18n)
+        en.speech.startLoop(en, resolvedLines, 2000, dialog.intervalMs ?? DEFAULT_SPEECH_INTERVAL)
       } else {
         en.speech.stopLoop()
       }
@@ -285,7 +287,8 @@ export function updateArcherAI(scene: Phaser.Scene, archer: Archer, player: Phas
     if (archer.lastSpeechState !== stateStr) {
       const dialog = archer.dialogs[stateStr]
       if (dialog && dialog.lines.length > 0) {
-        archer.speech.startLoop(archer, dialog.lines, 2000, dialog.intervalMs ?? DEFAULT_SPEECH_INTERVAL)
+        const { lines: resolvedLines } = resolveText({ lines: dialog.lines }, dialog.i18n)
+        archer.speech.startLoop(archer, resolvedLines, 2000, dialog.intervalMs ?? DEFAULT_SPEECH_INTERVAL)
       } else {
         archer.speech.stopLoop()
       }
@@ -375,7 +378,8 @@ export function updateMageAI(scene: Phaser.Scene, mage: Mage, player: Phaser.Phy
     if (mage.lastSpeechState !== stateStr) {
       const dialog = mage.dialogs[stateStr]
       if (dialog && dialog.lines.length > 0) {
-        mage.speech.startLoop(mage, dialog.lines, 2000, dialog.intervalMs ?? DEFAULT_SPEECH_INTERVAL)
+        const { lines: resolvedLines } = resolveText({ lines: dialog.lines }, dialog.i18n)
+        mage.speech.startLoop(mage, resolvedLines, 2000, dialog.intervalMs ?? DEFAULT_SPEECH_INTERVAL)
       } else {
         mage.speech.stopLoop()
       }
@@ -473,7 +477,8 @@ export function updateBruteAI(scene: Phaser.Scene, brute: Brute, player: Phaser.
     if (brute.lastSpeechState !== stateStr) {
       const dialog = brute.dialogs[stateStr]
       if (dialog && dialog.lines.length > 0) {
-        brute.speech.startLoop(brute, dialog.lines, 2000, dialog.intervalMs ?? DEFAULT_SPEECH_INTERVAL)
+        const { lines: resolvedLines } = resolveText({ lines: dialog.lines }, dialog.i18n)
+        brute.speech.startLoop(brute, resolvedLines, 2000, dialog.intervalMs ?? DEFAULT_SPEECH_INTERVAL)
       } else {
         brute.speech.stopLoop()
       }
