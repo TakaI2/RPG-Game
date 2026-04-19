@@ -1,6 +1,16 @@
 // Gameflow Editor - vanilla JS, no dependencies
 // Catppuccin Mocha theme
 
+// ─── ストーリースクリプト一覧（assets/story/scripts/ から取得）─────────────────
+let storyScripts = [];
+(async () => {
+  try {
+    const res = await fetch('/api/list-assets?folder=assets/story/scripts');
+    const json = await res.json();
+    if (json.ok) storyScripts = json.files.filter(f => f.endsWith('.json')).map(f => f.replace(/\.json$/, ''));
+  } catch (e) {}
+})();
+
 // ─── Constants ───────────────────────────────────────────────────────────────
 const NODE_W      = 220;
 const HEADER_H    = 36;
@@ -408,7 +418,12 @@ function buildMapProps(node) {
           <td><select class="trig-type" data-ti="${i}">
             <option value="story" selected>story</option>
           </select></td>
-          <td><input class="trig-val" data-ti="${i}" value="${escHtml(t.storyId||'')}" placeholder="storyId"></td>
+          <td>${(() => {
+            const cur = t.storyId || ''
+            const opts = storyScripts.map(s => `<option value="${escHtml(s)}" ${s === cur ? 'selected' : ''}>${escHtml(s)}</option>`).join('')
+            const extra = (!storyScripts.includes(cur) && cur) ? `<option value="${escHtml(cur)}" selected>${escHtml(cur)}</option>` : ''
+            return `<select class="trig-val" data-ti="${i}"><option value="">-- 選択 --</option>${extra}${opts}</select>`
+          })()}</td>
           <td><button class="btn-del-trigger" data-ti="${i}">✕</button></td>
         </tr>`;
     } else {
@@ -482,11 +497,21 @@ function buildMapProps(node) {
 }
 
 function buildStoryProps(node) {
+  const currentStoryId = node.data.storyId || ''
+  const storyOptions = storyScripts.map(s =>
+    `<option value="${escHtml(s)}" ${s === currentStoryId ? 'selected' : ''}>${escHtml(s)}</option>`
+  ).join('')
+  const hasMatch = storyScripts.includes(currentStoryId)
+  const extraOption = (!hasMatch && currentStoryId)
+    ? `<option value="${escHtml(currentStoryId)}" selected>${escHtml(currentStoryId)}</option>` : ''
   return `
     <div class="prop-section-title">Story</div>
     <div class="prop-group">
       <label>Story ID</label>
-      <input id="prop-story-id" value="${escHtml(node.data.storyId||'')}">
+      <select id="prop-story-id">
+        <option value="">-- 選択 --</option>
+        ${extraOption}${storyOptions}
+      </select>
     </div>
     <div class="prop-group">
       <label>Then Action</label>
@@ -645,7 +670,7 @@ function bindPropertyHandlers(node) {
   }
 
   if (node.type === 'story') {
-    listen('prop-story-id', 'input', e => {
+    listen('prop-story-id', 'change', e => {
       node.data.storyId = e.target.value;
       renderNodes();
     });
