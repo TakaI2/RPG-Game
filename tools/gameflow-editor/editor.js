@@ -11,6 +11,16 @@ let storyScripts = [];
   } catch (e) {}
 })();
 
+// ─── マップファイル一覧（assets/maps/ から取得）──────────────────────────────
+let mapIds = [];
+(async () => {
+  try {
+    const res = await fetch('/api/list-assets?folder=assets/maps');
+    const json = await res.json();
+    if (json.ok) mapIds = json.files.filter(f => f.endsWith('.json') && !f.includes('tilesets')).map(f => f.replace(/\.json$/, ''));
+  } catch (e) {}
+})();
+
 // ─── Constants ───────────────────────────────────────────────────────────────
 const NODE_W      = 220;
 const HEADER_H    = 36;
@@ -461,11 +471,21 @@ function buildMapProps(node) {
         <tbody id="portal-tbody">${portalRows}</tbody>
       </table>`;
 
+  const currentMapId = node.data.id || ''
+  const mapOptions = mapIds.map(m =>
+    `<option value="${escHtml(m)}" ${m === currentMapId ? 'selected' : ''}>${escHtml(m)}</option>`
+  ).join('')
+  const hasMapMatch = mapIds.includes(currentMapId)
+  const extraMapOption = (!hasMapMatch && currentMapId)
+    ? `<option value="${escHtml(currentMapId)}" selected>${escHtml(currentMapId)}</option>` : ''
   return `
     <div class="prop-section-title">Map</div>
     <div class="prop-group">
       <label>Map ID</label>
-      <input id="prop-map-id" value="${escHtml(node.data.id||'')}">
+      <select id="prop-map-id">
+        <option value="">-- 選択 --</option>
+        ${extraMapOption}${mapOptions}
+      </select>
     </div>
     <div class="prop-group">
       <label>BGM</label>
@@ -554,7 +574,7 @@ function bindPropertyHandlers(node) {
   };
 
   if (node.type === 'map') {
-    listen('prop-map-id', 'input', e => {
+    listen('prop-map-id', 'change', e => {
       node.data.id = e.target.value;
       renderNodes(); // タイトル即時更新
       // Map JSON から portal 数を非同期取得
