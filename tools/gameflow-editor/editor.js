@@ -21,6 +21,22 @@ let mapIds = [];
   } catch (e) {}
 })();
 
+// ─── BGMファイル一覧（assets/story/bgm/ から取得）────────────────────────────
+// key → url のマップ。serialize 時に assets.bgm[] を自動生成するために使う
+let bgmFileMap = {};
+(async () => {
+  try {
+    const res = await fetch('/api/list-assets?folder=assets/story/bgm');
+    const json = await res.json();
+    if (json.ok) {
+      json.files.filter(f => /\.(ogg|mp3|wav)$/i.test(f)).forEach(f => {
+        const key = f.replace(/\.[^.]+$/, '');
+        bgmFileMap[key] = `assets/story/bgm/${f}`;
+      });
+    }
+  } catch (e) {}
+})();
+
 // ─── Constants ───────────────────────────────────────────────────────────────
 const NODE_W      = 220;
 const HEADER_H    = 36;
@@ -412,11 +428,16 @@ function renderNodeProperties(node) {
 }
 
 function buildMapProps(node) {
-  const bgmKeys = state.nodes
-    .filter(n => n.type === 'bgm')
-    .map(n => `<option value="${escHtml(n.data.key)}"${node.data.bgm === n.data.key ? ' selected' : ''}>${escHtml(n.data.key)}</option>`)
-    .join('');
-  const bgmBlank = node.data.bgm ? '' : ' selected';
+  const currentBgm = node.data.bgm || '';
+  // ファイル一覧 + 旧来のBGMノードキーをマージして選択肢を構築
+  const bgmNodeKeys = state.nodes.filter(n => n.type === 'bgm').map(n => n.data.key).filter(Boolean);
+  const allBgmKeys = [...new Set([...Object.keys(bgmFileMap), ...bgmNodeKeys])];
+  const bgmKeys = allBgmKeys.map(k =>
+    `<option value="${escHtml(k)}"${k === currentBgm ? ' selected' : ''}>${escHtml(k)}</option>`
+  ).join('');
+  const hasMatch = allBgmKeys.includes(currentBgm);
+  const extraBgm = (!hasMatch && currentBgm) ? `<option value="${escHtml(currentBgm)}" selected>${escHtml(currentBgm)}</option>` : '';
+  const bgmBlank = currentBgm ? '' : ' selected';
 
   let triggerRows = '';
   const triggers = node.data.eventTriggers || [];
@@ -491,7 +512,7 @@ function buildMapProps(node) {
       <label>BGM</label>
       <select id="prop-map-bgm">
         <option value=""${bgmBlank}>(なし)</option>
-        ${bgmKeys}
+        ${extraBgm}${bgmKeys}
       </select>
     </div>
     <div class="prop-group">
@@ -1308,10 +1329,21 @@ function deserialize(cfg) {
 function serialize() {
   const result = {};
 
-  // BGM assets
-  const bgmNodes = state.nodes.filter(n => n.type === 'bgm');
-  if (bgmNodes.length > 0) {
-    result.assets = { bgm: bgmNodes.map(n => ({ key: n.data.key, url: n.data.url })) };
+  // BGM assets: BGMノード + マップノードで使われているBGMファイルをマージ
+  const bgmAssetsMap = new Map();
+  // 明示的なBGMノード（後方互換）
+  state.nodes.filter(n => n.type === 'bgm').forEach(n => {
+    if (n.data.key) bgmAssetsMap.set(n.data.key, n.data.url);
+  });
+  // マップノードで選択されたBGMファイル（bgmFileMap から URL を自動解決）
+  state.nodes.filter(n => n.type === 'map').forEach(n => {
+    const key = n.data.bgm;
+    if (key && !bgmAssetsMap.has(key) && bgmFileMap[key]) {
+      bgmAssetsMap.set(key, bgmFileMap[key]);
+    }
+  });
+  if (bgmAssetsMap.size > 0) {
+    result.assets = { bgm: Array.from(bgmAssetsMap, ([key, url]) => ({ key, url })) };
   }
 
   // Start
