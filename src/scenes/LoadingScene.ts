@@ -74,9 +74,10 @@ export default class LoadingScene extends Phaser.Scene {
       console.warn('[LoadingScene] Could not sync-load npc-defs.json:', e)
     }
 
-    // ゲームフロー設定JSON（testFlow=1 の場合はテスト用を使用）
-    const isTestMode = new URLSearchParams(window.location.search).has('testFlow')
-    const gameflowUrl = isTestMode ? 'assets/test_gameflow.json' : 'assets/gameflow.json'
+    // ゲームフロー設定JSON（?gameflow=xxx で assets/gameflows/xxx.json をロード）
+    const params = new URLSearchParams(window.location.search)
+    const gameflowName = params.get('gameflow') ?? (params.has('testFlow') ? 'test_gameflow' : 'gameflow')
+    const gameflowUrl = `assets/gameflows/${gameflowName}.json`
     this.load.json('gameflow', gameflowUrl)
     this.load.once('filecomplete-json-gameflow', () => {
       const config = this.cache.json.get('gameflow') as GameFlowConfig

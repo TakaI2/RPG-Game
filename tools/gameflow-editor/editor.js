@@ -935,6 +935,44 @@ function setFileName(name) {
   fileNameInput.value = name;
 }
 
+// ─── ファイルブラウザ ──────────────────────────────────────────────────────────
+document.getElementById('btn-browse').addEventListener('click', async () => {
+  let files = [];
+  try {
+    const res = await fetch('/api/list-assets?folder=assets/gameflows');
+    const json = await res.json();
+    if (json.ok) files = json.files.filter(f => f.endsWith('.json'));
+  } catch (e) {
+    alert('ファイル一覧の取得に失敗しました');
+    return;
+  }
+  if (files.length === 0) { alert('gameflows/ フォルダにファイルがありません'); return; }
+
+  // シンプルなモーダルで選択
+  const overlay = document.createElement('div');
+  overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:9999;display:flex;align-items:center;justify-content:center';
+  const box = document.createElement('div');
+  box.style.cssText = 'background:#1e1e2e;border:1px solid #45475a;border-radius:8px;padding:16px;min-width:260px;max-height:60vh;overflow-y:auto';
+  box.innerHTML = `<div style="font-weight:bold;margin-bottom:10px;color:#cdd6f4">gameflows/ のファイル</div>`;
+  files.forEach(f => {
+    const btn = document.createElement('button');
+    btn.textContent = f;
+    btn.style.cssText = 'display:block;width:100%;text-align:left;padding:6px 10px;margin-bottom:4px;background:#313244;border:none;border-radius:4px;color:#cdd6f4;cursor:pointer;font-size:14px';
+    btn.onmouseenter = () => btn.style.background = '#45475a';
+    btn.onmouseleave = () => btn.style.background = '#313244';
+    btn.onclick = () => { setFileName(f); document.body.removeChild(overlay); };
+    box.appendChild(btn);
+  });
+  const cancel = document.createElement('button');
+  cancel.textContent = 'キャンセル';
+  cancel.style.cssText = 'margin-top:8px;width:100%;padding:6px;background:#45475a;border:none;border-radius:4px;color:#cdd6f4;cursor:pointer';
+  cancel.onclick = () => document.body.removeChild(overlay);
+  box.appendChild(cancel);
+  overlay.appendChild(box);
+  overlay.onclick = (e) => { if (e.target === overlay) document.body.removeChild(overlay); };
+  document.body.appendChild(overlay);
+});
+
 // ─── Toolbar Buttons ──────────────────────────────────────────────────────────
 document.getElementById('btn-new').addEventListener('click', () => {
   if (state.nodes.length > 0 && !confirm('現在の内容を破棄して新規作成しますか？')) return;
@@ -952,7 +990,7 @@ document.getElementById('btn-new').addEventListener('click', () => {
 });
 
 document.getElementById('btn-open').addEventListener('click', () => {
-  const path = `assets/${state.fileName}`;
+  const path = `assets/gameflows/${state.fileName}`;
   fetch(`/api/load-asset?path=${encodeURIComponent(path)}&_t=${Date.now()}`, { cache: 'no-store' })
     .then(r => r.json())
     .then(res => {
@@ -977,7 +1015,7 @@ document.getElementById('btn-save').addEventListener('click', () => {
 });
 
 document.getElementById('btn-save-to-game').addEventListener('click', () => {
-  const path = `assets/${state.fileName}`;
+  const path = `assets/gameflows/${state.fileName}`;
   window.saveToGame(path, serialize());
 });
 
