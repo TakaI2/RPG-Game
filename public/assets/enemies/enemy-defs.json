@@ -84,5 +84,355 @@
     },
     "hitSound": "beat.ogg",
     "attackSound": "charm.ogg"
+  },
+  {
+    "id": "enemy_1776000001000",
+    "name": "ナーシャ",
+    "enemyType": "blob",
+    "spriteKey": "succubus",
+    "animPrefix": "blob",
+    "stats": {
+      "hp": 20,
+      "speed": 120,
+      "sight": 300,
+      "cooldownTime": 2600,
+      "aimDuration": 500,
+      "castDuration": 600,
+      "dashSpeed": 340
+    },
+    "dialogs": {
+      "patrol": {
+        "lines": [
+          "はぁ～、おなかすいた～♥",
+          "若い子の精気ってほんとにおいしいよね～♥",
+          "あれ～？さっき捕まえた子、どこ行ったかな～？逃がしちゃったかも～。",
+          "この村の男の子たち、みんなおいしそう～♥"
+        ],
+        "intervalMs": 4200
+      },
+      "aim": {
+        "lines": [
+          "あ～！邪魔しないでよ～！これから食べようとしてたのに～！"
+        ]
+      },
+      "cooldown": {
+        "lines": [
+          "むぅ～！"
+        ]
+      },
+      "return": {
+        "lines": [
+          "え、いなくなっちゃった～？",
+          "逃げ足早いな～。もう～。"
+        ]
+      }
+    },
+    "hitSound": "beat.ogg",
+    "attackSound": "beam.ogg"
+  },
+  {
+    "id": "enemy_1776000002000",
+    "name": "リリス",
+    "enemyType": "mage",
+    "spriteKey": "succubus",
+    "animPrefix": "mage",
+    "stats": {
+      "hp": 22,
+      "speed": 155,
+      "sight": 400,
+      "cooldownTime": 2000,
+      "aimDuration": 700,
+      "castDuration": 350,
+      "dashSpeed": 460
+    },
+    "dialogs": {
+      "patrol": {
+        "lines": [
+          "まったく・・・汚らしい村ね。",
+          "人間って、なんでこんなに弱いのかしら。抵抗する気概くらい見せなさいよ。",
+          "私がこんな場所で見張りをしなければならないなんて・・・屈辱だわ。"
+        ],
+        "intervalMs": 7800
+      },
+      "aim": {
+        "lines": [
+          "貴女が例のハンター？思ったより大したことないわね。",
+          "私の爪を受けなさい。"
+        ]
+      },
+      "cooldown": {
+        "lines": [
+          "これで終わりではないわよ。"
+        ]
+      },
+      "return": {
+        "lines": [
+          "ふん。運がよかっただけよ。"
+        ]
+      }
+    },
+    "hitSound": "beat.ogg",
+    "attackSound": "charm.ogg"
+  },
+  {
+    "id": "enemy_1776000003000",
+    "name": "メル",
+    "enemyType": "blob",
+    "spriteKey": "succubus",
+    "animPrefix": "blob",
+    "stats": {
+      "hp": 35,
+      "speed": 100,
+      "sight": 250,
+      "cooldownTime": 3200,
+      "aimDuration": 900,
+      "castDuration": 550,
+      "dashSpeed": 300
+    },
+    "dialogs": {
+      "patrol": {
+        "lines": [
+          "ふわぁ・・・見張りって眠いな・・・。",
+          "また逃げた。まあいいか・・・。",
+          "ちょっとだけ座っていい・・・？"
+        ],
+        "intervalMs": 9500
+      },
+      "aim": {
+        "lines": [
+          "・・・邪魔。さっさと終わらせて寝る。"
+        ]
+      },
+      "cooldown": {
+        "lines": [
+          "・・・（あくび）"
+        ]
+      },
+      "return": {
+        "lines": [
+          "まあいいか・・・ねむ・・・。"
+        ]
+      }
+    },
+    "hitSound": "beat.ogg",
+    "attackSound": "beam.ogg"
+  },
+  {
+    "id": "enemy_1776000004000",
+    "name": "ヴィータ",
+    "enemyType": "brute",
+    "spriteKey": "succubus",
+    "animPrefix": "brute",
+    "stats": {
+      "hp": 30,
+      "speed": 200,
+      "sight": 450,
+      "cooldownTime": 1500,
+      "aimDuration": 200,
+      "castDuration": 300,
+      "dashSpeed": 600
+    },
+    "dialogs": {
+      "patrol": {
+        "lines": [
+          "ははっ、逃げた逃げた！そうじゃないとつまらないのよ！",
+          "この村の男、みんなすぐへたれるのよね。もう少し走ってくれてもいいのに。",
+          "あのハンターとやら、会ってみたいな！"
+        ],
+        "intervalMs": 5300
+      },
+      "aim": {
+        "lines": [
+          "来たよ来たよ！ちゃんと強いんでしょうね！？",
+          "逃げろ逃げろ～♥もっと必死になれよ！"
+        ]
+      },
+      "cooldown": {
+        "lines": [
+          "いいじゃん、やろうよ！！"
+        ]
+      },
+      "return": {
+        "lines": [
+          "もう終わり？物足りないな！"
+        ]
+      }
+    },
+    "hitSound": "beat.ogg",
+    "attackSound": "beat.ogg"
+  },
+  {
+    "id": "enemy_1776000005000",
+    "name": "ソフィア",
+    "enemyType": "mage",
+    "spriteKey": "succubus",
+    "animPrefix": "mage",
+    "stats": {
+      "hp": 25,
+      "speed": 160,
+      "sight": 380,
+      "cooldownTime": 1800,
+      "aimDuration": 600,
+      "castDuration": 350,
+      "dashSpeed": 470
+    },
+    "dialogs": {
+      "patrol": {
+        "lines": [
+          "あら～、大丈夫？怖くないよ？（ニコニコ）",
+          "逃げなくていいのに。ちゃんと優しくするから♥",
+          "抵抗するの、見てるの好きなんだよね。いつか諦めるから。みんなそうだから。"
+        ],
+        "intervalMs": 6100
+      },
+      "aim": {
+        "lines": [
+          "あらあら、強いんだね。でも大丈夫、ゆっくりやるから。"
+        ]
+      },
+      "cooldown": {
+        "lines": [
+          "痛かった？ごめんね。でも、もっと痛くなるよ？"
+        ]
+      },
+      "return": {
+        "lines": [
+          "あれ～、もう行っちゃうの？残念。"
+        ]
+      }
+    },
+    "hitSound": "beat.ogg",
+    "attackSound": "charm.ogg"
+  },
+  {
+    "id": "enemy_1776000006000",
+    "name": "ミミ",
+    "enemyType": "blob",
+    "spriteKey": "succubus",
+    "animPrefix": "blob",
+    "stats": {
+      "hp": 18,
+      "speed": 175,
+      "sight": 350,
+      "cooldownTime": 1700,
+      "aimDuration": 300,
+      "castDuration": 400,
+      "dashSpeed": 500
+    },
+    "dialogs": {
+      "patrol": {
+        "lines": [
+          "ねえ、一緒に遊ぼ～？（ニコ）",
+          "あのおじさん、ミミに触ってきたから倍返しにしてやったよ！えへ♥",
+          "強い人間、来るんだって？ミミ、会いたい！いじめちゃおっと♥"
+        ],
+        "intervalMs": 3700
+      },
+      "aim": {
+        "lines": [
+          "わ！強い！！やばい！・・・でも負けないも～ん！",
+          "馬鹿にしてるでしょ！？ミミ本気になったら怖いんだから！！"
+        ]
+      },
+      "cooldown": {
+        "lines": [
+          "えいえいえい！！"
+        ]
+      },
+      "return": {
+        "lines": [
+          "む～！覚えてろ～！！"
+        ]
+      }
+    },
+    "hitSound": "beat.ogg",
+    "attackSound": "beam.ogg"
+  },
+  {
+    "id": "enemy_1776000007000",
+    "name": "ローレン",
+    "enemyType": "mage",
+    "spriteKey": "succubus",
+    "animPrefix": "mage",
+    "stats": {
+      "hp": 27,
+      "speed": 150,
+      "sight": 500,
+      "cooldownTime": 2200,
+      "aimDuration": 500,
+      "castDuration": 300,
+      "dashSpeed": 450
+    },
+    "dialogs": {
+      "patrol": {
+        "lines": [
+          "村の西側は制圧完了。東側はあと2名。予定より遅れているわ。",
+          "ハンターが侵入したなら、逃げ道を塞ぐべきね。",
+          "感情で動く連中は使いにくい。"
+        ],
+        "intervalMs": 11000
+      },
+      "aim": {
+        "lines": [
+          "事前に調べてある。貴女の戦闘スタイルは把握しているわ。"
+        ]
+      },
+      "cooldown": {
+        "lines": [
+          "・・・想定の範囲内。"
+        ]
+      },
+      "return": {
+        "lines": [
+          "・・・想定外ね。修正する。"
+        ]
+      }
+    },
+    "hitSound": "beat.ogg",
+    "attackSound": "charm.ogg"
+  },
+  {
+    "id": "enemy_1776000008000",
+    "name": "エルザ",
+    "enemyType": "brute",
+    "spriteKey": "succubus",
+    "animPrefix": "brute",
+    "stats": {
+      "hp": 32,
+      "speed": 175,
+      "sight": 420,
+      "cooldownTime": 1600,
+      "aimDuration": 300,
+      "castDuration": 350,
+      "dashSpeed": 520
+    },
+    "dialogs": {
+      "patrol": {
+        "lines": [
+          "あの子、今日も同じ場所にいる。かわいい。ずっと見ていたい。",
+          "逃げないで。逃げても追いかけるだけよ。",
+          "あの子に他のコが近づいた。・・・だめ。あの子はわたしの。"
+        ],
+        "intervalMs": 8400
+      },
+      "aim": {
+        "lines": [
+          "・・・邪魔しないで。あの子のそばにいたいの。",
+          "わたしを怒らせたらどうなるか・・・わかってるよね？"
+        ]
+      },
+      "cooldown": {
+        "lines": [
+          "どこにも行かせない。"
+        ]
+      },
+      "return": {
+        "lines": [
+          "・・・逃げた。でも、また見つける。"
+        ]
+      }
+    },
+    "hitSound": "beat.ogg",
+    "attackSound": "beat.ogg"
   }
 ]

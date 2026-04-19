@@ -11,6 +11,16 @@ let storyScripts = [];
   } catch (e) {}
 })();
 
+// ─── ボスファイル一覧（assets/bosses/ から取得）─────────────────────────────
+let bossIds = [];
+(async () => {
+  try {
+    const res = await fetch('/api/list-assets?folder=assets/bosses');
+    const json = await res.json();
+    if (json.ok) bossIds = json.files.filter(f => f.endsWith('.json')).map(f => f.replace(/\.json$/, ''));
+  } catch (e) {}
+})();
+
 // ─── マップファイル一覧（assets/maps/ から取得）──────────────────────────────
 let mapIds = [];
 (async () => {
@@ -455,7 +465,7 @@ function buildMapProps(node) {
             const extra = (!storyScripts.includes(cur) && cur) ? `<option value="${escHtml(cur)}" selected>${escHtml(cur)}</option>` : ''
             return `<select class="trig-val" data-ti="${i}"><option value="">-- 選択 --</option>${extra}${opts}</select>`
           })()}</td>
-          <td><button class="btn-del-trigger" data-ti="${i}">✕</button></td>
+          <td><button type="button" class="btn-del-trigger" data-ti="${i}">✕</button></td>
         </tr>`;
     } else {
       // teleport 型（旧形式）: 警告表示のみ、編集不可
@@ -464,7 +474,7 @@ function buildMapProps(node) {
           <td>${i}</td>
           <td style="color:#f38ba8">[deprecated] teleport</td>
           <td style="color:#f38ba8">${escHtml(t.targetMap||'')}</td>
-          <td><button class="btn-del-trigger" data-ti="${i}">✕</button></td>
+          <td><button type="button" class="btn-del-trigger" data-ti="${i}">✕</button></td>
         </tr>`;
     }
   });
@@ -521,12 +531,33 @@ function buildMapProps(node) {
         <label for="prop-map-hasboss">hasBoss</label>
       </div>
     </div>
+    ${node.data.hasBoss ? (() => {
+      const curKey = node.data.bossConfigKey || '';
+      const bossOptions = bossIds.map(b => `<option value="${escHtml(b)}"${b === curKey ? ' selected' : ''}>${escHtml(b)}</option>`).join('');
+      const extraBossOpt = (!bossIds.includes(curKey) && curKey) ? `<option value="${escHtml(curKey)}" selected>${escHtml(curKey)}</option>` : '';
+      return `
+    <div class="prop-group">
+      <label>Boss Config</label>
+      <select id="prop-boss-configkey">
+        <option value="">-- 選択 --</option>
+        ${extraBossOpt}${bossOptions}
+      </select>
+    </div>
+    <div class="prop-group">
+      <label>Boss Spawn X</label>
+      <input type="number" id="prop-boss-x" value="${Number(node.data.bossX ?? 5)}" style="width:70px">
+    </div>
+    <div class="prop-group">
+      <label>Boss Spawn Y</label>
+      <input type="number" id="prop-boss-y" value="${Number(node.data.bossY ?? 5)}" style="width:70px">
+    </div>`;
+    })() : ''}
     <div class="prop-section-title">Event Triggers</div>
     <table class="trigger-table">
       <thead><tr><th>#</th><th>Type</th><th>Value</th><th></th></tr></thead>
       <tbody id="trigger-tbody">${triggerRows}</tbody>
     </table>
-    <button class="btn-add-trigger" id="btn-add-trigger">+ トリガー追加</button>
+    <button type="button" class="btn-add-trigger" id="btn-add-trigger">+ トリガー追加</button>
     <div class="prop-section-title" style="margin-top:12px">Portals</div>
     <p style="font-size:0.78rem;color:#6c7086;margin-bottom:6px;">portal[N] ピンを他Mapノードの in に接続して接続先を設定</p>
     ${portalSection}
@@ -612,6 +643,16 @@ function bindPropertyHandlers(node) {
     listen('prop-map-hasboss', 'change', e => {
       node.data.hasBoss = e.target.checked;
       renderAll();
+      renderProperties();
+    });
+    listen('prop-boss-configkey', 'change', e => {
+      node.data.bossConfigKey = e.target.value;
+    });
+    listen('prop-boss-x', 'change', e => {
+      node.data.bossX = parseInt(e.target.value) || 0;
+    });
+    listen('prop-boss-y', 'change', e => {
+      node.data.bossY = parseInt(e.target.value) || 0;
     });
     // Trigger table
     const tbody = document.getElementById('trigger-tbody');
@@ -1022,6 +1063,7 @@ document.getElementById('btn-browse').addEventListener('click', async () => {
   box.innerHTML = `<div style="font-weight:bold;margin-bottom:10px;color:#cdd6f4">gameflows/ のファイル</div>`;
   files.forEach(f => {
     const btn = document.createElement('button');
+    btn.type = 'button';
     btn.textContent = f;
     btn.style.cssText = 'display:block;width:100%;text-align:left;padding:6px 10px;margin-bottom:4px;background:#313244;border:none;border-radius:4px;color:#cdd6f4;cursor:pointer;font-size:14px';
     btn.onmouseenter = () => btn.style.background = '#45475a';
@@ -1030,6 +1072,7 @@ document.getElementById('btn-browse').addEventListener('click', async () => {
     box.appendChild(btn);
   });
   const cancel = document.createElement('button');
+  cancel.type = 'button';
   cancel.textContent = 'キャンセル';
   cancel.style.cssText = 'margin-top:8px;width:100%;padding:6px;background:#45475a;border:none;border-radius:4px;color:#cdd6f4;cursor:pointer';
   cancel.onclick = () => document.body.removeChild(overlay);
@@ -1133,7 +1176,7 @@ function addNode(type) {
 
 function defaultData(type) {
   switch (type) {
-    case 'map':   return { id: 'new_map', bgm: '', hasBoss: false, eventTriggers: [], _portalCount: 0, _portalDests: [] };
+    case 'map':   return { id: 'new_map', bgm: '', hasBoss: false, bossConfigKey: '', bossX: 5, bossY: 5, eventTriggers: [], _portalCount: 0, _portalDests: [] };
     case 'story': return { storyId: 'new_story', thenAction: 'stay' };
     case 'bgm':   return { key: 'new_bgm', url: '' };
     case 'exit':  return {};
@@ -1211,7 +1254,10 @@ function deserialize(cfg) {
       data: {
         id:            mapId,
         bgm:           mapData.bgm || '',
-        hasBoss:       mapData.hasBoss || false,
+        hasBoss:       !!(mapData.hasBoss || mapData.boss),
+        bossConfigKey: mapData.boss?.configKey || '',
+        bossX:         mapData.boss?.x ?? 5,
+        bossY:         mapData.boss?.y ?? 5,
         eventTriggers: mapData.eventTriggers ? JSON.parse(JSON.stringify(mapData.eventTriggers)) : [],
         _portalCount:  portals.length,
         _portalDests:  portals.map(pt => ({ targetX: pt.targetX || 5, targetY: pt.targetY || 5 })),
@@ -1370,10 +1416,14 @@ function serialize() {
       const mapObj = {
         bgm:     mapNode.data.bgm || null,
         onEnter: resolveMapPort(mapNode, 'onEnter'),
-        hasBoss: mapNode.data.hasBoss || false,
         onPlayerDefeat: resolveMapPort(mapNode, 'onPlayerDefeat'),
       };
       if (mapNode.data.hasBoss) {
+        mapObj.boss = {
+          configKey: mapNode.data.bossConfigKey || '',
+          x: mapNode.data.bossX ?? 5,
+          y: mapNode.data.bossY ?? 5,
+        };
         mapObj.onBossDefeat = resolveMapPort(mapNode, 'onBossDefeat');
       }
       // eventTriggers

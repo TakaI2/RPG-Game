@@ -970,7 +970,7 @@ document.getElementById('btnStartTest').addEventListener('click', async () => {
   await fetch('/api/save-asset', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ path: 'assets/test_gameflow.json', content: JSON.stringify(testFlow, null, 2) })
+    body: JSON.stringify({ path: 'assets/gameflows/test_gameflow.json', content: JSON.stringify(testFlow, null, 2) })
   })
 
   const frame = document.getElementById('gameFrame')
