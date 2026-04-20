@@ -493,12 +493,24 @@ export default class MainScene extends Phaser.Scene {
         const vx = this.boss.body.velocity.x
         const vy = this.boss.body.velocity.y
         const moving = Math.abs(vx) > 10 || Math.abs(vy) > 10
-        const dir = getDirectionFromVelocity(vx, vy)
-        if (moving) {
-          const targetAnim = `${this.boss.animKey}-walk-${dir}`
-          if (this.boss.anims.currentAnim?.key !== targetAnim) this.boss.play(targetAnim, true)
+        const moveDir = getDirectionFromVelocity(vx, vy)
+        if (moving) this.boss.setData('lastDir', moveDir)
+        const lastDir = this.boss.getData('lastDir') || 'down'
+
+        if (this.boss.getData('dashActive')) {
+          // 突進中: 移動方向の攻撃アニメ
+          const atkAnim = `${this.boss.animKey}-atk-${moveDir}`
+          if (this.boss.anims.currentAnim?.key !== atkAnim) this.boss.play(atkAnim, true)
+        } else if (this.boss.state === 'attacking' || this.boss.state === 'cutin') {
+          // 攻撃モーション中: プレイヤー方向の攻撃アニメ
+          const atkDir = this.getDirectionToPlayer(this.boss)
+          const atkAnim = `${this.boss.animKey}-atk-${atkDir}`
+          if (this.boss.anims.currentAnim?.key !== atkAnim) this.boss.play(atkAnim, false)
+        } else if (moving) {
+          const walkAnim = `${this.boss.animKey}-walk-${moveDir}`
+          if (this.boss.anims.currentAnim?.key !== walkAnim) this.boss.play(walkAnim, true)
         } else {
-          const idleAnim = `${this.boss.animKey}-idle-${dir}`
+          const idleAnim = `${this.boss.animKey}-idle-${lastDir}`
           if (this.boss.anims.currentAnim?.key !== idleAnim && !this.boss.anims.currentAnim?.key.includes('atk')) {
             this.boss.play(idleAnim, true)
           }
@@ -774,7 +786,7 @@ export default class MainScene extends Phaser.Scene {
 
   private makeAnimatedEnemy(x: number, y: number, overrides?: EnemyOverrides): EnemyWithAI {
     const en = makeEnemy(this, x, y, overrides)
-    en.setScale(2)
+    en.setScale(1)
     en.lastSpeechTime = 0
     en.lastSpeechState = ''
     en.play(`${en.animKey}-idle-down`)
@@ -1030,6 +1042,24 @@ export default class MainScene extends Phaser.Scene {
         }
       })
       this.colliders.push(hitCollider)
+      const contactCollider = this.physics.add.overlap(this.player, en, () => {
+        if (en.state !== 'chase' && en.state !== 'attack') return
+        if (en.getData('dead')) return
+        if (this.player.getData('hitCool') || this.isGameOver) return
+        type PlayerWithHp = Phaser.Types.Physics.Arcade.SpriteWithDynamicBody & { hp: number }
+        const damage = (en as EnemyWithAI & { damage?: number }).damage ?? 1
+        const oldHP = (this.player as PlayerWithHp).hp
+        const newHP = Math.max(0, oldHP - damage)
+        ;(this.player as PlayerWithHp).hp = newHP
+        this.updateHPDisplay()
+        this.player.setTint(0xff4444)
+        this.audioBus.playSe('se_player_hit', { volume: 0.8 })
+        this.player.setData('hitCool', true)
+        this.time.delayedCall(100, () => this.player.clearTint())
+        this.time.delayedCall(500, () => this.player.setData('hitCool', false))
+        if (newHP <= 0) this.triggerGameOver()
+      })
+      this.colliders.push(contactCollider)
     })
     this.archers.forEach(ar => {
       const collider = this.physics.add.collider(ar, this.walls!)
@@ -1352,8 +1382,8 @@ export default class MainScene extends Phaser.Scene {
     this.colliders.push(...npcColliders)
 
     // onEnter ストーリーがあれば再生
-    if (mapConfig?.onEnter) {
-      this.launchStory(mapConfig.onEnter, { action: 'stay' })
+    if (mapConfig?.onEnter?.story) {
+      this.launchStory(mapConfig.onEnter.story, mapConfig.onEnter.then)
     }
 
     console.log(`[MainScene] Map loaded: ${mapId}`)

@@ -291,7 +291,7 @@
   function renderDialogLines(lines) {
     const container = document.getElementById('dialogLines')
     container.innerHTML = ''
-    lines.forEach((line, i) => addLineRow(container, line, i, 'dialog'))
+    lines.forEach((line, i) => addDialogLineRow(container, line, i))
   }
 
   function addDialogLine() {
@@ -300,6 +300,62 @@
     if (!def.dialogLines) def.dialogLines = []
     def.dialogLines.push('')
     renderDialogLines(def.dialogLines)
+  }
+
+  function addDialogLineRow(container, value, idx) {
+    // value は string または { name, text }
+    const isObj = value && typeof value === 'object'
+    const textVal = isObj ? value.text : (value || '')
+    const nameVal = isObj ? value.name : ''
+
+    const row = document.createElement('div')
+    row.className = 'line-row dialog-line-row'
+    row.style.flexDirection = 'column'
+    row.style.alignItems = 'stretch'
+    row.style.gap = '4px'
+
+    // 上段: 話者名 + 削除ボタン
+    const topRow = document.createElement('div')
+    topRow.style.cssText = 'display:flex; gap:6px; align-items:center;'
+
+    const nameInput = document.createElement('input')
+    nameInput.type = 'text'
+    nameInput.value = nameVal
+    nameInput.placeholder = '話者名（空=NPC名）'
+    nameInput.style.cssText = 'width:180px; flex-shrink:0; font-size:0.8rem; opacity:0.8;'
+
+    const del = document.createElement('button')
+    del.className = 'btn-del-line'
+    del.textContent = '✕'
+    del.style.marginLeft = 'auto'
+
+    topRow.appendChild(nameInput)
+    topRow.appendChild(del)
+
+    // 下段: セリフ本文
+    const textInput = document.createElement('input')
+    textInput.type = 'text'
+    textInput.value = textVal
+    textInput.placeholder = 'セリフを入力...'
+
+    const sync = () => {
+      const def = npcDefs[selectedIdx]
+      if (!def.dialogLines) def.dialogLines = []
+      const n = nameInput.value.trim()
+      def.dialogLines[idx] = n ? { name: n, text: textInput.value } : textInput.value
+    }
+    nameInput.addEventListener('input', sync)
+    textInput.addEventListener('input', sync)
+
+    del.addEventListener('click', () => {
+      const def = npcDefs[selectedIdx]
+      def.dialogLines.splice(idx, 1)
+      renderDialogLines(def.dialogLines)
+    })
+
+    row.appendChild(topRow)
+    row.appendChild(textInput)
+    container.appendChild(row)
   }
 
   function addLineRow(container, value, idx, type) {
@@ -311,16 +367,16 @@
     input.placeholder = 'セリフを入力...'
     input.addEventListener('input', () => {
       const def = npcDefs[selectedIdx]
-      if (type === 'speech') { if (!def.speechLines) def.speechLines = []; def.speechLines[idx] = input.value }
-      else { if (!def.dialogLines) def.dialogLines = []; def.dialogLines[idx] = input.value }
+      if (!def.speechLines) def.speechLines = []
+      def.speechLines[idx] = input.value
     })
     const del = document.createElement('button')
     del.className = 'btn-del-line'
     del.textContent = '✕'
     del.addEventListener('click', () => {
       const def = npcDefs[selectedIdx]
-      if (type === 'speech') { def.speechLines.splice(idx, 1); renderSpeechLines(def.speechLines) }
-      else { def.dialogLines.splice(idx, 1); renderDialogLines(def.dialogLines) }
+      def.speechLines.splice(idx, 1)
+      renderSpeechLines(def.speechLines)
     })
     row.appendChild(input)
     row.appendChild(del)

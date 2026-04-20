@@ -3,15 +3,15 @@
   "start": {
     "then": {
       "action": "goto_map",
-      "mapId": "boss_map",
+      "mapId": "Village_map",
       "x": 5,
       "y": 5
     }
   },
   "maps": {
-    "boss_map": {
+    "Village_map": {
       "boss": {
-        "configKey": "reala_boss",
+        "configKey": "belladonna_boss",
         "x": 20,
         "y": 15
       },

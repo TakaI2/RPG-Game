@@ -2,31 +2,36 @@
   "assets": {
     "bgm": [
       {
-        "key": "spiral",
-        "url": "assets/story/bgm/spiral.ogg"
-      },
-      {
         "key": "redmoon",
         "url": "assets/story/bgm/redmoon.ogg"
+      },
+      {
+        "key": "spiral",
+        "url": "assets/story/bgm/spiral.ogg"
       }
     ]
   },
   "start": {
-    "story": "intro",
+    "story": "opening",
     "then": {
       "action": "goto_map",
-      "mapId": "first_map",
+      "mapId": "Village_map",
       "x": 10,
       "y": 10
     }
   },
   "maps": {
-    "boss_map": {
+    "grave_map": {
       "bgm": "redmoon",
-      "onEnter": null,
-      "boss": { "configKey": "belladonna_boss", "x": 30, "y": 15 },
+      "onEnter": {
+        "story": "boss_story",
+        "then": {
+          "action": "exit"
+        }
+      },
+      "hasBoss": true,
       "onPlayerDefeat": {
-        "story": "gameover",
+        "story": "badend",
         "then": {
           "action": "exit"
         }
@@ -39,12 +44,12 @@
       },
       "eventTriggers": []
     },
-    "first_map": {
+    "Village_map": {
       "bgm": "spiral",
       "onEnter": null,
       "hasBoss": false,
       "onPlayerDefeat": {
-        "story": "gameover",
+        "story": "badend",
         "then": {
           "action": "exit"
         }
@@ -52,72 +57,53 @@
       "eventTriggers": [],
       "portals": [
         {
-          "targetMap": "gail",
+          "targetMap": "grave_map",
           "targetX": 5,
           "targetY": 5
-        }
-      ]
-    },
-    "gail": {
-      "bgm": "spiral",
-      "onEnter": null,
-      "hasBoss": false,
-      "onPlayerDefeat": {
-        "story": "gameover",
-        "then": {
-          "action": "exit"
-        }
-      },
-      "eventTriggers": [],
-      "portals": [
-        {
-          "targetMap": "boss_map",
-          "targetX": 30,
-          "targetY": 46
         }
       ]
     }
   },
   "_editorPositions": {
-    "bgm_spiral": {
-      "x": 9.400009155273438,
-      "y": 237.60003662109375
-    },
     "bgm_redmoon": {
-      "x": 9.599990844726562,
-      "y": 343.9999694824219
+      "x": 59.72833181909891,
+      "y": 238.6910010020173
     },
-    "map_boss_map": {
-      "x": 497.70001220703125,
-      "y": 361.8151087905421
+    "bgm_spiral": {
+      "x": 62.731541919973125,
+      "y": 365.9915600907866
     },
-    "map_first_map": {
-      "x": 486.7999267578125,
-      "y": -45.71514083399917
+    "map_grave_map": {
+      "x": 378.7678568213153,
+      "y": 426.0575775244171
     },
-    "map_gail": {
-      "x": 489.9848484848485,
-      "y": 157.0151515151515
+    "map_Village_map": {
+      "x": 384.55610223775795,
+      "y": 202.08777809284047
     },
     "start": {
-      "x": -80,
-      "y": -32.79999542236328
+      "x": 12.437777168711364,
+      "y": 22.88036908536869
     },
-    "story_intro": {
-      "x": 179.99996948242188,
-      "y": -35.20000457763672
+    "story_opening": {
+      "x": 381.8086072380515,
+      "y": 19.647454333046603
     },
-    "story_gameover": {
-      "x": 796.5000610351562,
-      "y": 154.1999969482422
+    "story_boss_story": {
+      "x": 779.2448579903911,
+      "y": 441.74724012164455
     },
-    "exit": {
-      "x": 1042.7999267578125,
-      "y": 295.99993896484375
+    "story_badend": {
+      "x": 777.0398199936807,
+      "y": 326.14078043009783
     },
     "story_clear": {
-      "x": 775.1000366210938,
-      "y": 543
+      "x": 782.1925022145391,
+      "y": 569.563819757983
+    },
+    "exit": {
+      "x": 1132.5,
+      "y": 444.49999999999994
     }
   }
 }

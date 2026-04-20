@@ -112,7 +112,7 @@ export type Brute = Phaser.Types.Physics.Arcade.SpriteWithDynamicBody & {
 export type AnyEnemy = EnemyWithAI | Archer | Mage | Brute
 
 export function makeEnemy(scene: Phaser.Scene, x: number, y: number, overrides?: EnemyOverrides): EnemyWithAI {
-  const en = scene.physics.add.sprite(x, y, 'solder').setScale(2) as EnemyWithAI
+  const en = scene.physics.add.sprite(x, y, 'solder').setScale(1) as EnemyWithAI
   en.state = 'patrol'
   en.speed = 180
   en.hp = 3

@@ -104,8 +104,8 @@ export function updateBossAI(
   // フェーズ判定
   updatePhase(boss, speechBubble)
 
-  // idle/cooldown 中はプレイヤーに向かって歩く
-  if (boss.state === 'idle' || boss.state === 'cooldown') {
+  // idle/cooldown 中はプレイヤーに向かって歩く（突進中は速度を上書きしない）
+  if ((boss.state === 'idle' || boss.state === 'cooldown') && !boss.getData('dashActive')) {
     const dx = player.x - boss.x
     const dy = player.y - boss.y
     const dist = Math.sqrt(dx * dx + dy * dy)
@@ -410,6 +410,7 @@ function executeTeleportDashAttack(
               }
 
               const dashAngle = Phaser.Math.Angle.Between(boss.x, boss.y, player.x, player.y)
+              boss.setData('dashActive', true)
               boss.setVelocity(Math.cos(dashAngle) * cfg.dashSpeed, Math.sin(dashAngle) * cfg.dashSpeed)
               boss.setData('dashDamage', cfg.damage)
 
@@ -417,6 +418,7 @@ function executeTeleportDashAttack(
               scene.time.delayedCall(cfg.dashDuration, () => {
                 boss.setVelocity(0, 0)
                 boss.setData('dashDamage', 0)
+                boss.setData('dashActive', false)
               })
             })
           }

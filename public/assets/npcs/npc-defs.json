@@ -11,20 +11,41 @@
     ],
     "speechIntervalMs": 5000,
     "dialogLines": [
-      "この先には魔物がいるから気をつけて！"
+      {
+        "name": "ベルナデット",
+        "text": "この先には魔物がいるから気をつけて！"
+      }
     ]
   },
   {
     "id": "npc_1775354231905",
-    "name": "生贄",
+    "name": "村人",
     "spriteKey": "victhim2",
     "animated": true,
     "movement": "fixed",
     "speechLines": [
-      "うううぅ・・・・"
+      "うううぅ・・・、溶ける・・・体が・・・",
+      "あつい・・・、身体が熱い・・・"
     ],
     "speechIntervalMs": 5000,
-    "dialogLines": []
+    "dialogLines": [
+      {
+        "name": "ベルナデット",
+        "text": "磔にされて、寄って集って襲われたか。　キス痕だらけ。"
+      },
+      {
+        "name": "ベルナデット",
+        "text": "サキュバス特有の「遊び」ね・・・。汚らわしい。"
+      },
+      {
+        "name": "ベルナデット",
+        "text": "壊れた蛇口みたいに体液垂れ流して・・・、強い魅了の呪いが掛けられてるのかしら。"
+      },
+      {
+        "name": "ベルナデット",
+        "text": "呪いをかけたのはあのリアラってやつかしら？"
+      }
+    ]
   },
   {
     "id": "npc_1775505028741",
@@ -88,7 +109,14 @@
     ],
     "speechIntervalMs": 5000,
     "dialogLines": [
-      "あ～あ、サキュバスに襲われたのね、すっかり壊れてる・・・。"
+      {
+        "name": "ベルナデット",
+        "text": "あ～あ、サキュバスに襲われたのね、すっかり壊れてる・・・。"
+      },
+      {
+        "name": "ベルナデット",
+        "text": "体液が垂れ流し。干乾びるのも時間の問題ね。"
+      }
     ],
     "frameRate": 4
   },
@@ -102,5 +130,255 @@
     "speechIntervalMs": 5000,
     "dialogLines": [],
     "frameCount": 7
+  },
+  {
+    "id": "npc_1776100001000",
+    "name": "壮年の農夫",
+    "spriteKey": "victhim2",
+    "animated": true,
+    "movement": "fixed",
+    "speechLines": [
+      "ぁ・・・、ぁあ・・・",
+      "いあぁ・・・、あはぁ・・・"
+    ],
+    "speechIntervalMs": 6800,
+    "dialogLines": [
+      {
+        "name": "ベルナデット",
+        "text": "身体が干乾びたうえ、腐って溶け始めている。"
+      },
+      {
+        "name": "ベルナデット",
+        "text": "リアラね・・・。あのマントに包まれて全身の毛穴から命を吸われたのね。"
+      },
+      {
+        "name": "ベルナデット",
+        "text": "地獄の快楽を味わわされて、もう言葉も発せなくなったわね。"
+      }
+    ],
+    "frameRate": 3
+  },
+  {
+    "id": "npc_1776100002000",
+    "name": "若い行商人",
+    "spriteKey": "victhim3_l",
+    "animated": true,
+    "movement": "fixed",
+    "speechLines": [
+      "きて・・・、もどってきて・・・",
+      "なんで・・・、いかないで・・・"
+    ],
+    "speechIntervalMs": 4500,
+    "dialogLines": [
+      {
+        "name": "ベルナデット",
+        "text": "身体中、キス痕まみれ・・・。　致命傷ね。"
+      },
+      {
+        "name": "ベルナデット",
+        "text": "干乾びて死ぬまで垂れ流しでしょうね。"
+      }
+    ],
+    "frameRate": 5
+  },
+  {
+    "id": "npc_1776100003000",
+    "name": "初老の職人",
+    "spriteKey": "victhim3_r",
+    "animated": true,
+    "movement": "fixed",
+    "speechLines": [
+      "ふぅ・・・、はぁ・・・",
+      "きもちいい・・・あぁ・・・"
+    ],
+    "speechIntervalMs": 9200,
+    "dialogLines": [
+      {
+        "name": "ベルナデット",
+        "text": "夢見てるみたいな顔してる。　二度と醒めることはないでしょうね・・・。"
+      }
+    ],
+    "frameRate": 2
+  },
+  {
+    "id": "npc_1776100004000",
+    "name": "青年兵士",
+    "spriteKey": "victhim2",
+    "animated": true,
+    "movement": "fixed",
+    "speechLines": [
+      "あぅ・・・あぁぁ・・・！",
+      "もっと・・・、もっと・・・吸って・・・。"
+    ],
+    "speechIntervalMs": 3900,
+    "dialogLines": [
+      {
+        "name": "ベルナデット",
+        "text": "ガタイがいいわね。兵士かしら・・・？"
+      },
+      {
+        "name": "ベルナデット",
+        "text": "哀れね・・・。　若くて鍛えられた男なんて奴らからしたらご馳走も同然ね。"
+      },
+      {
+        "name": "ベルナデット",
+        "text": "何匹ものサキュバスに同時に犯されたでしょうね。"
+      }
+    ],
+    "frameRate": 6
+  },
+  {
+    "id": "npc_1776100005000",
+    "name": "商店主",
+    "spriteKey": "victhim3_l",
+    "animated": true,
+    "movement": "fixed",
+    "speechLines": [
+      "あぅぅ・・・、あぁぁ・・・",
+      "リアラ様・・・、あぁ・・・"
+    ],
+    "speechIntervalMs": 7600,
+    "dialogLines": [
+      {
+        "name": "ベルナデット",
+        "text": "うわ・・・、まるでボロ布みたい。　"
+      },
+      {
+        "name": "ベルナデット",
+        "text": "キス痕だけじゃなくて噛痕も。　あのリアラにやられたのか。"
+      },
+      {
+        "name": "ベルナデット",
+        "text": "吸血鬼に比べたら、サキュバスもまだ可愛いもんだわ。"
+      }
+    ],
+    "frameRate": 3
+  },
+  {
+    "id": "npc_1776100006000",
+    "name": "村の長老",
+    "spriteKey": "victhim3_r",
+    "animated": true,
+    "movement": "fixed",
+    "speechLines": [
+      "うぅ・・・うぅ・・・",
+      "助けて・・・息子だけは・・・・・・"
+    ],
+    "speechIntervalMs": 11000,
+    "dialogLines": [
+      {
+        "name": "ベルナデット",
+        "text": "もう、他人の区別もつかないでしょうに・・・。　最期まで身内を案じている"
+      },
+      {
+        "name": "ベルナデット",
+        "text": "残念だけど、息子の方ももう無事ではないでしょうね・・・。"
+      }
+    ],
+    "frameRate": 2
+  },
+  {
+    "id": "npc_1776100007000",
+    "name": "少年",
+    "spriteKey": "victhim2",
+    "animated": true,
+    "movement": "fixed",
+    "speechLines": [
+      "ああぁ・・・、おねえちゃん・・・",
+      "おねぇちゃん・・・、もっと・・・"
+    ],
+    "speechIntervalMs": 5200,
+    "dialogLines": [
+      {
+        "name": "ベルナデット",
+        "text": "・・・悍ましい。　身内か親しい人がサキュバスに変えられたんだ。"
+      },
+      {
+        "name": "ベルナデット",
+        "text": "わざわざ、この子を襲わせたな・・・、悪趣味な・・・。"
+      }
+    ],
+    "frameRate": 4
+  },
+  {
+    "id": "npc_1776100008000",
+    "name": "旅人",
+    "spriteKey": "victhim3_l",
+    "animated": true,
+    "movement": "fixed",
+    "speechLines": [
+      "うぁ、とける・・・とける・・・！！",
+      "まって・・・、たすけて・・・・・・"
+    ],
+    "speechIntervalMs": 4100,
+    "dialogLines": [
+      {
+        "name": "ベルナデット",
+        "text": "食べかけで放置されたか・・・。　"
+      },
+      {
+        "name": "ベルナデット",
+        "text": "中途半端にサキュバスの魔毒を注ぎ込まれたら悲惨ね。"
+      },
+      {
+        "name": "ベルナデット",
+        "text": "地獄の快楽に侵されながらじわじわ死に近づくしかない・・・。"
+      }
+    ],
+    "frameRate": 5
+  },
+  {
+    "id": "npc_1776100009000",
+    "name": "神父の助手",
+    "spriteKey": "victhim3_r",
+    "animated": true,
+    "movement": "fixed",
+    "speechLines": [
+      "かみさまぁ・・・",
+      "でも・・・あのこが・・・すきで・・・"
+    ],
+    "speechIntervalMs": 8300,
+    "dialogLines": [
+      {
+        "name": "ベルナデット",
+        "text": "聖職者か・・・。　手酷くやられてるわね。"
+      },
+      {
+        "name": "ベルナデット",
+        "text": "快楽で狂わして、信仰を捨てる様を嘲笑う。　反吐が出る遊びだ。"
+      },
+      {
+        "name": "ベルナデット",
+        "text": "それに噛み痕も・・・。　リアラが襲った犠牲者はかなりいたぶられてるわね。"
+      }
+    ],
+    "frameRate": 3
+  },
+  {
+    "id": "npc_1776100010000",
+    "name": "元自警団員",
+    "spriteKey": "victhim3_l",
+    "animated": true,
+    "movement": "fixed",
+    "speechLines": [
+      "おれが・・・まもらなきゃ・・・",
+      "ミミ・・・可愛い、俺の妹・・・"
+    ],
+    "speechIntervalMs": 6200,
+    "dialogLines": [
+      {
+        "name": "ベルナデット",
+        "text": "手元にロケットが握られている。　誰かの写し絵かしら・・・？"
+      },
+      {
+        "name": "ベルナデット",
+        "text": "・・・・・・"
+      },
+      {
+        "name": "ベルナデット",
+        "text": "さっきみたサキュバスだ・・・。　惨めね。"
+      }
+    ],
+    "frameRate": 4
   }
 ]

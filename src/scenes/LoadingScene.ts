@@ -50,6 +50,7 @@ export default class LoadingScene extends Phaser.Scene {
     // 飛び道具
     this.load.image('arrow', 'assets/images/arrow.png')
     this.load.image('orb', 'assets/images/magic_orb.png')
+    this.load.image('hert', 'assets/images/hert.png')
 
     // NPC定義JSON（同期XHRで先行取得 → スプライト画像を直接ロード）
     this.load.json('npc-defs', 'assets/npcs/npc-defs.json')

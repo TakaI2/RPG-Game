@@ -576,6 +576,7 @@ function buildStoryProps(node) {
   const hasMatch = storyScripts.includes(currentStoryId)
   const extraOption = (!hasMatch && currentStoryId)
     ? `<option value="${escHtml(currentStoryId)}" selected>${escHtml(currentStoryId)}</option>` : ''
+  const isGotoMap = node.data.thenAction === 'goto_map'
   return `
     <div class="prop-section-title">Story</div>
     <div class="prop-group">
@@ -592,6 +593,16 @@ function buildStoryProps(node) {
         <option value="goto_map"${node.data.thenAction === 'goto_map' ? ' selected' : ''}>goto_map</option>
         <option value="exit"${node.data.thenAction === 'exit' ? ' selected' : ''}>exit</option>
       </select>
+    </div>
+    <div id="prop-story-spawn-wrap" style="display:${isGotoMap ? '' : 'none'}">
+      <div class="prop-group">
+        <label>Spawn X (タイル)</label>
+        <input type="number" id="prop-story-spawn-x" value="${node.data.thenMapX ?? 10}" min="0">
+      </div>
+      <div class="prop-group">
+        <label>Spawn Y (タイル)</label>
+        <input type="number" id="prop-story-spawn-y" value="${node.data.thenMapY ?? 10}" min="0">
+      </div>
     </div>
     <p style="font-size:0.78rem;color:#6c7086;margin-top:6px;">then の遷移先は then ポートからエッジで接続してください</p>
   `;
@@ -758,7 +769,15 @@ function bindPropertyHandlers(node) {
     });
     listen('prop-story-then', 'change', e => {
       node.data.thenAction = e.target.value;
+      const wrap = document.getElementById('prop-story-spawn-wrap');
+      if (wrap) wrap.style.display = e.target.value === 'goto_map' ? '' : 'none';
       renderNodes();
+    });
+    listen('prop-story-spawn-x', 'input', e => {
+      node.data.thenMapX = parseInt(e.target.value) || 0;
+    });
+    listen('prop-story-spawn-y', 'input', e => {
+      node.data.thenMapY = parseInt(e.target.value) || 0;
     });
   }
 
@@ -1177,7 +1196,7 @@ function addNode(type) {
 function defaultData(type) {
   switch (type) {
     case 'map':   return { id: 'new_map', bgm: '', hasBoss: false, bossConfigKey: '', bossX: 5, bossY: 5, eventTriggers: [], _portalCount: 0, _portalDests: [] };
-    case 'story': return { storyId: 'new_story', thenAction: 'stay' };
+    case 'story': return { storyId: 'new_story', thenAction: 'stay', thenMapX: 10, thenMapY: 10 };
     case 'bgm':   return { key: 'new_bgm', url: '' };
     case 'exit':  return {};
     case 'start': return {};
@@ -1299,6 +1318,11 @@ function deserialize(cfg) {
   function resolveThen(storyNodeId, thenCfg) {
     if (!thenCfg) return;
     if (thenCfg.action === 'goto_map') {
+      const node = state.nodes.find(n => n.id === storyNodeId);
+      if (node) {
+        node.data.thenMapX = thenCfg.x ?? 10;
+        node.data.thenMapY = thenCfg.y ?? 10;
+      }
       const targetMapNodeId = ensureMapNode(thenCfg.mapId, cfg.maps?.[thenCfg.mapId] || {});
       addEdge(storyNodeId, 'then', targetMapNodeId, 'in');
     } else if (thenCfg.action === 'exit') {
@@ -1505,7 +1529,7 @@ function resolveThenConfig(storyNode) {
   const target = findNode(thenEdge.toNode);
   if (!target) return { action: 'stay' };
   if (target.type === 'exit') return { action: 'exit' };
-  if (target.type === 'map') return { action: 'goto_map', mapId: target.data.id, x: 10, y: 10 };
+  if (target.type === 'map') return { action: 'goto_map', mapId: target.data.id, x: storyNode.data.thenMapX ?? 10, y: storyNode.data.thenMapY ?? 10 };
   return { action: storyNode.data.thenAction || 'stay' };
 }
 

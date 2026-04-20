@@ -87,12 +87,13 @@ export function fireHomingOrb(
   target: Phaser.GameObjects.Sprite,
   speed = 220,
   turnRate = 6.0,
-  life = 3000
+  life = 3000,
+  textureKey = 'hert'
 ): HomingOrb {
   const group = (scene as SceneWithProjectiles).projectiles
   const orb = (group
-    ? group.create(from.x, from.y, 'orb')
-    : scene.physics.add.image(from.x, from.y, 'orb')) as HomingOrb
+    ? group.create(from.x, from.y, textureKey)
+    : scene.physics.add.image(from.x, from.y, textureKey)) as HomingOrb
 
   orb.target = target
   orb.speed = speed

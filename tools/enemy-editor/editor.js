@@ -31,13 +31,23 @@ let spriteImage = null
 /** -------------------------------------------------- *
  *  Init
  * -------------------------------------------------- */
-window.addEventListener('DOMContentLoaded', () => {
-  loadFromStorage()
+window.addEventListener('DOMContentLoaded', async () => {
+  await loadFromGame()
   renderCharList()
   bindEvents()
 })
 
-function loadFromStorage() {
+async function loadFromGame() {
+  try {
+    const data = await loadAsset('assets/enemies/enemy-defs.json')
+    if (Array.isArray(data)) {
+      defs = data
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(defs))
+      return
+    }
+  } catch {
+    // dev server not running or file not found — fall back to localStorage
+  }
   try {
     const raw = localStorage.getItem(STORAGE_KEY)
     defs = raw ? JSON.parse(raw) : []
@@ -71,6 +81,7 @@ function bindEvents() {
   document.getElementById('btnExport').addEventListener('click', onExport)
   document.getElementById('btnSaveToGame').addEventListener('click', () => {
     collectCurrentDef()
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(defs))
     window.saveToGame('assets/enemies/enemy-defs.json', defs)
   })
 

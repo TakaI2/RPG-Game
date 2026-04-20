@@ -358,6 +358,7 @@
         <div class="control-group">
             <button class="primary" onclick="createNewMap()">新規マップ作成</button>
             <button onclick="clearMap()">マップをクリア</button>
+            <button type="button" onclick="openGenerateModal()" style="background:#2a1a4a;color:#cba6f7;border:1px solid #cba6f7;padding:7px 14px;border-radius:6px;cursor:pointer;font-size:0.85rem;margin-left:8px;">🎲 自動生成</button>
         </div>
         <div class="control-group">
             <button class="primary" onclick="exportMap()">JSONエクスポート</button>
@@ -1388,6 +1389,269 @@
         if (!mapId) { alert('マップIDを入力してください'); return }
         const mapJSON = { cols, rows, tiles: mapData, enemySpawns, npcSpawns, portals }
         window.saveToGame(`assets/maps/${mapId}.json`, mapJSON)
+    }
+
+    // ============================================================
+    // 自動生成
+    // ============================================================
+
+    // ---- ノイズ ユーティリティ ----
+    function ihash(x, y, seed) {
+        let h = (seed * 1234567 + x * 374761393 + y * 668265263) | 0
+        h = Math.imul(h ^ (h >>> 13), 1540483477)
+        return ((h ^ (h >>> 15)) >>> 0) / 0xFFFFFFFF
+    }
+    function lerp(a, b, t) { return a + (b - a) * t }
+    function smoothstep(t) { return t * t * (3 - 2 * t) }
+    function valueNoise(x, y, seed) {
+        const xi = Math.floor(x), yi = Math.floor(y)
+        const tx = smoothstep(x - xi), ty = smoothstep(y - yi)
+        return lerp(
+            lerp(ihash(xi, yi, seed),   ihash(xi+1, yi, seed),   tx),
+            lerp(ihash(xi, yi+1, seed), ihash(xi+1, yi+1, seed), tx),
+            ty
+        )
+    }
+    function fbm(x, y, seed, octaves = 5) {
+        let v = 0, amp = 0.5, freq = 1, max = 0
+        for (let i = 0; i < octaves; i++) {
+            v += valueNoise(x * freq, y * freq, seed + i * 997) * amp
+            max += amp; amp *= 0.5; freq *= 2
+        }
+        return v / max
+    }
+    function mulberry32(seed) {
+        let s = seed >>> 0
+        return () => {
+            s = (s + 0x6D2B79F5) | 0
+            let t = Math.imul(s ^ s >>> 15, 1 | s)
+            t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t
+            return ((t ^ t >>> 14) >>> 0) / 4294967296
+        }
+    }
+
+    // ---- テーマプリセット ----
+    const GEN_THEMES = {
+        village:  { floor: 0,  floor2: 15, water: 6,  wall: 5,  wall2: -1, waterRatio: 18, wallDensity: 12, scale: 4, paths: true,  path: 15 },
+        graveyard:{ floor: 15, floor2: -1, water: -1, wall: 2,  wall2: 4,  waterRatio: 0,  wallDensity: 22, scale: 3, paths: false, path: -1 },
+        dungeon:  { floor: 7,  floor2: 8,  water: 9,  wall: 5,  wall2: 10, waterRatio: 12, wallDensity: 28, scale: 3, paths: true,  path: 8  },
+        custom:   null
+    }
+
+    function openGenerateModal() {
+        const floorDefs = allDefs.filter(d => d.role === 'floor')
+        const wallDefs  = allDefs.filter(d => d.role === 'wall')
+
+        const floorOpts = floorDefs.map(d => `<option value="${d.id}">${d.label}</option>`).join('')
+        const floorOptsNone = `<option value="-1">（なし）</option>` + floorOpts
+        const wallOpts  = wallDefs.map(d => `<option value="${d.id}">${d.label}</option>`).join('')
+        const wallOptsNone = `<option value="-1">（なし）</option>` + wallOpts
+
+        const modal = document.createElement('div')
+        modal.id = 'gen-modal'
+        modal.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:9999;display:flex;align-items:center;justify-content:center;'
+        modal.innerHTML = `
+          <div style="background:#1e1e2e;border:1px solid #45475a;border-radius:10px;padding:24px;width:480px;max-height:90vh;overflow-y:auto;">
+            <h2 style="color:#cba6f7;margin-bottom:16px;font-size:1.1rem;">🎲 プロシージャル マップ生成</h2>
+
+            <div style="margin-bottom:12px;">
+              <label style="color:#a6adc8;font-size:0.85rem;">テーマプリセット</label><br>
+              <select id="gen-theme" onchange="applyGenTheme()" style="width:100%;margin-top:4px;padding:5px;background:#313244;color:#cdd6f4;border:1px solid #45475a;border-radius:4px;">
+                <option value="village">村（Village）</option>
+                <option value="graveyard">墓地（Graveyard）</option>
+                <option value="dungeon">ダンジョン（Dungeon）</option>
+                <option value="custom">カスタム</option>
+              </select>
+            </div>
+
+            <div style="margin-bottom:12px;">
+              <label style="color:#a6adc8;font-size:0.85rem;">シード値（空欄でランダム）</label><br>
+              <input id="gen-seed" type="number" placeholder="例: 12345" style="width:100%;margin-top:4px;padding:5px;background:#313244;color:#cdd6f4;border:1px solid #45475a;border-radius:4px;">
+            </div>
+
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px;">
+              <div>
+                <label style="color:#a6adc8;font-size:0.82rem;">主地面タイル</label><br>
+                <select id="gen-floor" style="width:100%;margin-top:3px;padding:4px;background:#313244;color:#cdd6f4;border:1px solid #45475a;border-radius:4px;">${floorOpts}</select>
+              </div>
+              <div>
+                <label style="color:#a6adc8;font-size:0.82rem;">副地面タイル</label><br>
+                <select id="gen-floor2" style="width:100%;margin-top:3px;padding:4px;background:#313244;color:#cdd6f4;border:1px solid #45475a;border-radius:4px;">${floorOptsNone}</select>
+              </div>
+              <div>
+                <label style="color:#a6adc8;font-size:0.82rem;">水面タイル</label><br>
+                <select id="gen-water" style="width:100%;margin-top:3px;padding:4px;background:#313244;color:#cdd6f4;border:1px solid #45475a;border-radius:4px;">${floorOptsNone}</select>
+              </div>
+              <div>
+                <label style="color:#a6adc8;font-size:0.82rem;">主壁タイル</label><br>
+                <select id="gen-wall" style="width:100%;margin-top:3px;padding:4px;background:#313244;color:#cdd6f4;border:1px solid #45475a;border-radius:4px;">${wallOpts}</select>
+              </div>
+              <div>
+                <label style="color:#a6adc8;font-size:0.82rem;">副壁タイル</label><br>
+                <select id="gen-wall2" style="width:100%;margin-top:3px;padding:4px;background:#313244;color:#cdd6f4;border:1px solid #45475a;border-radius:4px;">${wallOptsNone}</select>
+              </div>
+            </div>
+
+            <div style="margin-bottom:10px;">
+              <label style="color:#a6adc8;font-size:0.82rem;">水面の割合: <span id="gen-water-ratio-val">18</span>%</label><br>
+              <input id="gen-water-ratio" type="range" min="0" max="40" value="18" oninput="document.getElementById('gen-water-ratio-val').textContent=this.value" style="width:100%;margin-top:3px;">
+            </div>
+            <div style="margin-bottom:10px;">
+              <label style="color:#a6adc8;font-size:0.82rem;">壁の密度: <span id="gen-wall-density-val">12</span>%</label><br>
+              <input id="gen-wall-density" type="range" min="2" max="45" value="12" oninput="document.getElementById('gen-wall-density-val').textContent=this.value" style="width:100%;margin-top:3px;">
+            </div>
+            <div style="margin-bottom:10px;">
+              <label style="color:#a6adc8;font-size:0.82rem;">地形スケール: <span id="gen-scale-val">4</span></label><br>
+              <input id="gen-scale" type="range" min="1" max="10" value="4" step="0.5" oninput="document.getElementById('gen-scale-val').textContent=this.value" style="width:100%;margin-top:3px;">
+            </div>
+
+            <div style="margin-bottom:12px;display:flex;align-items:center;gap:8px;">
+              <input type="checkbox" id="gen-paths" checked>
+              <label for="gen-paths" style="color:#a6adc8;font-size:0.82rem;">道を生成する</label>
+              <select id="gen-path" style="margin-left:8px;padding:4px;background:#313244;color:#cdd6f4;border:1px solid #45475a;border-radius:4px;">${floorOptsNone}</select>
+            </div>
+
+            <div style="display:flex;gap:10px;justify-content:flex-end;margin-top:16px;">
+              <button type="button" onclick="closeGenerateModal()" style="padding:7px 16px;background:#45475a;color:#cdd6f4;border:none;border-radius:6px;cursor:pointer;">キャンセル</button>
+              <button type="button" onclick="runGenerate()" style="padding:7px 20px;background:#2a1a4a;color:#cba6f7;border:1px solid #cba6f7;border-radius:6px;cursor:pointer;font-weight:bold;">生成</button>
+            </div>
+          </div>`
+        document.body.appendChild(modal)
+        applyGenTheme()
+    }
+
+    function closeGenerateModal() {
+        const m = document.getElementById('gen-modal')
+        if (m) m.remove()
+    }
+
+    function setSelectValue(id, val) {
+        const el = document.getElementById(id)
+        if (!el) return
+        const opt = [...el.options].find(o => parseInt(o.value) === val)
+        if (opt) el.value = String(val)
+        else if (el.options.length > 0) el.value = el.options[0].value
+    }
+
+    function applyGenTheme() {
+        const theme = document.getElementById('gen-theme').value
+        const preset = GEN_THEMES[theme]
+        if (!preset) return
+        setSelectValue('gen-floor',  preset.floor)
+        setSelectValue('gen-floor2', preset.floor2)
+        setSelectValue('gen-water',  preset.water)
+        setSelectValue('gen-wall',   preset.wall)
+        setSelectValue('gen-wall2',  preset.wall2)
+        setSelectValue('gen-path',   preset.path)
+        const wr = document.getElementById('gen-water-ratio')
+        wr.value = preset.waterRatio
+        document.getElementById('gen-water-ratio-val').textContent = preset.waterRatio
+        const wd = document.getElementById('gen-wall-density')
+        wd.value = preset.wallDensity
+        document.getElementById('gen-wall-density-val').textContent = preset.wallDensity
+        const sc = document.getElementById('gen-scale')
+        sc.value = preset.scale
+        document.getElementById('gen-scale-val').textContent = preset.scale
+        document.getElementById('gen-paths').checked = preset.paths
+    }
+
+    function runGenerate() {
+        const rawSeed = document.getElementById('gen-seed').value.trim()
+        const seed    = rawSeed !== '' ? parseInt(rawSeed) : Math.floor(Math.random() * 999999)
+        const floorId  = parseInt(document.getElementById('gen-floor').value)
+        const floor2Id = parseInt(document.getElementById('gen-floor2').value)
+        const waterId  = parseInt(document.getElementById('gen-water').value)
+        const wallId   = parseInt(document.getElementById('gen-wall').value)
+        const wall2Id  = parseInt(document.getElementById('gen-wall2').value)
+        const waterRatio  = parseInt(document.getElementById('gen-water-ratio').value) / 100
+        const wallDensity = parseInt(document.getElementById('gen-wall-density').value) / 100
+        const scale    = parseFloat(document.getElementById('gen-scale').value)
+        const hasPaths = document.getElementById('gen-paths').checked
+        const pathId   = parseInt(document.getElementById('gen-path').value)
+
+        const map = []
+        for (let y = 0; y < rows; y++) {
+            map.push([])
+            for (let x = 0; x < cols; x++) {
+                const nx = (x / cols) * scale
+                const ny = (y / rows) * scale
+                const n  = fbm(nx, ny, seed)
+                const n2 = fbm(nx * 2.7 + 13.1, ny * 2.7 + 7.3, seed + 500)
+
+                let tileId
+                if (waterId >= 0 && n < waterRatio) {
+                    tileId = waterId
+                } else if (n > 1 - wallDensity) {
+                    tileId = (wall2Id >= 0 && n2 > 0.62) ? wall2Id : wallId
+                } else {
+                    tileId = (floor2Id >= 0 && n2 > 0.68) ? floor2Id : floorId
+                }
+                map[y].push(tileId)
+            }
+        }
+
+        if (hasPaths && pathId >= 0) {
+            generatePaths(map, seed, pathId, floorId, wallId, waterId)
+        }
+
+        // マップ端を壁で囲む
+        for (let x = 0; x < cols; x++) { map[0][x] = wallId; map[rows-1][x] = wallId }
+        for (let y = 0; y < rows; y++) { map[y][0] = wallId; map[y][cols-1] = wallId }
+
+        mapData = map
+        drawMap()
+        closeGenerateModal()
+    }
+
+    // ---- 道の生成 ----
+    function generatePaths(map, seed, pathId, floorId, wallId, waterId) {
+        const rng = mulberry32(seed + 77777)
+        const numPoints = 3 + Math.floor(rng() * 4)
+        const pts = []
+        const margin = Math.floor(Math.min(cols, rows) * 0.1)
+        for (let i = 0; i < numPoints; i++) {
+            pts.push({
+                x: margin + Math.floor(rng() * (cols - margin * 2)),
+                y: margin + Math.floor(rng() * (rows - margin * 2))
+            })
+        }
+        // 中心点を追加して放射状に
+        pts.unshift({ x: Math.floor(cols / 2), y: Math.floor(rows / 2) })
+
+        for (let i = 0; i < pts.length - 1; i++) {
+            drawPathSegment(map, pts[i], pts[i+1], pathId, wallId, waterId, rng)
+        }
+    }
+
+    function drawPathSegment(map, from, to, pathId, wallId, waterId, rng) {
+        let x = from.x, y = from.y
+        const maxSteps = (Math.abs(to.x - from.x) + Math.abs(to.y - from.y)) * 4 + 80
+        for (let step = 0; step < maxSteps; step++) {
+            // 幅2の道を描く
+            for (let dy = -1; dy <= 1; dy++) {
+                for (let dx = -1; dx <= 1; dx++) {
+                    const px = x + dx, py = y + dy
+                    if (px > 0 && px < cols - 1 && py > 0 && py < rows - 1) {
+                        // 壁と水面は上書きしない（道が自然につながるように）
+                        if (map[py][px] !== wallId && map[py][px] !== waterId) {
+                            map[py][px] = pathId
+                        }
+                    }
+                }
+            }
+            if (x === to.x && y === to.y) break
+            // 10%の確率でランダム歩行、残りは目標方向へ
+            if (rng() < 0.1) {
+                const dirs = [[1,0],[-1,0],[0,1],[0,-1]]
+                const d = dirs[Math.floor(rng() * 4)]
+                x = Math.max(1, Math.min(cols-2, x + d[0]))
+                y = Math.max(1, Math.min(rows-2, y + d[1]))
+            } else {
+                const dx = to.x - x, dy = to.y - y
+                if (Math.abs(dx) >= Math.abs(dy)) x += dx > 0 ? 1 : -1
+                else y += dy > 0 ? 1 : -1
+            }
+        }
     }
     </script>
     <script src="../shared/save-api.js"></script>

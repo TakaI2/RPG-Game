@@ -1,7 +1,8 @@
 import Phaser from 'phaser'
 import { GAME_W } from '../config'
 
-export type DialogData = { portraitTint?: number; lines: string[] }
+export type DialogLine = string | { name: string; text: string }
+export type DialogData = { portraitTint?: number; lines: DialogLine[] }
 
 export default class DialogUI {
   private scene: Phaser.Scene
@@ -10,7 +11,8 @@ export default class DialogUI {
   private msgText!: Phaser.GameObjects.Text
   private portrait!: Phaser.GameObjects.Image
 
-  private lines: string[] = []
+  private lines: DialogLine[] = []
+  private defaultName = ''
   private idx = 0
   private typing = false
   private fullLine = ''
@@ -43,11 +45,11 @@ export default class DialogUI {
   show(name: string, data: DialogData) {
     console.log('[DialogUI] show called with:', { name, lines: data.lines })
     this.lines = data.lines.slice()
+    this.defaultName = name
     this.idx = 0
-    this.nameText.setText(name)
     this.portrait.setTint(data.portraitTint ?? 0xffffff)
     this.container.setVisible(true)
-    this.typeLine(this.lines[this.idx])
+    this.showLine(this.lines[this.idx])
   }
 
   next() {
@@ -65,7 +67,14 @@ export default class DialogUI {
       return
     }
     console.log('[DialogUI] Showing line', this.idx, ':', this.lines[this.idx])
-    this.typeLine(this.lines[this.idx])
+    this.showLine(this.lines[this.idx])
+  }
+
+  private showLine(line: DialogLine) {
+    const text = typeof line === 'string' ? line : line.text
+    const name = typeof line === 'string' ? this.defaultName : line.name
+    this.nameText.setText(name)
+    this.typeLine(text)
   }
 
   private typeLine(text: string) {

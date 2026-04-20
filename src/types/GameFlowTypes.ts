@@ -42,7 +42,7 @@ export type BossMapConfig = {
 
 export type MapFlowConfig = {
   bgm?: string
-  onEnter: string | null
+  onEnter: StoryThenConfig | null
   boss?: BossMapConfig | null
   onPlayerDefeat: StoryThenConfig
   onBossDefeat?: StoryThenConfig

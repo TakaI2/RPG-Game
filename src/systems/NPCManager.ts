@@ -3,7 +3,7 @@ import { TILE } from '../config'
 import { EnemySpeech } from './EnemySpeech'
 import type DialogUI from './Dialog'
 import type { DialogData } from './Dialog'
-import type { NPCDef, NPCSpawn } from '../types/NPCTypes'
+import type { NPCDef, NPCSpawn, DialogLine } from '../types/NPCTypes'
 import { resolveText } from '../utils/LocaleManager'
 
 interface NPCInstance {
@@ -122,7 +122,7 @@ export function createNPCManager(scene: Phaser.Scene, ui: DialogUI): NPCManagerH
       if (dist < maxDistance) {
         const { dialogLines } = resolveText({ dialogLines: inst.def.dialogLines }, inst.def.i18n)
         if (dialogLines && dialogLines.length > 0) {
-          const data: DialogData = { lines: dialogLines }
+          const data: DialogData = { lines: dialogLines as DialogLine[] }
           ui.show(inst.def.name, data)
           return true
         }

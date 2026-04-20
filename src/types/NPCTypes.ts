@@ -1,3 +1,5 @@
+export type DialogLine = string | { name: string; text: string }
+
 export interface NPCDef {
   id: string
   name: string
@@ -10,8 +12,8 @@ export interface NPCDef {
   patrolRange?: number      // tiles, default 3
   speechLines?: string[]
   speechIntervalMs?: number // default 5000
-  dialogLines?: string[]
-  i18n?: Record<string, { speechLines?: string[]; dialogLines?: string[] }>
+  dialogLines?: DialogLine[]
+  i18n?: Record<string, { speechLines?: string[]; dialogLines?: DialogLine[] }>
 }
 
 export interface NPCSpawn {

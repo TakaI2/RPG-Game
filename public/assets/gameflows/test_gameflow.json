@@ -3,13 +3,13 @@
   "start": {
     "then": {
       "action": "goto_map",
-      "mapId": "grave_map",
+      "mapId": "boss_map1",
       "x": 5,
       "y": 5
     }
   },
   "maps": {
-    "grave_map": {
+    "boss_map1": {
       "boss": {
         "configKey": "reala_boss",
         "x": 20,
