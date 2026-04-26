@@ -37,6 +37,9 @@ export default class StoryScene extends Phaser.Scene {
   init(data: { id: string; then?: ThenAction }) {
     this.scriptId = data?.id || 'intro'
     this.thenAction = data?.then ?? { action: 'stay' }
+    this.isSkipping = false
+    this.waitingForSpace = false
+    this.checkInterval = undefined
     console.log(`[StoryScene] init with id: ${this.scriptId}`, 'then:', this.thenAction)
 
     if (!data || !data.id) {
@@ -133,7 +136,7 @@ export default class StoryScene extends Phaser.Scene {
 
     // スキップボタン（右下）
     this.skipBtn = this.add.image(GAME_W - 120, GAME_H - 60, 'btn_skip')
-      .setDepth(1000)
+      .setDepth(2000)
       .setScrollFactor(0)
       .setInteractive({ useHandCursor: true })
     this.skipBtn.on('pointerdown', () => this.skipStory())
@@ -380,6 +383,7 @@ export default class StoryScene extends Phaser.Scene {
    * ストーリーを進める（Spaceキーまたは左クリック）
    */
   private onAdvance() {
+    if (this.isSkipping) return
     console.log('[StoryScene] Advance triggered, ui.visible:', this.ui.visible, 'waitingForSpace:', this.waitingForSpace)
     if (this.ui.visible) {
       console.log('[StoryScene] Calling ui.next()')
