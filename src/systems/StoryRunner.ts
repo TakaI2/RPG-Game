@@ -47,6 +47,8 @@ export class StoryRunner {
   private onPortraitShow!: (payload: PortraitPayload) => Promise<void>
   private onPortraitHide!: () => Promise<void>
   private onEnd!: (returnTo: string) => void
+  private onFadeIn!: (color: string, duration: number, alpha: number) => Promise<void>
+  private onFadeOut!: (duration: number) => Promise<void>
 
   constructor(scene: Phaser.Scene, audio: AudioBus) {
     this.scene = scene
@@ -70,12 +72,16 @@ export class StoryRunner {
     onPortraitShow: (p: PortraitPayload) => Promise<void>
     onPortraitHide: () => Promise<void>
     onEnd: (rtn: string) => void
+    onFadeIn: (color: string, duration: number, alpha: number) => Promise<void>
+    onFadeOut: (duration: number) => Promise<void>
   }) {
     this.onSay = h.onSay
     this.onBg = h.onBg
     this.onPortraitShow = h.onPortraitShow
     this.onPortraitHide = h.onPortraitHide
     this.onEnd = h.onEnd
+    this.onFadeIn = h.onFadeIn
+    this.onFadeOut = h.onFadeOut
   }
 
   /**
@@ -170,6 +176,27 @@ export class StoryRunner {
 
         case 'se.stop': {
           this.audio.stopSeLoop(op.name as string)
+          break
+        }
+
+        case 'delay': {
+          await new Promise<void>(resolve => {
+            this.scene.time.delayedCall(op.duration as number ?? 1000, () => resolve())
+          })
+          break
+        }
+
+        case 'fade.in': {
+          await this.onFadeIn(
+            op.color as string ?? '#000000',
+            op.duration as number ?? 500,
+            op.alpha as number ?? 1.0
+          )
+          break
+        }
+
+        case 'fade.out': {
+          await this.onFadeOut(op.duration as number ?? 500)
           break
         }
 

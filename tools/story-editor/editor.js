@@ -521,6 +521,15 @@ function addCommand(type) {
     case 'portrait.hide':
       newCmd = { op: 'portrait.hide' };
       break;
+    case 'delay':
+      newCmd = { op: 'delay', duration: 1000 };
+      break;
+    case 'fade.in':
+      newCmd = { op: 'fade.in', color: '#000000', duration: 500, alpha: 1.0 };
+      break;
+    case 'fade.out':
+      newCmd = { op: 'fade.out', duration: 500 };
+      break;
     case 'end':
       newCmd = {
         op: 'end',
@@ -643,6 +652,12 @@ function getCommandPreview(cmd) {
       return `${cmd.portrait || '(未設定)'} (${cmd.x ?? 960}, ${cmd.y ?? 540}) ×${cmd.scale ?? 1.0}`;
     case 'portrait.hide':
       return '立ち絵を消す';
+    case 'delay':
+      return `${cmd.duration ?? 1000}ms`;
+    case 'fade.in':
+      return `${cmd.color || '#000000'} / ${cmd.duration ?? 500}ms / α${cmd.alpha ?? 1.0}`;
+    case 'fade.out':
+      return `${cmd.duration ?? 500}ms`;
     case 'end':
       return `→ ${cmd.returnTo || 'MainScene'}`;
     default:
@@ -858,6 +873,19 @@ function renderProperties() {
     case 'portrait.hide':
       html = '<p class="placeholder">立ち絵を非表示にします。プロパティはありません。</p>';
       break;
+    case 'delay':
+      html = `
+        <div class="prop-group">
+          <label>遅延時間 (ms)</label>
+          <input type="number" id="prop-duration" value="${cmd.duration ?? 1000}" data-prop="duration" min="0" step="100">
+        </div>`;
+      break;
+    case 'fade.in':
+      html = renderFadeInProperties(cmd);
+      break;
+    case 'fade.out':
+      html = renderFadeOutProperties(cmd);
+      break;
     case 'end':
       html = renderEndProperties(cmd);
       break;
@@ -892,6 +920,21 @@ function renderProperties() {
   }
   if (btnBgmStop) {
     btnBgmStop.addEventListener('click', stopBgmPreview)
+  }
+
+  // カラーピッカー ↔ テキスト入力の同期（fade.in）
+  const colorPicker = document.getElementById('prop-color-picker')
+  const colorText = document.getElementById('prop-color')
+  if (colorPicker && colorText) {
+    colorPicker.addEventListener('input', () => {
+      colorText.value = colorPicker.value
+      updateProperty(colorText)
+    })
+    colorText.addEventListener('input', () => {
+      if (/^#[0-9a-fA-F]{6}$/.test(colorText.value)) {
+        colorPicker.value = colorText.value
+      }
+    })
   }
 
   // SE試聴ボタン
@@ -1148,6 +1191,36 @@ function renderEndProperties(cmd) {
         <option value="game" ${cmd.returnTo === 'game' ? 'selected' : ''}>ゲーム (game)</option>
         <option value="none" ${cmd.returnTo === 'none' ? 'selected' : ''}>なし (none)</option>
       </select>
+    </div>
+  `;
+}
+
+function renderFadeInProperties(cmd) {
+  const color = cmd.color || '#000000';
+  return `
+    <div class="prop-group">
+      <label>色</label>
+      <div style="display:flex; gap:8px; align-items:center;">
+        <input type="color" id="prop-color-picker" value="${color}" style="width:48px; height:32px; padding:2px; cursor:pointer;">
+        <input type="text" id="prop-color" value="${color}" data-prop="color" style="width:96px; font-family:monospace;" placeholder="#000000" maxlength="7">
+      </div>
+    </div>
+    <div class="prop-group">
+      <label>時間 (ms)</label>
+      <input type="number" id="prop-duration" value="${cmd.duration ?? 500}" data-prop="duration" min="0" step="100">
+    </div>
+    <div class="prop-group">
+      <label>不透明度 (0〜1)</label>
+      <input type="number" id="prop-alpha" value="${cmd.alpha ?? 1.0}" data-prop="alpha" min="0" max="1" step="0.1">
+    </div>
+  `;
+}
+
+function renderFadeOutProperties(cmd) {
+  return `
+    <div class="prop-group">
+      <label>時間 (ms)</label>
+      <input type="number" id="prop-duration" value="${cmd.duration ?? 500}" data-prop="duration" min="0" step="100">
     </div>
   `;
 }

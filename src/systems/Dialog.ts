@@ -16,6 +16,7 @@ export default class DialogUI {
   private idx = 0
   private typing = false
   private fullLine = ''
+  private typingTimer: Phaser.Time.TimerEvent | null = null
 
   constructor(scene: Phaser.Scene) {
     this.scene = scene
@@ -57,6 +58,7 @@ export default class DialogUI {
     if (this.typing) {
       console.log('[DialogUI] Still typing, showing full line immediately')
       this.typing = false
+      if (this.typingTimer) { this.typingTimer.remove(); this.typingTimer = null }
       this.msgText.setText(this.fullLine)
       return
     }
@@ -86,13 +88,14 @@ export default class DialogUI {
 
     const chars = [...normalized]
     let i = 0
-    const timer = this.scene.time.addEvent({
+    if (this.typingTimer) { this.typingTimer.remove() }
+    this.typingTimer = this.scene.time.addEvent({
       delay: 20,
       repeat: chars.length - 1,
       callback: () => {
         this.msgText.setText(this.msgText.text + chars[i])
         i++
-        if (i >= chars.length) { this.typing = false; timer.remove() }
+        if (i >= chars.length) { this.typing = false; this.typingTimer = null }
       }
     })
   }

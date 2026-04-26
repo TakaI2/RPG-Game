@@ -22,10 +22,11 @@
         11,
         30
       ],
-      "attackCooldown": 1,
+      "attackCooldown": 0.7,
       "patterns": [
         "temptation",
-        "vampire_kiss"
+        "vampire_kiss",
+        "bat_attack"
       ]
     },
     {
@@ -34,7 +35,7 @@
         0,
         10
       ],
-      "attackCooldown": 0.7,
+      "attackCooldown": 0.3,
       "patterns": [
         "temptation",
         "vampire_kiss",
@@ -85,7 +86,9 @@
         "windup": "charm",
         "fire": "charm"
       },
-      "speech": null
+      "speech": {
+        "text": "私に酔いなさい！"
+      }
     },
     {
       "id": "vampire_kiss",

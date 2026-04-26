@@ -58,6 +58,26 @@ npm run dev
 - イントロ、クリア、ゲームオーバー各種ストーリー
 - イベントトリガーによるストーリー再生
 - 立ち絵・背景・BGM・SEを使った演出
+- 右下スキップボタン（どのストーリーでも任意のタイミングで動作）
+- 背景・立ち絵はリニアフィルタで高画質表示（ゲームのピクセルアートモードと独立）
+
+#### ストーリースクリプトコマンド一覧
+
+| コマンド | 主なパラメータ | 説明 |
+|----------|--------------|------|
+| `say` | `name`, `lines`, `portrait` | セリフ表示（クリックで進む） |
+| `bg` | `name`, `x`, `y`, `scaleX`, `scaleY`, `fade` | 背景画像を変更 |
+| `portrait.show` | `portrait`, `x`, `y`, `scale` | 立ち絵を表示 |
+| `portrait.hide` | — | 立ち絵を非表示 |
+| `bgm.play` | `name`, `loop`, `volume`, `fade` | BGMを再生 |
+| `bgm.stop` | `fade` | BGMを停止 |
+| `bgm.cross` | `from`, `to`, `time` | BGMをクロスフェード |
+| `se` | `name`, `loop` | 効果音を再生 |
+| `se.stop` | `name` | ループSEを停止 |
+| `fade.in` | `color`, `duration`, `alpha` | 指定色のオーバーレイをフェードイン |
+| `fade.out` | `duration` | オーバーレイをフェードアウト |
+| `delay` | `duration` | 指定ms待機してから次のコマンドへ |
+| `end` | `returnTo` | ストーリー終了・次のシーンへ遷移 |
 
 ### NPC会話システム
 - マップごとに配置されるNPC
@@ -75,9 +95,10 @@ npm run dev
 - 各敵の **ステータス**（HP・速度・視野距離など）を個別オーバーライド
 - 各敵の **スプライト**（`spriteKey`）を個別指定——def に合わせたアニメーションセットを自動生成
 - **セリフ吹き出しシステム**（`EnemySpeech`）
-  - ステート別にセリフ行を定義（patrol / aim / cooldown / return など）
-  - `intervalMs` 指定で定期発話、未指定でステート変化時に1回発話
-  - ランダム行選択・フェードアウト付き
+  - ステート別にセリフ行を定義（patrol / aim / windup / cooldown / return など）
+  - ステートに入るたびに**順番に異なるセリフ**を表示（循環）
+  - `intervalMs` 指定で長いステートでもループ発話
+  - フェードアウト付き吹き出し表示
 
 ### エネミーエディタ（`tools/enemy-editor/`）
 - Catppuccin Mochaテーマのブラウザ内GUIツール

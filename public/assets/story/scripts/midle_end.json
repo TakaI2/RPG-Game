@@ -287,6 +287,19 @@
       "op": "portrait.hide"
     },
     {
+      "op": "bg",
+      "name": "endcard.png",
+      "fade": 500,
+      "x": 16,
+      "y": 20,
+      "scaleX": 1.25,
+      "scaleY": 1.25
+    },
+    {
+      "op": "delay",
+      "duration": 4000
+    },
+    {
       "op": "end",
       "returnTo": "MainScene"
     }

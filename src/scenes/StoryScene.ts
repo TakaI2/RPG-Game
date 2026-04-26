@@ -26,6 +26,7 @@ export default class StoryScene extends Phaser.Scene {
   private bgImage?: Phaser.GameObjects.Image
   private portraitImage?: Phaser.GameObjects.Image
   private skipBtn?: Phaser.GameObjects.Image
+  private fadeOverlay?: Phaser.GameObjects.Rectangle
 
   // クリーンアップ用
   private checkInterval?: Phaser.Time.TimerEvent
@@ -94,6 +95,10 @@ export default class StoryScene extends Phaser.Scene {
     // AudioBus作成
     this.audio = new AudioBus(this)
 
+    // フェードオーバーレイ（fade.in / fade.out コマンド用）
+    this.fadeOverlay = this.add.rectangle(GAME_W / 2, GAME_H / 2, GAME_W, GAME_H, 0x000000)
+      .setAlpha(0).setDepth(1500).setScrollFactor(0)
+
     // DialogUI作成
     this.ui = new DialogUI(this)
 
@@ -117,6 +122,12 @@ export default class StoryScene extends Phaser.Scene {
       },
       onEnd: (_returnTo) => {
         this.endStory()
+      },
+      onFadeIn: async (color, duration, alpha) => {
+        await this.doFadeIn(color, duration, alpha)
+      },
+      onFadeOut: async (duration) => {
+        await this.doFadeOut(duration)
       }
     })
 
@@ -244,6 +255,10 @@ export default class StoryScene extends Phaser.Scene {
     if (this.skipBtn) {
       this.skipBtn.destroy()
       this.skipBtn = undefined
+    }
+    if (this.fadeOverlay) {
+      this.fadeOverlay.destroy()
+      this.fadeOverlay = undefined
     }
 
     // Spaceキーリスナーを削除
@@ -401,6 +416,20 @@ export default class StoryScene extends Phaser.Scene {
     } else {
       console.log('[StoryScene] Waiting for current say to complete')
     }
+  }
+
+  private doFadeIn(color: string, duration: number, alpha: number): Promise<void> {
+    return new Promise(resolve => {
+      const colorInt = parseInt(color.replace('#', ''), 16)
+      this.fadeOverlay!.setFillStyle(colorInt).setAlpha(0)
+      this.tweens.add({ targets: this.fadeOverlay, alpha, duration, onComplete: () => resolve() })
+    })
+  }
+
+  private doFadeOut(duration: number): Promise<void> {
+    return new Promise(resolve => {
+      this.tweens.add({ targets: this.fadeOverlay, alpha: 0, duration, onComplete: () => resolve() })
+    })
   }
 
   /**
