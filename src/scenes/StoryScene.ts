@@ -209,6 +209,13 @@ export default class StoryScene extends Phaser.Scene {
     // アセットロード完了時にコールバックを呼ぶ
     this.load.once('complete', () => {
       console.log('[StoryScene] Assets loaded, calling onComplete')
+      // pixelArt: true によるニアレストネイバーを上書きし、背景・立ち絵を線形補間で描画
+      bgSet.forEach(bg => {
+        this.textures.get(`story_bg_${bg}`).setFilter(Phaser.Textures.FilterMode.LINEAR)
+      })
+      portraitSet.forEach(portrait => {
+        this.textures.get(`story_portrait_${portrait}`).setFilter(Phaser.Textures.FilterMode.LINEAR)
+      })
       onComplete()
     })
 
