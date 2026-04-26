@@ -37,7 +37,7 @@ export default class DialogUI {
     this.msgText = this.scene.add.text(240, 64, '', { fontFamily: 'monospace', fontSize: '30px', color: '#ffffff', wordWrap: { width: GAME_W - 360 } })
 
     this.container.add([bg, this.portrait, this.nameText, this.msgText])
-    this.container.setDepth(1000).setVisible(false)
+    this.container.setDepth(2000).setVisible(false)
   }
 
   get visible() { return this.container.visible }
@@ -78,11 +78,13 @@ export default class DialogUI {
   }
 
   private typeLine(text: string) {
+    // リテラルの \n を実際の改行文字に変換（JSONエスケープが二重になった場合の対策）
+    const normalized = text.replace(/\\n/g, '\n')
     this.typing = true
-    this.fullLine = text
+    this.fullLine = normalized
     this.msgText.setText('')
 
-    const chars = [...text]
+    const chars = [...normalized]
     let i = 0
     const timer = this.scene.time.addEvent({
       delay: 20,

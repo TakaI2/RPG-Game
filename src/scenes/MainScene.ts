@@ -354,6 +354,11 @@ export default class MainScene extends Phaser.Scene {
   private setupMouseMovement() {
     this.input.on('pointerdown', (pointer: Phaser.Input.Pointer) => {
       if (pointer.rightButtonDown()) {
+        if (this.ui.visible) {
+          this.ui.next()
+          return
+        }
+        if (this.npcManager.tryInteract(this.player, 80)) return
         this.isRightMouseHeld = true
         this.performAttack()
       }
@@ -536,6 +541,15 @@ export default class MainScene extends Phaser.Scene {
       if (result && result.type === 'story' && result.storyId) {
         console.log(`[MainScene] Story event triggered: ${result.storyId}`)
         this.launchStory(result.storyId, result.then ?? { action: 'stay' })
+      }
+    }
+
+    // ウィンドウ外でボタンを離した場合にフラグが残らないよう同期
+    if (this.isRightMouseHeld && !this.input.activePointer.rightButtonDown()) {
+      this.isRightMouseHeld = false
+      if (this.isSpecialAttacking) {
+        this.isSpecialAttacking = false
+        this.player.play(`hero-idle-${this.playerDirection}`)
       }
     }
 
@@ -838,6 +852,14 @@ export default class MainScene extends Phaser.Scene {
 
     this.time.delayedCall(300, () => {
       ;(this.hitbox.body as Phaser.Physics.Arcade.Body).setEnable(false)
+    })
+
+    // 安全タイムアウト: ANIMATION_COMPLETE が何らかの理由で発火しなかった場合に強制クリア
+    this.time.delayedCall(800, () => {
+      if (this.isAttacking) {
+        console.warn('[MainScene] isAttacking safety timeout triggered')
+        this.isAttacking = false
+      }
     })
   }
 

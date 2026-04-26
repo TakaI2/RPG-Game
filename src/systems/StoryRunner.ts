@@ -160,7 +160,16 @@ export class StoryRunner {
         }
 
         case 'se': {
-          this.audio.se(op.name as string)
+          if (op.loop) {
+            this.audio.playStorySeLoop(op.name as string)
+          } else {
+            this.audio.playStorySe(op.name as string)
+          }
+          break
+        }
+
+        case 'se.stop': {
+          this.audio.stopSeLoop(op.name as string)
           break
         }
 

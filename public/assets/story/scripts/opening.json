@@ -2,6 +2,22 @@
   "id": "opening",
   "script": [
     {
+      "op": "bg",
+      "name": "forest.png",
+      "fade": 500,
+      "scaleX": 1.5,
+      "scaleY": 1.5,
+      "x": -11,
+      "y": -96
+    },
+    {
+      "op": "bgm.play",
+      "name": "bgm1.ogg",
+      "loop": true,
+      "volume": 0.6,
+      "fade": 1000
+    },
+    {
       "op": "say",
       "lines": [
         "はぁ・・・、はぁっ！！"
@@ -27,19 +43,23 @@
       "lines": [
         "み～つけた♥"
       ],
-      "name": "リアラ"
+      "name": "リアラ",
+      "portrait": "reala2.png",
+      "portraitX": 994,
+      "portraitY": 1117,
+      "portraitScale": 1.15
     },
     {
       "op": "say",
       "lines": [
-        "ひぃぃっ！？"
+        "ひぃぃ！！"
       ],
       "name": "ルーネ"
     },
     {
       "op": "say",
       "lines": [
-        "村にいる男達は、もうみんな"
+        "村にいる男達は、もうみんな襲って絞り尽くしちゃったのよ♥　\\nそろそろデザートが欲しいところだったのに、逃げたらダメじゃない。"
       ],
       "name": "リアラ"
     },
@@ -48,7 +68,11 @@
       "lines": [
         "君みたいに、若くて美味しそうなボウヤを味わわずに帰れないわ。"
       ],
-      "name": "リアラ"
+      "name": "リアラ",
+      "portrait": "reala2_2.png",
+      "portraitX": 1014,
+      "portraitY": 1320,
+      "portraitScale": 1.4
     },
     {
       "op": "say",
@@ -62,70 +86,172 @@
       "lines": [
         "お～っと、早速獲物発見した？"
       ],
-      "name": "???"
+      "name": "???",
+      "portrait": "hunter.png",
+      "portraitScale": 0.65,
+      "portraitX": 978,
+      "portraitY": 595
     },
     {
       "op": "say",
       "lines": [
-        "どうも～！！　安らかに眠れない貴方の為に、迅速に安らぎをお届けです！"
+        "さっそく焼き払っちゃっていい感じかな？"
       ],
       "name": "???"
     },
     {
+      "op": "portrait.hide"
+    },
+    {
       "op": "say",
       "lines": [
-        "ヴァンパイアハンター？"
+        "っ！！！　なに？！"
+      ],
+      "name": "リアラ"
+    },
+    {
+      "op": "bg",
+      "name": "fire.png",
+      "fade": 500,
+      "scaleX": 0.75,
+      "scaleY": 0.75,
+      "x": -34,
+      "y": -78
+    },
+    {
+      "op": "say",
+      "lines": [
+        "きゃあぁ！！"
       ],
       "name": "リアラ"
     },
     {
       "op": "say",
       "lines": [
-        "っ！！　あなた、そのマントは・・・！！　だから気配が感じ取れなかったのか・・・。"
+        "どうも～！！　安らかに眠れない貴女の為に、迅速に安らぎをお届けしま～す！"
+      ],
+      "name": "???",
+      "portrait": "hunter_l.png",
+      "portraitScale": 0.5,
+      "portraitX": 952,
+      "portraitY": 896
+    },
+    {
+      "op": "say",
+      "lines": [
+        "・・・！！　ヴァンパイアハンター？！"
       ],
       "name": "リアラ"
     },
     {
       "op": "say",
-      "name": "名前",
+      "lines": [
+        "そんな・・・、ハンターがこんな近くにいて私が気付かないわけが・・・。"
+      ],
+      "name": "リアラ"
+    },
+    {
+      "op": "say",
+      "lines": [
+        "っ！！　あなた、そのマントは・・・！！　\\nだから気配が感じ取れなかったのか・・・。"
+      ],
+      "name": "リアラ",
+      "portrait": "reala2_3.png",
+      "portraitX": 970,
+      "portraitY": 1105,
+      "portraitScale": 1.2
+    },
+    {
+      "op": "say",
+      "lines": [
+        "ちょっと～、初対面でバラさないでもらえませんかね？"
+      ],
+      "name": "???",
+      "portrait": "hunter.png",
+      "portraitScale": 0.6,
+      "portraitX": 980,
+      "portraitY": 1120
+    },
+    {
+      "op": "bg",
+      "name": "forest.png",
+      "fade": 500,
+      "scaleX": 2,
+      "x": 0,
+      "scaleY": 2,
+      "y": -50
+    },
+    {
+      "op": "say",
+      "lines": [
+        "気鋭のハンター、ベルナデットちゃんの強さと美しさは企業秘密なんですから。"
+      ],
+      "name": "???"
+    },
+    {
+      "op": "say",
       "lines": [
         "私の同胞を殺して奪ったのね・・・！！　"
-      ]
+      ],
+      "name": "リアラ"
     },
     {
       "op": "say",
       "lines": [
         "おかげさまで、気に入っているの。　魔物たちには同類だと思ってもらえるし、上等なのは着心地も良いからね。"
       ],
-      "name": "ベルナデット"
+      "name": "ベルナデット",
+      "portrait": "hunter.png",
+      "portraitScale": 0.45,
+      "portraitX": 959,
+      "portraitY": 638
     },
     {
       "op": "say",
       "lines": [
-        "貴女のも上等そうね、大きいしツルツルしてて気持ちよさそう♥"
+        "持主も可愛らしい吸血鬼だったわよ。　焼いたらよく燃えるのもよかったし。"
       ],
       "name": "ベルナデット"
     },
     {
       "op": "say",
       "lines": [
-        "吸血娘のマントは好事家に高く売れるし、それだけ良い物なら私のコレクションに加えてもよさそう！"
+        "貴女のも上等そうね、大きいしツルツルしてて気持ちよさそう♥  \\nぜひ私に譲ってくれないかしら？"
+      ],
+      "name": "ベルナデット",
+      "portrait": "hunter_l.png",
+      "portraitScale": 0.75,
+      "portraitX": 967,
+      "portraitY": 1414
+    },
+    {
+      "op": "say",
+      "lines": [
+        "ついでに貴女の写真もいい？　可愛い吸血娘のマントは商品価値があって好事家に高く売れるの。"
       ],
       "name": "ベルナデット"
     },
     {
       "op": "say",
       "lines": [
-        "冗談じゃない！　お姉様から貰った大事なマントを貴女なんかに！"
+        "冗談じゃない！　お姉様から貰った大事なマントをなんで貴女なんかに！"
       ],
-      "name": "リアラ"
+      "name": "リアラ",
+      "portrait": "reala2_3.png",
+      "portraitX": 1000,
+      "portraitY": 1030,
+      "portraitScale": 1.1
     },
     {
       "op": "say",
       "lines": [
-        "獲物になるのは貴女よ！　私の可愛いサキュバス達の餌食になるといいわ！"
+        "そんなに触れたいというなら、私の獲物になりなさいよ。\\n それなら喜んで極上の気持ちよさで包んであげるわよ？"
       ],
-      "name": "リアラ"
+      "name": "リアラ",
+      "portrait": "reala2_2.png",
+      "portraitX": 1000,
+      "portraitY": 1030,
+      "portraitScale": 1.1
     },
     {
       "op": "say",
@@ -133,6 +259,87 @@
         "ボウヤもね！　私が可愛がってあげようと思ったのに。　嫌だと言うならその女と仲良く襲われちゃいなさい！"
       ],
       "name": "リアラ"
+    },
+    {
+      "op": "say",
+      "lines": [
+        "村で楽しいパーティをやってるから来るがいいわ！ \\nみんなで歓迎してあげる！"
+      ],
+      "name": "リアラ"
+    },
+    {
+      "op": "say",
+      "lines": [
+        "ふふふ・・・♥　楽しみにしているわよ。"
+      ],
+      "name": "リアラ",
+      "portrait": "bat_change.png",
+      "portraitScale": 0.65,
+      "portraitX": 961,
+      "portraitY": 483
+    },
+    {
+      "op": "portrait.hide"
+    },
+    {
+      "op": "say",
+      "lines": [
+        "あ、待ちなさいよ！　もう、逃げ足が速い。"
+      ],
+      "name": "ベルナデット",
+      "portrait": "hunter_a.png",
+      "portraitScale": 0.6,
+      "portraitX": 980,
+      "portraitY": 1200
+    },
+    {
+      "op": "say",
+      "lines": [
+        "あ・・・、あの・・・。助けてくれてありがとうございます。"
+      ],
+      "name": "ルーネ"
+    },
+    {
+      "op": "say",
+      "lines": [
+        "あ～、君、もしかしてこの先の村の住人？　私そこに向かってたんだけど。　この先で合ってる？"
+      ],
+      "name": "ベルナデット",
+      "portrait": "hunter.png",
+      "portraitScale": 0.6,
+      "portraitX": 980,
+      "portraitY": 1200
+    },
+    {
+      "op": "say",
+      "lines": [
+        "え、はい・・・そうですけど。"
+      ],
+      "name": "ルーネ"
+    },
+    {
+      "op": "say",
+      "lines": [
+        "おっけー！　ちょっとアイツ狩ってくるから！　待っててちょうだいね！"
+      ],
+      "name": "ベルナデット"
+    },
+    {
+      "op": "say",
+      "lines": [
+        "このベルナデットが来たからにはもう安心！　魔物なんて一匹残らず駆逐しちゃうからね！"
+      ],
+      "name": "ベルナデット"
+    },
+    {
+      "op": "portrait.hide"
+    },
+    {
+      "op": "say",
+      "lines": [
+        "あ・・・、待って！　置いていかないでください！"
+      ],
+      "name": "ルーネ"
     },
     {
       "op": "end",

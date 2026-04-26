@@ -503,6 +503,12 @@ function addCommand(type) {
         name: 'sound.mp3'
       };
       break;
+    case 'se.stop':
+      newCmd = {
+        op: 'se.stop',
+        name: 'sound.mp3'
+      };
+      break;
     case 'portrait.show':
       newCmd = {
         op: 'portrait.show',
@@ -611,6 +617,7 @@ function getCommandLabel(op) {
     'bgm.stop': '⏹️ BGM停止',
     'bgm.cross': '🔀 BGMクロス',
     'se': '🔊 効果音',
+    'se.stop': '🔇 効果音停止',
     'portrait.show': '🧍 立ち絵表示',
     'portrait.hide': '🚫 立ち絵非表示',
     'end': '🏁 終了'
@@ -629,6 +636,8 @@ function getCommandPreview(cmd) {
     case 'bgm.stop':
       return `フェード: ${cmd.fade || 0}ms`;
     case 'se':
+      return (cmd.name || '(未設定)') + (cmd.loop ? ' 🔁' : '');
+    case 'se.stop':
       return cmd.name || '(未設定)';
     case 'portrait.show':
       return `${cmd.portrait || '(未設定)'} (${cmd.x ?? 960}, ${cmd.y ?? 540}) ×${cmd.scale ?? 1.0}`;
@@ -839,6 +848,9 @@ function renderProperties() {
       break;
     case 'se':
       html = renderSeProperties(cmd);
+      break;
+    case 'se.stop':
+      html = renderSeStopProperties(cmd);
       break;
     case 'portrait.show':
       html = renderPortraitShowProperties(cmd);
@@ -1070,6 +1082,33 @@ function renderSeProperties(cmd) {
         <button type="button" id="btn-se-stop" title="停止">■</button>
       </div>
     </div>
+    <div class="prop-group">
+      <label>
+        <input type="checkbox" id="prop-loop" data-prop="loop" ${cmd.loop ? 'checked' : ''}>
+        ループ再生
+      </label>
+      <div class="prop-hint">ONにすると繰り返し再生。停止するには「効果音停止」コマンドを使用。</div>
+    </div>
+  `;
+}
+
+function renderSeStopProperties(cmd) {
+  const current = cmd.name || ''
+  const options = seFiles.map(f =>
+    `<option value="${escapeHtml(f)}" ${f === current ? 'selected' : ''}>${escapeHtml(f)}</option>`
+  ).join('')
+  const hasMatch = seFiles.includes(current)
+  const extraOption = (!hasMatch && current)
+    ? `<option value="${escapeHtml(current)}" selected>${escapeHtml(current)}</option>` : ''
+  return `
+    <div class="prop-group">
+      <label>停止する効果音ファイル</label>
+      <select id="prop-name" data-prop="name">
+        <option value="">-- 選択 --</option>
+        ${extraOption}${options}
+      </select>
+      <div class="prop-hint">ループ再生中の効果音を停止します。</div>
+    </div>
   `;
 }
 
@@ -1143,7 +1182,9 @@ function updateProperty(input) {
   }
 
   // 型変換
-  if (input.type === 'number') {
+  if (input.type === 'checkbox') {
+    value = input.checked;
+  } else if (input.type === 'number') {
     value = parseFloat(value) || 0;
   } else if (prop === 'loop') {
     value = value === 'true';
