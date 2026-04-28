@@ -5,6 +5,11 @@ import type { TileDef } from '../types/tileset'
 import type { BossConfig } from '../types/BossTypes'
 import type { NPCDef } from '../types/NPCTypes'
 
+/** OGGのURLにM4Aフォールバックを追加（iOS Safari対応） */
+function audioUrls(url: string): string[] {
+  return url.endsWith('.ogg') ? [url, url.replace(/\.ogg$/, '.m4a')] : [url]
+}
+
 /**
  * ローディング画面
  * - 進捗バー表示
@@ -83,8 +88,14 @@ export default class LoadingScene extends Phaser.Scene {
     this.load.once('filecomplete-json-gameflow', () => {
       const config = this.cache.json.get('gameflow') as GameFlowConfig
       config.assets?.bgm?.forEach(({ key, url }) => {
-        this.load.audio(key, url)
+        this.load.audio(key, audioUrls(url))
       })
+
+      // ロード画像を事前ロード（ChapterLoadingScene で使う）
+      config.assets?.loadingImages?.forEach(img => {
+        this.load.image(`loading_img_${img}`, `assets/images/loading_images/${img}`)
+      })
+
       // ボスJSON動的ロード（gameflow.json に定義された configKey を収集）
       const bossKeys = new Set<string>()
       Object.values(config.maps).forEach(mapConfig => {
@@ -101,7 +112,7 @@ export default class LoadingScene extends Phaser.Scene {
             Object.values(atk.se).forEach(v => { if (v) seKeys.add(v) })
           })
           seKeys.forEach(seKey => {
-            this.load.audio(seKey, `assets/sounds/se/${seKey}.ogg`)
+            this.load.audio(seKey, audioUrls(`assets/sounds/se/${seKey}.ogg`))
           })
           // カットイン画像・飛び道具テクスチャを assets/images/boss/{configKey}/ から動的ロード
           const cutinImg = bossConfig.cutin?.image
@@ -196,8 +207,8 @@ export default class LoadingScene extends Phaser.Scene {
     this.load.image('btn_config', 'assets/images/ui/Se_config_Button.png')
 
     // ゲームSE（ファイルが存在しない場合は loaderror で警告のみ）
-    this.load.audio('se_player_attack', 'assets/sounds/se/player_attack.ogg')
-    this.load.audio('se_player_hit',    'assets/sounds/se/player_hit.ogg')
+    this.load.audio('se_player_attack', audioUrls('assets/sounds/se/player_attack.ogg'))
+    this.load.audio('se_player_hit',    audioUrls('assets/sounds/se/player_hit.ogg'))
     this.load.audio('se_flame',         'assets/sounds/se/flame.mp3')
 
     // enemy-defs ロード完了後に hitSound/attackSound を動的ロード
@@ -210,7 +221,7 @@ export default class LoadingScene extends Phaser.Scene {
           if (sound && !loaded.has(sound)) {
             loaded.add(sound)
             const key = 'se_' + sound.replace(/\.(ogg|mp3)$/, '')
-            this.load.audio(key, `assets/sounds/se/${sound}`)
+            this.load.audio(key, audioUrls(`assets/sounds/se/${sound}`))
           }
         })
       })

@@ -11,15 +11,28 @@
       }
     ]
   },
-  "start": {
-    "story": "opening",
-    "then": {
-      "action": "goto_map",
-      "mapId": "village_l",
-      "x": 40,
-      "y": 78
+  "chapters": [
+    {
+      "id": "chapter1",
+      "label": "襲われた村",
+      "start": {
+        "story": "opening",
+        "then": {
+          "action": "goto_map",
+          "mapId": "village_l",
+          "x": 40,
+          "y": 78
+        }
+      },
+      "stories": [
+        "opening",
+        "boss_story",
+        "badend",
+        "midle_end",
+        "badend_vil"
+      ]
     }
-  },
+  ],
   "maps": {
     "boss_map1": {
       "bgm": "redmoon",

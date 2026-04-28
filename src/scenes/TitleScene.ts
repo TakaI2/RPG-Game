@@ -49,7 +49,15 @@ export default class TitleScene extends Phaser.Scene {
     this.playButton.on('pointerdown', () => { this.playButton.setScale(1.9) })
     this.playButton.on('pointerup',   () => {
       this.playButton.setScale(2.2)
-      this.scene.start('MainScene')
+      // iOS: ユーザー操作の中で AudioContext を resume（suspended のまま音が鳴らない問題の対策）
+      if ('context' in this.sound) {
+        const ctx = (this.sound as Phaser.Sound.WebAudioSoundManager).context
+        if (ctx && ctx.state === 'suspended') ctx.resume().catch(() => {})
+      }
+      // ChapterLoadingScene で第一章アセットをプリロードしてから MainScene へ
+      const config = this.cache.json.get('gameflow')
+      const firstChapterId = config?.chapters?.[0]?.id ?? 'chapter1'
+      this.scene.start('ChapterLoadingScene', { chapterId: firstChapterId })
     })
   }
 

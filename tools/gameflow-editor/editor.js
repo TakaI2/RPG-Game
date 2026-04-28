@@ -31,6 +31,16 @@ let mapIds = [];
   } catch (e) {}
 })();
 
+// ─── ロード画像一覧（assets/images/loading_images/ から取得）────────────────
+let loadingImageFiles = [];
+(async () => {
+  try {
+    const res = await fetch('/api/list-assets?folder=assets/images/loading_images');
+    const json = await res.json();
+    if (json.ok) loadingImageFiles = json.files.filter(f => /\.(png|jpg|jpeg|webp)$/i.test(f));
+  } catch (e) {}
+})();
+
 // ─── BGMファイル一覧（assets/story/bgm/ から取得）────────────────────────────
 // key → url のマップ。serialize 時に assets.bgm[] を自動生成するために使う
 let bgmFileMap = {};
@@ -86,6 +96,8 @@ const state = {
   fileName: 'gameflow.json',
   /** Incrementing id counter */
   _nextId: 1,
+  /** @type {Array<{id:string, label:string, stories:string[], loadingImages:string[]}>} */
+  chapters: [{ id: 'chapter1', label: '', stories: [], loadingImages: [] }],
 };
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
@@ -1108,12 +1120,14 @@ document.getElementById('btn-new').addEventListener('click', () => {
   state.edges = [];
   state.selectedId = null;
   state._nextId = 1;
+  state.chapters = [{ id: 'chapter1', label: '', stories: [], loadingImages: [] }];
   setFileName('gameflow.json');
   // start ノードを追加
   const startNode = { id: 'start', type: 'start', x: 100, y: 200, data: { label: 'START' } };
   state.nodes.push(startNode);
   renderAll();
   renderProperties();
+  renderChaptersPanel();
   window.showToast('新規作成しました', 'success');
 });
 
@@ -1331,17 +1345,30 @@ function deserialize(cfg) {
     // 'stay' → no edge
   }
 
-  // Start node
-  if (cfg.start) {
+  // Chapters メタデータを state に読み込む（新形式: chapters[]、旧形式: start フォールバック）
+  state.chapters = (cfg.chapters || []).map(ch => ({
+    id: ch.id || 'chapter1',
+    label: ch.label || '',
+    stories: ch.stories || [],
+    loadingImages: cfg.assets?.loadingImages || [],
+  }));
+  if (state.chapters.length === 0) {
+    state.chapters = [{ id: 'chapter1', label: '', stories: [], loadingImages: cfg.assets?.loadingImages || [] }];
+  }
+  renderChaptersPanel();
+
+  // Start node（chapters[0].start を優先、旧形式は cfg.start にフォールバック）
+  const startCfg = cfg.chapters?.[0]?.start ?? cfg.start;
+  if (startCfg) {
     const p = pos('start') || { x: autoLayout.startX, y: autoLayout.startY };
     const startNode = { id: genId(), type: 'start', x: p.x, y: p.y, data: {} };
     state.nodes.push(startNode);
 
-    if (cfg.start.story) {
-      const thenAction = cfg.start.then?.action || 'stay';
-      const storyNodeId = ensureStoryNode(cfg.start.story, thenAction);
+    if (startCfg.story) {
+      const thenAction = startCfg.then?.action || 'stay';
+      const storyNodeId = ensureStoryNode(startCfg.story, thenAction);
       addEdge(startNode.id, 'out', storyNodeId, 'in');
-      resolveThen(storyNodeId, cfg.start.then);
+      resolveThen(storyNodeId, startCfg.then);
     }
   }
 
@@ -1412,23 +1439,38 @@ function serialize() {
       bgmAssetsMap.set(key, bgmFileMap[key]);
     }
   });
-  if (bgmAssetsMap.size > 0) {
-    result.assets = { bgm: Array.from(bgmAssetsMap, ([key, url]) => ({ key, url })) };
-  }
+  result.assets = { bgm: bgmAssetsMap.size > 0 ? Array.from(bgmAssetsMap, ([key, url]) => ({ key, url })) : [] };
+  const loadingImgs = state.chapters[0]?.loadingImages ?? [];
+  if (loadingImgs.length > 0) result.assets.loadingImages = loadingImgs;
 
-  // Start
+  // Chapters（グラフの Start ノードを chapters[0].start として書き出し）
   const startNode = state.nodes.find(n => n.type === 'start');
+  let startConfig = null;
   if (startNode) {
     const outEdge = state.edges.find(e => e.fromNode === startNode.id && e.fromPort === 'out');
     if (outEdge) {
       const storyNode = findNode(outEdge.toNode);
       if (storyNode && storyNode.type === 'story') {
-        result.start = {
-          story: storyNode.data.storyId,
-          then: resolveThenConfig(storyNode),
-        };
+        startConfig = { story: storyNode.data.storyId, then: resolveThenConfig(storyNode) };
       }
     }
+  }
+  // chapter 1 の stories をグラフ上の全 Story ノードから自動収集
+  const autoStories = [...new Set(
+    state.nodes.filter(n => n.type === 'story' && n.data.storyId).map(n => n.data.storyId)
+  )];
+  if (state.chapters[0]) state.chapters[0].stories = autoStories;
+  renderChaptersPanel();
+
+  result.chapters = state.chapters.map((ch, i) => {
+    const obj = { id: ch.id };
+    if (ch.label) obj.label = ch.label;
+    obj.start = i === 0 ? (startConfig || { story: null, then: { action: 'stay' } }) : (ch.start || { story: null, then: { action: 'stay' } });
+    if (ch.stories && ch.stories.length > 0) obj.stories = ch.stories;
+    return obj;
+  });
+  if (result.chapters.length === 0 && startConfig) {
+    result.chapters = [{ id: 'chapter1', start: startConfig }];
   }
 
   // Maps
@@ -1533,7 +1575,75 @@ function resolveThenConfig(storyNode) {
   return { action: storyNode.data.thenAction || 'stay' };
 }
 
+// ─── Chapters Panel ───────────────────────────────────────────────────────────
+const chaptersContent = document.getElementById('chapters-content');
+
+function renderChaptersPanel() {
+  if (!chaptersContent) return;
+  const ch = state.chapters[0] || { id: 'chapter1', label: '', stories: [], loadingImages: [] };
+  const selectedImages = ch.loadingImages || [];
+
+  const imgOptions = loadingImageFiles
+    .filter(f => !selectedImages.includes(f))
+    .map(f => `<option value="${f}">${f}</option>`)
+    .join('');
+  const imgTags = selectedImages.map(f => `
+    <span style="display:inline-flex;align-items:center;gap:3px;background:var(--surface1);border-radius:4px;padding:2px 6px;margin:2px;font-size:0.8rem;">
+      ${f}<button type="button" data-img="${f}" style="background:none;border:none;color:var(--red);cursor:pointer;padding:0;line-height:1;">×</button>
+    </span>`).join('');
+
+  chaptersContent.innerHTML = `
+    <div class="prop-section-title">章設定（chapter 1）</div>
+    <div class="prop-group">
+      <label>章 ID</label>
+      <input id="ch-id" type="text" value="${ch.id || 'chapter1'}">
+    </div>
+    <div class="prop-group">
+      <label>ラベル</label>
+      <input id="ch-label" type="text" placeholder="例: 第一章" value="${ch.label || ''}">
+    </div>
+    <div class="prop-group">
+      <label>プリロード Story</label>
+      <div style="background:var(--mantle);border:1px solid var(--surface1);border-radius:4px;padding:4px;font-size:0.82rem;min-height:32px;color:var(--subtext0);">${(ch.stories || []).join(', ') || '（保存時に自動収集）'}</div>
+    </div>
+    <div class="prop-group">
+      <label>ロード画像</label>
+      <div style="display:flex;gap:4px;margin-bottom:4px;">
+        <select id="ch-images-select" style="flex:1;background:var(--mantle);color:var(--text);border:1px solid var(--surface1);border-radius:4px;padding:2px 4px;">
+          <option value="">-- 画像を選択 --</option>
+          ${imgOptions}
+        </select>
+        <button id="ch-images-add" type="button" style="padding:2px 8px;background:var(--blue);color:var(--base);border:none;border-radius:4px;cursor:pointer;">追加</button>
+      </div>
+      <div id="ch-images-list" style="display:flex;flex-wrap:wrap;">${imgTags}</div>
+      ${loadingImageFiles.length === 0 ? '<p style="font-size:0.75rem;color:var(--overlay0);margin:2px 0;">loading_images/ フォルダに画像がありません</p>' : ''}
+    </div>
+  `;
+
+  document.getElementById('ch-id').addEventListener('input', e => { state.chapters[0].id = e.target.value; });
+  document.getElementById('ch-label').addEventListener('input', e => { state.chapters[0].label = e.target.value; });
+
+  document.getElementById('ch-images-add').addEventListener('click', () => {
+    const sel = document.getElementById('ch-images-select');
+    const val = sel.value;
+    if (!val) return;
+    if (!state.chapters[0].loadingImages.includes(val)) {
+      state.chapters[0].loadingImages = [...state.chapters[0].loadingImages, val];
+      renderChaptersPanel();
+    }
+  });
+
+  chaptersContent.querySelectorAll('[data-img]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const img = btn.getAttribute('data-img');
+      state.chapters[0].loadingImages = state.chapters[0].loadingImages.filter(f => f !== img);
+      renderChaptersPanel();
+    });
+  });
+}
+
 // ─── Init ─────────────────────────────────────────────────────────────────────
 applyTransform();
 renderAll();
 renderProperties();
+renderChaptersPanel();

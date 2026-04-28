@@ -3,6 +3,11 @@ import DialogUI from '../systems/Dialog'
 import { StoryRunner } from '../systems/StoryRunner'
 import { AudioBus } from '../systems/AudioBus'
 import { events } from '../systems/Events'
+
+/** OGGのURLにM4Aフォールバックを追加（iOS Safari対応） */
+function audioUrls(url: string): string[] {
+  return url.endsWith('.ogg') ? [url, url.replace(/\.ogg$/, '.m4a')] : [url]
+}
 import { GAME_W, GAME_H } from '../config'
 import type { ThenAction } from '../types/GameFlowTypes'
 
@@ -57,8 +62,10 @@ export default class StoryScene extends Phaser.Scene {
       g.fillStyle(0xffffff, 1).fillRect(0, 0, 200, 200).generateTexture('portrait', 200, 200).clear()
     }
 
-    // JSONスクリプトをロード
-    this.load.json(`story_${this.scriptId}`, `assets/story/scripts/${this.scriptId}.json`)
+    // JSONスクリプトをロード（既にキャッシュ済みならスキップ）
+    if (!this.cache.json.has(`story_${this.scriptId}`)) {
+      this.load.json(`story_${this.scriptId}`, `assets/story/scripts/${this.scriptId}.json`)
+    }
   }
 
   create() {
@@ -183,24 +190,28 @@ export default class StoryScene extends Phaser.Scene {
       }
     })
 
-    // 背景画像をロード
+    // 背景画像をロード（未ロードのみ）
     bgSet.forEach(bg => {
-      this.load.image(`story_bg_${bg}`, `assets/story/bg/${bg}`)
+      if (!this.textures.exists(`story_bg_${bg}`))
+        this.load.image(`story_bg_${bg}`, `assets/story/bg/${bg}`)
     })
 
-    // 立ち絵をロード
+    // 立ち絵をロード（未ロードのみ）
     portraitSet.forEach(portrait => {
-      this.load.image(`story_portrait_${portrait}`, `assets/story/portraits/${portrait}`)
+      if (!this.textures.exists(`story_portrait_${portrait}`))
+        this.load.image(`story_portrait_${portrait}`, `assets/story/portraits/${portrait}`)
     })
 
-    // BGMをロード
+    // BGMをロード（未ロードのみ）
     bgmSet.forEach(bgm => {
-      this.load.audio(bgm, `assets/story/bgm/${bgm}`)
+      if (!this.cache.audio.has(bgm))
+        this.load.audio(bgm, audioUrls(`assets/story/bgm/${bgm}`))
     })
 
-    // SEをロード
+    // SEをロード（未ロードのみ）
     seSet.forEach(se => {
-      this.load.audio(se, `assets/story/se/${se}`)
+      if (!this.cache.audio.has(se))
+        this.load.audio(se, audioUrls(`assets/story/se/${se}`))
     })
 
     console.log('[StoryScene] BGM/SE/BG/Portrait assets to load:', {

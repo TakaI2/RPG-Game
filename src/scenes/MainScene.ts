@@ -187,8 +187,10 @@ export default class MainScene extends Phaser.Scene {
     // HP表示を先に作成
     this.createHPDisplay()
 
-    // ログダウンロードボタンを作成
-    this.createLogDownloadButton()
+    // ログダウンロードボタンを作成（開発時のみ）
+    if (import.meta.env.DEV) {
+      this.createLogDownloadButton()
+    }
 
     // 仮想ジョイスティックと攻撃ボタンを作成
     this.createVirtualControls()
@@ -760,6 +762,10 @@ export default class MainScene extends Phaser.Scene {
       case 'goto_map':
         this.scene.resume()
         this.switchMap(then.mapId, then.x, then.y)
+        break
+      case 'goto_chapter':
+        this.scene.stop()
+        this.scene.start('ChapterLoadingScene', { chapterId: then.chapterId })
         break
     }
   }

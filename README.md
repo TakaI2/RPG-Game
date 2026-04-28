@@ -41,10 +41,22 @@ npm run dev
 - ESCキーでのポーズ／再開
 - タイトルに戻るボタン
 
-### ゲームフロー管理システム
-- `public/assets/gameflow.json` によるゲーム全体フローの一元管理
+### ゲームフロー管理システム（章立て対応）
+- `public/assets/gameflows/gameflow.json` によるゲーム全体フローの一元管理
+- **章（Chapter）単位**でマップ・ストーリーをグループ管理
+  - `chapters[]` 配列で章を定義（id・label・start・stories）
+  - `goto_chapter` アクションで章遷移が可能
 - マップごとのBGM・ボス有無・イベントトリガーを宣言的に定義
 - **ゲームフローエディタ** (`tools/gameflow-editor/`) でGUI編集可能
+  - 「章管理」パネルで章ID・ラベル・ストーリーリスト・ロード画像を設定
+  - 保存時にグラフ上の全Storyノードを自動収集して `stories` に反映
+
+### チャプターローディング画面
+- Play ボタン押下 → `ChapterLoadingScene` → `MainScene` の流れ
+- `public/assets/images/loading_images/` に配置した画像をランダム表示
+- その間に章内の全ストーリーアセット（背景・立ち絵・BGM・SE）を事前ロード
+- プログレスバー＋パーセント表示（ゲーム起動時と同形式）
+- ロード完了後400ms表示してから遷移
 
 ### マップ移動システム（ポータルスプライト）
 - 複数のマップ間を移動可能（`demo_map` ⇔ `boss_map`）
@@ -133,6 +145,7 @@ npm run dev
 ### BGMシステム
 - `AudioBus` による統合音声管理
 - マップ遷移時の自動BGM切替・フェードイン
+- **iOS Safari対応**：OGGと同名のM4Aファイルを同フォルダに配置することで自動フォールバック再生
 
 ## プロジェクト構造
 
@@ -144,9 +157,11 @@ RPGGame/
 │       ├── maps/             # マップデータ（JSON）
 │       ├── npcs/             # NPC設定（JSON）
 │       ├── bosses/           # ボス設定（JSON）
+│       ├── gameflows/        # ゲームフロー設定（gameflow.json）
 │       ├── images/
 │       │   ├── boss/         # ボス関連画像（ボスIDごとにサブフォルダ）
 │       │   │   └── {bossId}/ # カットイン画像・弾テクスチャ
+│       │   ├── loading_images/ # チャプターロード画面の背景画像
 │       │   └── ...           # その他スプライト
 │       └── story/            # ストーリーアセット
 │           ├── scripts/      # ストーリースクリプト（Git管理）
@@ -156,9 +171,11 @@ RPGGame/
 │           └── se/           # SE（Git除外）
 ├── src/
 │   ├── scenes/               # Phaserシーン
-│   │   ├── LoadingScene.ts   # アセット読み込み・chroma key処理
-│   │   ├── MainScene.ts      # メインゲームループ
-│   │   └── TitleScene.ts     # タイトル画面
+│   │   ├── LoadingScene.ts      # アセット読み込み・chroma key処理
+│   │   ├── TitleScene.ts        # タイトル画面
+│   │   ├── ChapterLoadingScene.ts # 章切り替えロード画面
+│   │   ├── MainScene.ts         # メインゲームループ
+│   │   └── StoryScene.ts        # ストーリーシーン
 │   ├── systems/              # ゲームシステム
 │   │   ├── AnimationManager.ts
 │   │   ├── AudioBus.ts
