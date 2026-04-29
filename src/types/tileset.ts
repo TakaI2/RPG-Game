@@ -31,4 +31,5 @@ export interface MapData {
   tiles: number[][]
   enemySpawns?: EnemySpawn[]
   portals?: Portal[]
+  activitySpots?: import('./NPCTypes').ActivitySpot[]
 }

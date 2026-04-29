@@ -98,6 +98,8 @@ const state = {
   _nextId: 1,
   /** @type {Array<{id:string, label:string, stories:string[], loadingImages:string[]}>} */
   chapters: [{ id: 'chapter1', label: '', stories: [], loadingImages: [] }],
+  /** @type {number} 実ms / ゲーム1時間 */
+  clockSpeed: 180000,
 };
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
@@ -1121,6 +1123,7 @@ document.getElementById('btn-new').addEventListener('click', () => {
   state.selectedId = null;
   state._nextId = 1;
   state.chapters = [{ id: 'chapter1', label: '', stories: [], loadingImages: [] }];
+  state.clockSpeed = 180000;
   setFileName('gameflow.json');
   // start ノードを追加
   const startNode = { id: 'start', type: 'start', x: 100, y: 200, data: { label: 'START' } };
@@ -1355,6 +1358,7 @@ function deserialize(cfg) {
   if (state.chapters.length === 0) {
     state.chapters = [{ id: 'chapter1', label: '', stories: [], loadingImages: cfg.assets?.loadingImages || [] }];
   }
+  state.clockSpeed = cfg.assets?.clockSpeed ?? 180000;
   renderChaptersPanel();
 
   // Start node（chapters[0].start を優先、旧形式は cfg.start にフォールバック）
@@ -1442,6 +1446,7 @@ function serialize() {
   result.assets = { bgm: bgmAssetsMap.size > 0 ? Array.from(bgmAssetsMap, ([key, url]) => ({ key, url })) : [] };
   const loadingImgs = state.chapters[0]?.loadingImages ?? [];
   if (loadingImgs.length > 0) result.assets.loadingImages = loadingImgs;
+  if (state.clockSpeed && state.clockSpeed !== 180000) result.assets.clockSpeed = state.clockSpeed;
 
   // Chapters（グラフの Start ノードを chapters[0].start として書き出し）
   const startNode = state.nodes.find(n => n.type === 'start');
@@ -1607,6 +1612,15 @@ function renderChaptersPanel() {
       <div style="background:var(--mantle);border:1px solid var(--surface1);border-radius:4px;padding:4px;font-size:0.82rem;min-height:32px;color:var(--subtext0);">${(ch.stories || []).join(', ') || '（保存時に自動収集）'}</div>
     </div>
     <div class="prop-group">
+      <label>ゲーム内時計速度</label>
+      <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap;">
+        <input id="ch-clock-speed" type="number" min="1000" step="1000" value="${state.clockSpeed ?? 180000}" style="width:110px;">
+        <span style="font-size:0.8rem;color:var(--subtext0);">ms / ゲーム1時間</span>
+        <button type="button" data-preset="180000" style="font-size:0.78rem;padding:2px 6px;background:var(--surface1);border:none;border-radius:4px;cursor:pointer;color:var(--text);">3分/h</button>
+        <button type="button" data-preset="60000" style="font-size:0.78rem;padding:2px 6px;background:var(--surface1);border:none;border-radius:4px;cursor:pointer;color:var(--text);">1分/h(テスト)</button>
+      </div>
+    </div>
+    <div class="prop-group">
       <label>ロード画像</label>
       <div style="display:flex;gap:4px;margin-bottom:4px;">
         <select id="ch-images-select" style="flex:1;background:var(--mantle);color:var(--text);border:1px solid var(--surface1);border-radius:4px;padding:2px 4px;">
@@ -1622,6 +1636,13 @@ function renderChaptersPanel() {
 
   document.getElementById('ch-id').addEventListener('input', e => { state.chapters[0].id = e.target.value; });
   document.getElementById('ch-label').addEventListener('input', e => { state.chapters[0].label = e.target.value; });
+  document.getElementById('ch-clock-speed').addEventListener('input', e => { state.clockSpeed = parseInt(e.target.value) || 180000; });
+  chaptersContent.querySelectorAll('[data-preset]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      state.clockSpeed = parseInt(btn.getAttribute('data-preset'));
+      document.getElementById('ch-clock-speed').value = state.clockSpeed;
+    });
+  });
 
   document.getElementById('ch-images-add').addEventListener('click', () => {
     const sel = document.getElementById('ch-images-select');

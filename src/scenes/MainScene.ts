@@ -45,6 +45,8 @@ import { GameFlowManager } from '../systems/GameFlowManager'
 import { PortalManager } from '../systems/PortalManager'
 import type { FullPortalData } from '../systems/PortalManager'
 import type { ThenAction } from '../types/GameFlowTypes'
+import { advanceClock, setClockSpeed } from '../systems/GameClock'
+import { setDangerLevel, resetWorldState } from '../systems/WorldState'
 
 export default class MainScene extends Phaser.Scene {
   private cursors!: Phaser.Types.Input.Keyboard.CursorKeys
@@ -243,6 +245,7 @@ export default class MainScene extends Phaser.Scene {
 
     // GameFlowManager初期化（BGMManager より先に初期化する）
     this.gameFlowManager = new GameFlowManager(this)
+    setClockSpeed(this.gameFlowManager.getClockSpeed())
 
     // BGMManagerの初期化
     this.bgmManager = new BGMManager(this, this.audioBus, this.gameFlowManager)
@@ -495,6 +498,9 @@ export default class MainScene extends Phaser.Scene {
         this.bossHpUI.update(this.boss.hp, this.boss.maxHp, this.boss.phase)
       }
 
+      // フェーズに応じて危険度を更新
+      setDangerLevel(this.boss.phase >= 2 ? 3 : 2)
+
       // ボスアニメーション更新
       if (this.boss.animKey) {
         const vx = this.boss.body.velocity.x
@@ -727,8 +733,11 @@ export default class MainScene extends Phaser.Scene {
       }
     })
 
+    // ゲーム内時計を進める
+    advanceClock(delta)
+
     // NPC更新（移動・吹き出し）
-    this.npcManager.update()
+    this.npcManager.update(delta, this.player.x, this.player.y)
   }
 
   /**
@@ -1378,6 +1387,9 @@ export default class MainScene extends Phaser.Scene {
     this.currentMapId = mapId
     this.currentMapData = mapData
 
+    // マップ遷移時に WorldState をリセット
+    resetWorldState()
+
     // タイルマップを構築
     const tileDefArray = this.cache.json.get('tilesets') as TileDef[]
     const tileDefMap = new Map(tileDefArray.map(d => [d.id, d]))
@@ -1405,6 +1417,8 @@ export default class MainScene extends Phaser.Scene {
     // NPCを再初期化
     const npcDefs = (this.cache.json.get('npc-defs') as NPCDef[]) || []
     const npcSpawns = (mapData.npcSpawns as NPCSpawn[]) || []
+    const typedMapData = mapData as unknown as MapData
+    this.npcManager.loadActivitySpots(typedMapData.activitySpots ?? [])
     this.npcManager.loadFromSpawns(npcSpawns, npcDefs)
     const npcColliders = this.npcManager.setupCollisions(this.player)
     this.colliders.push(...npcColliders)
@@ -1427,6 +1441,7 @@ export default class MainScene extends Phaser.Scene {
     console.log(`[MainScene] Spawning boss: ${configKey} at (${x}, ${y})`)
 
     this.boss = makeBoss(this, x * TILE, y * TILE, configKey)
+    setDangerLevel(2)
 
     const bossWallCollider = this.physics.add.collider(this.boss, this.walls!)
     this.colliders.push(bossWallCollider)
@@ -1528,6 +1543,7 @@ export default class MainScene extends Phaser.Scene {
     console.log('[MainScene] Boss defeated!')
 
     this.boss.state = 'defeated'
+    setDangerLevel(0)
 
     if (this.boss.config.se.defeat) {
       this.audioBus.playSe(this.boss.config.se.defeat, { volume: 0.8 })

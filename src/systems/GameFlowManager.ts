@@ -50,4 +50,8 @@ export class GameFlowManager {
   getLoadingImages(): string[] {
     return this.config.assets?.loadingImages ?? []
   }
+
+  getClockSpeed(): number {
+    return this.config.assets?.clockSpeed ?? 180000
+  }
 }

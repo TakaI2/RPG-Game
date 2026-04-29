@@ -336,6 +336,36 @@
             text-align: center; font-size: 0.7rem;
             background: rgba(0,0,0,0.5); padding: 1px 0;
         }
+        .tile-option.spot-tile { background: #1a2a3a; color: #89dceb; border-color: #45475a; }
+
+        /* --- スポットモーダル --- */
+        #spotModal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.7); align-items: center; justify-content: center; z-index: 1000; }
+        #spotModal.show { display: flex; }
+
+        /* --- スポット情報パネル --- */
+        #spotInfoPanel {
+            margin-top: 12px;
+            background: #181825;
+            border: 1px solid #45475a;
+            border-radius: 8px;
+            padding: 12px;
+            display: none;
+        }
+        #spotInfoPanel.show { display: block; }
+        #spotInfoPanel h4 { color: #89dceb; font-size: 0.9rem; margin-bottom: 8px; }
+        #spotInfoPanel .spot-prop { font-size: 0.82rem; color: #a6adc8; margin-bottom: 4px; }
+        #spotInfoPanel .spot-prop span { color: #cdd6f4; }
+        .btn-delete-spot {
+            margin-top: 8px;
+            padding: 5px 12px;
+            background: transparent;
+            border: 1px solid #f38ba8;
+            color: #f38ba8;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.82rem;
+        }
+        .btn-delete-spot:hover { background: #f38ba822; }
     </style>
 </head>
 <body>
@@ -435,6 +465,15 @@
         </div>
     </div>
 
+    <div id="spotInfoPanel">
+        <h4>選択中のスポット</h4>
+        <div class="spot-prop">type: <span id="spotInfoType">-</span></div>
+        <div class="spot-prop">位置 (x, y): <span id="spotInfoPos">-</span></div>
+        <div class="spot-prop">ラベル: <span id="spotInfoLabel">-</span></div>
+        <div class="spot-prop">roleFilter: <span id="spotInfoRole">-</span></div>
+        <button class="btn-delete-spot" onclick="deleteSelectedSpot()">削除</button>
+    </div>
+
     <!-- ポータル選択モーダル -->
     <div id="portalModal">
         <div class="modal-box">
@@ -473,6 +512,43 @@
             <div class="modal-footer">
                 <a href="../npc-editor/" target="_blank" style="padding:5px 10px; background:#313244; color:#a6adc8; border:1px solid #45475a; border-radius:6px; cursor:pointer; font-size:0.82rem; text-decoration:none;">+ NPC Editor</a>
                 <button class="btn-confirm" onclick="confirmNPCSelection()">決定</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- スポット配置モーダル -->
+    <div id="spotModal">
+        <div class="modal-box" style="width:440px;">
+            <div class="modal-header">
+                <h3>🏠 ActivitySpot を配置</h3>
+                <button onclick="closeSpotModal()">✕</button>
+            </div>
+            <div class="modal-body">
+                <div class="add-tile-form">
+                    <label>タイプ</label>
+                    <select id="spotType">
+                        <option value="idle">idle（待機）</option>
+                        <option value="walk">walk（歩く）</option>
+                        <option value="work">work（作業）</option>
+                        <option value="eat">eat（食事）</option>
+                        <option value="sleep">sleep（就寝）</option>
+                        <option value="rest">rest（休憩）</option>
+                        <option value="watch">watch（見張り）</option>
+                        <option value="chat">chat（会話）</option>
+                        <option value="pray">pray（祈り）</option>
+                        <option value="flee">flee（逃走）</option>
+                    </select>
+                    <label>ラベル <span style="color:#6c7086;font-size:0.75rem;">（省略可）</span></label>
+                    <input type="text" id="spotLabel" placeholder="例: 食堂テーブル">
+                    <label>roleFilter <span style="color:#6c7086;font-size:0.75rem;">（省略可）</span></label>
+                    <input type="text" id="spotRoleFilter" placeholder="例: guard,merchant">
+                </div>
+                <div style="margin-top:10px; font-size:0.78rem; color:#6c7086;">
+                    roleFilter はカンマ区切りで対象ロールを指定（空欄で全NPC対象）
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn-confirm" onclick="confirmSpotPlacement()">配置</button>
             </div>
         </div>
     </div>
@@ -517,8 +593,10 @@
     let enemySpawns = []   // { x, y, enemyDefId?: string }
     let npcSpawns = []     // { x, y, npcDefId: string }
     let portals = []       // { x, y }
+    let activitySpots = [] // { id, type, x, y, label?, roleFilter? }
     let selectedTile = 0
     let isDrawing = false
+    let selectedSpotId = null  // 選択中のスポットid
 
     // タイルセット
     let baseDefs = []    // tilesets.json から読み込んだ定義
@@ -678,6 +756,15 @@
         portalEl.addEventListener('click', () => selectTile(portalEl, 'portal'))
         container.appendChild(portalEl)
 
+        const spotEl = document.createElement('div')
+        spotEl.className = 'tile-option spot-tile'
+        spotEl.setAttribute('data-tile', 'spot')
+        spotEl.title = 'ActivitySpot（左クリックで配置モーダル、スポット上クリックで選択）'
+        spotEl.style.fontSize = '0.7rem'
+        spotEl.textContent = '🏠 スポット'
+        spotEl.addEventListener('click', () => selectTile(spotEl, 'spot'))
+        container.appendChild(spotEl)
+
         // 初期選択（id=0 の床）
         const first = container.querySelector('[data-tile="0"]')
         if (first) first.classList.add('selected')
@@ -687,7 +774,7 @@
     function selectTile(el, value) {
         document.querySelectorAll('.tile-option').forEach(o => o.classList.remove('selected'))
         el.classList.add('selected')
-        selectedTile = (value === 'spawn' || value === 'npc-spawn' || value === 'portal') ? value : parseInt(value)
+        selectedTile = (value === 'spawn' || value === 'npc-spawn' || value === 'portal' || value === 'spot') ? value : parseInt(value)
     }
 
     // ---- カスタムタイル追加/削除 ----
@@ -969,6 +1056,9 @@
         enemySpawns = []
         npcSpawns = []
         portals = []
+        activitySpots = []
+        selectedSpotId = null
+        hideSpotInfoPanel()
         canvas.width = cols * TILE_SIZE
         canvas.height = rows * TILE_SIZE
         drawMap()
@@ -980,6 +1070,9 @@
         enemySpawns = []
         npcSpawns = []
         portals = []
+        activitySpots = []
+        selectedSpotId = null
+        hideSpotInfoPanel()
         drawMap()
     }
 
@@ -992,6 +1085,7 @@
         enemySpawns.forEach(s => drawSpawn(s))
         npcSpawns.forEach(s => drawNPCSpawn(s))
         portals.forEach(p => drawPortal(p))
+        activitySpots.forEach(s => drawActivitySpot(s))
         drawGrid()
     }
 
@@ -1159,6 +1253,54 @@
         }
     }
 
+    const SPOT_COLORS = {
+        eat:   '#ff8800',
+        sleep: '#8800ff',
+        work:  '#884400',
+        watch: '#ff0000',
+        pray:  '#ffff00',
+        chat:  '#00ccff',
+        rest:  '#00cc44',
+        idle:  '#888888',
+        walk:  '#888888',
+        flee:  '#888888',
+    }
+
+    function getSpotColor(type) {
+        return SPOT_COLORS[type] ?? '#888888'
+    }
+
+    function drawActivitySpot(spot) {
+        const px = spot.x * TILE_SIZE
+        const py = spot.y * TILE_SIZE
+        const cx = px + TILE_SIZE / 2
+        const cy = py + TILE_SIZE / 2
+        const color = getSpotColor(spot.type)
+        const isSelected = spot.id === selectedSpotId
+
+        // 半透明背景
+        ctx.fillStyle = color + (isSelected ? 'cc' : '55')
+        ctx.fillRect(px + 2, py + 2, TILE_SIZE - 4, TILE_SIZE - 4)
+
+        // 枠線
+        ctx.strokeStyle = isSelected ? '#ffffff' : color + 'cc'
+        ctx.lineWidth = isSelected ? 3 : 2
+        ctx.strokeRect(px + 2, py + 2, TILE_SIZE - 4, TILE_SIZE - 4)
+
+        // type 頭文字
+        ctx.font = 'bold 20px sans-serif'
+        ctx.textAlign = 'center'
+        ctx.textBaseline = 'middle'
+        ctx.fillStyle = '#ffffff'
+        ctx.fillText(spot.type[0].toUpperCase(), cx, cy - 6)
+
+        // ラベル
+        const label = spot.label || spot.type
+        ctx.font = 'bold 9px sans-serif'
+        ctx.fillStyle = '#ffffff'
+        ctx.fillText(label.length > 8 ? label.slice(0, 7) + '…' : label, cx, cy + 12)
+    }
+
     // ---- Sprite Image Cache ----
     function getChromaCanvas(spriteKey) {
         if (spriteCache[spriteKey] !== undefined) return spriteCache[spriteKey]
@@ -1195,12 +1337,28 @@
         if (x < 0 || x >= cols || y < 0 || y >= rows) return
 
         if (e.button === 2) {
-            // 右クリック: 削除（タイル・敵スポーン・ポータル）
+            // 右クリック: 削除（タイル・敵スポーン・ポータル・スポット）
             mapData[y][x] = 0
             enemySpawns = enemySpawns.filter(s => !(s.x === x && s.y === y))
             npcSpawns = npcSpawns.filter(s => !(s.x === x && s.y === y))
             portals = portals.filter(p => !(p.x === x && p.y === y))
+            activitySpots = activitySpots.filter(s => !(s.x === x && s.y === y))
+            if (selectedSpotId !== null) {
+                const still = activitySpots.find(s => s.id === selectedSpotId)
+                if (!still) { selectedSpotId = null; hideSpotInfoPanel() }
+            }
             drawMap()
+        } else if (selectedTile === 'spot') {
+            // スポットモード: クリック位置にすでにスポットがあれば選択、なければ配置モーダル
+            const existing = activitySpots.find(s => s.x === x && s.y === y)
+            if (existing) {
+                selectedSpotId = existing.id
+                showSpotInfoPanel(existing)
+                drawMap()
+            } else {
+                isDrawing = false
+                openSpotModal(x, y)
+            }
         } else if (selectedTile === 'portal') {
             // ポータル配置 → デザイン選択モーダル
             const exists = portals.some(p => p.x === x && p.y === y)
@@ -1302,6 +1460,61 @@
         window.open('../enemy-editor/', '_blank')
     }
 
+    // ---- ActivitySpot Modal ----
+    let pendingSpotPos = null
+    let spotIdCounter = 1
+
+    function openSpotModal(x, y) {
+        pendingSpotPos = { x, y }
+        document.getElementById('spotType').value = 'idle'
+        document.getElementById('spotLabel').value = ''
+        document.getElementById('spotRoleFilter').value = ''
+        document.getElementById('spotModal').classList.add('show')
+    }
+
+    function closeSpotModal() {
+        document.getElementById('spotModal').classList.remove('show')
+        pendingSpotPos = null
+    }
+
+    function confirmSpotPlacement() {
+        if (!pendingSpotPos) { closeSpotModal(); return }
+        const { x, y } = pendingSpotPos
+        const type = document.getElementById('spotType').value
+        const label = document.getElementById('spotLabel').value.trim()
+        const roleFilterRaw = document.getElementById('spotRoleFilter').value.trim()
+        const roleFilter = roleFilterRaw ? roleFilterRaw.split(',').map(r => r.trim()).filter(r => r.length > 0) : []
+        const id = `spot_${x}_${y}_${spotIdCounter++}`
+        const spot = { id, type, x, y }
+        if (label) spot.label = label
+        if (roleFilter.length > 0) spot.roleFilter = roleFilter
+        activitySpots.push(spot)
+        selectedSpotId = id
+        showSpotInfoPanel(spot)
+        closeSpotModal()
+        drawMap()
+    }
+
+    function showSpotInfoPanel(spot) {
+        document.getElementById('spotInfoType').textContent = spot.type
+        document.getElementById('spotInfoPos').textContent = `(${spot.x}, ${spot.y})`
+        document.getElementById('spotInfoLabel').textContent = spot.label || '（なし）'
+        document.getElementById('spotInfoRole').textContent = spot.roleFilter && spot.roleFilter.length > 0 ? spot.roleFilter.join(', ') : '（全NPC）'
+        document.getElementById('spotInfoPanel').classList.add('show')
+    }
+
+    function hideSpotInfoPanel() {
+        document.getElementById('spotInfoPanel').classList.remove('show')
+    }
+
+    function deleteSelectedSpot() {
+        if (selectedSpotId === null) return
+        activitySpots = activitySpots.filter(s => s.id !== selectedSpotId)
+        selectedSpotId = null
+        hideSpotInfoPanel()
+        drawMap()
+    }
+
     // ---- Mini Sprite ----
     function drawMiniSprite(canvas, spriteKey) {
         if (!spriteKey) return
@@ -1320,7 +1533,7 @@
 
     // ---- Export / Import ----
     function exportMap() {
-        const mapJSON = { cols, rows, tiles: mapData, enemySpawns, npcSpawns, portals }
+        const mapJSON = { cols, rows, tiles: mapData, enemySpawns, npcSpawns, portals, activitySpots }
         const json = JSON.stringify(mapJSON, null, 2)
         const blob = new Blob([json], { type: 'application/json' })
         const url = URL.createObjectURL(blob)
@@ -1345,6 +1558,9 @@
                 }))
                 npcSpawns = (j.npcSpawns || []).map(s => ({ x: s.x, y: s.y, npcDefId: s.npcDefId }))
                 portals = (j.portals || []).map(p => ({ x: p.x, y: p.y, ...(p.spriteKey ? { spriteKey: p.spriteKey } : {}), ...(p.rotation ? { rotation: p.rotation } : {}) }))
+                activitySpots = (j.activitySpots || []).map(s => ({ id: s.id, type: s.type, x: s.x, y: s.y, ...(s.label ? { label: s.label } : {}), ...(s.roleFilter ? { roleFilter: s.roleFilter } : {}) }))
+                selectedSpotId = null
+                hideSpotInfoPanel()
                 document.getElementById('cols').value = cols
                 document.getElementById('rows').value = rows
                 // ファイル名からmapIdを自動設定（拡張子を除く）
@@ -1372,6 +1588,9 @@
             }))
             npcSpawns = (j.npcSpawns || []).map(s => ({ x: s.x, y: s.y, npcDefId: s.npcDefId }))
             portals = (j.portals || []).map(p => ({ x: p.x, y: p.y, ...(p.spriteKey ? { spriteKey: p.spriteKey } : {}), ...(p.rotation ? { rotation: p.rotation } : {}) }))
+            activitySpots = (j.activitySpots || []).map(s => ({ id: s.id, type: s.type, x: s.x, y: s.y, ...(s.label ? { label: s.label } : {}), ...(s.roleFilter ? { roleFilter: s.roleFilter } : {}) }))
+            selectedSpotId = null
+            hideSpotInfoPanel()
             document.getElementById('cols').value = cols
             document.getElementById('rows').value = rows
             document.getElementById('mapId').value = filename.replace(/\.json$/, '')
@@ -1387,7 +1606,7 @@
     function saveMapToGame() {
         const mapId = document.getElementById('mapId').value.trim()
         if (!mapId) { alert('マップIDを入力してください'); return }
-        const mapJSON = { cols, rows, tiles: mapData, enemySpawns, npcSpawns, portals }
+        const mapJSON = { cols, rows, tiles: mapData, enemySpawns, npcSpawns, portals, activitySpots }
         window.saveToGame(`assets/maps/${mapId}.json`, mapJSON)
     }
 

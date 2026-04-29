@@ -9,7 +9,8 @@
         "key": "spiral",
         "url": "assets/story/bgm/spiral.ogg"
       }
-    ]
+    ],
+    "clockSpeed": 180000
   },
   "chapters": [
     {

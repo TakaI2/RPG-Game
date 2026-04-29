@@ -6,6 +6,7 @@ export type GameFlowBgmAsset = {
 export type GameFlowAssets = {
   bgm: GameFlowBgmAsset[]
   loadingImages?: string[]   // assets/images/loading_images/ 内のファイル名リスト
+  clockSpeed?: number        // 実ms / ゲーム1時間（デフォルト: 180000）
 }
 
 export type ThenAction =
