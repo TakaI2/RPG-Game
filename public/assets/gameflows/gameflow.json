@@ -9,8 +9,7 @@
         "key": "spiral",
         "url": "assets/story/bgm/spiral.ogg"
       }
-    ],
-    "clockSpeed": 180000
+    ]
   },
   "chapters": [
     {
@@ -77,8 +76,19 @@
           "targetMap": "boss_map1",
           "targetX": 40,
           "targetY": 80
+        },
+        {
+          "targetMap": "lifemap1",
+          "targetX": 5,
+          "targetY": 5
         }
       ]
+    },
+    "lifemap1": {
+      "bgm": null,
+      "onEnter": null,
+      "onPlayerDefeat": null,
+      "eventTriggers": []
     }
   },
   "_editorPositions": {
@@ -96,7 +106,7 @@
     },
     "map_village_l": {
       "x": 380.830574299403,
-      "y": 202.61722907373667
+      "y": 195.85539586562248
     },
     "start": {
       "x": 12.437777168711364,
@@ -125,6 +135,10 @@
     "story_badend_vil": {
       "x": 779.5867310028879,
       "y": 191.7475582268971
+    },
+    "map_lifemap1": {
+      "x": 775.3185574755823,
+      "y": 17.17956423741564
     }
   }
 }

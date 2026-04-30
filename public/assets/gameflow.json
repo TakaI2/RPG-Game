@@ -62,6 +62,29 @@
           "targetY": 5
         }
       ]
+    },
+    "lifemap1": {
+      "bgm": "bgm_field",
+      "portals": [
+        {
+          "targetMap": "village_l",
+          "targetX": 64,
+          "targetY": 2
+        }
+      ],
+      "eventTriggers": []
+    },
+    "village_l": {
+      "bgm": "spiral",
+      "portals": [
+        {
+          "targetMap": "lifemap1",
+          "targetX": 20,
+          "targetY": 36
+        },
+        {}
+      ],
+      "eventTriggers": []
     }
   },
   "_editorPositions": {

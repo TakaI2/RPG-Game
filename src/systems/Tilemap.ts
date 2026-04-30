@@ -12,12 +12,54 @@ const FALLBACK_DEF: TileDef = {
 
 const DEFAULT_ANIM_FPS = 8
 
+/**
+ * オブジェクト・オーバーレイレイヤー用のスプライトを生成する。
+ * depth はレイヤーに応じて呼び出し側で指定する。
+ */
+function buildLayerTileSprite(
+  scene: Phaser.Scene,
+  def: TileDef,
+  cx: number,
+  cy: number,
+  depth: number
+): Phaser.GameObjects.Sprite {
+  const sprite = scene.add.sprite(cx, cy, def.textureKey)
+  sprite.setDisplaySize(TILE, TILE)
+  sprite.setDepth(depth)
+
+  if (def.animated) {
+    const animKey = `anim_${def.textureKey}`
+    if (!scene.anims.exists(animKey)) {
+      const frames = scene.anims.generateFrameNumbers(def.textureKey, { start: 0, end: 3 })
+      if (frames.length > 0) {
+        scene.anims.create({
+          key: animKey,
+          frames,
+          frameRate: def.fps ?? DEFAULT_ANIM_FPS,
+          repeat: -1,
+        })
+      }
+    }
+    if (scene.anims.exists(animKey)) {
+      sprite.play(animKey)
+    }
+  }
+
+  return sprite
+}
+
 export function buildMapFromJSON(
   scene: Phaser.Scene,
   data: MapData,
   tileDefMap: Map<number, TileDef>
-): { worldW: number; worldH: number; walls: Phaser.Physics.Arcade.StaticGroup; animSprites: Phaser.GameObjects.Sprite[] } {
-  const { cols, rows, tiles } = data
+): {
+  worldW: number
+  worldH: number
+  walls: Phaser.Physics.Arcade.StaticGroup
+  animSprites: Phaser.GameObjects.Sprite[]
+  layerSprites: Phaser.GameObjects.Sprite[]
+} {
+  const { cols, rows, tiles, objectLayer, overlayLayer } = data
   const worldW = cols * TILE
   const worldH = rows * TILE
 
@@ -26,6 +68,9 @@ export function buildMapFromJSON(
 
   // アニメーションスプライトの追跡（マップ遷移時に破棄するため）
   const animSprites: Phaser.GameObjects.Sprite[] = []
+
+  // オブジェクト・オーバーレイレイヤーのスプライト（マップ遷移時に破棄）
+  const layerSprites: Phaser.GameObjects.Sprite[] = []
 
   // 床タイルを HTML Canvas に描画してから単一テクスチャとして登録
   const floorCanvas = document.createElement('canvas')
@@ -115,9 +160,33 @@ export function buildMapFromJSON(
   scene.textures.addCanvas(floorKey, floorCanvas)
   scene.add.image(0, 0, floorKey).setOrigin(0, 0).setDepth(0)
 
+  // オブジェクトレイヤー（depth 3 – プレイヤー手前、PNG alpha 透過対応）
+  if (objectLayer) {
+    for (let y = 0; y < rows; y++) {
+      for (let x = 0; x < cols; x++) {
+        const tileId = objectLayer[y]?.[x] ?? 0
+        if (tileId === 0) continue
+        const def = tileDefMap.get(tileId) ?? FALLBACK_DEF
+        layerSprites.push(buildLayerTileSprite(scene, def, x * TILE + TILE / 2, y * TILE + TILE / 2, 3))
+      }
+    }
+  }
+
+  // オーバーレイレイヤー（depth 15 – プレイヤー背後、PNG alpha 透過対応）
+  if (overlayLayer) {
+    for (let y = 0; y < rows; y++) {
+      for (let x = 0; x < cols; x++) {
+        const tileId = overlayLayer[y]?.[x] ?? 0
+        if (tileId === 0) continue
+        const def = tileDefMap.get(tileId) ?? FALLBACK_DEF
+        layerSprites.push(buildLayerTileSprite(scene, def, x * TILE + TILE / 2, y * TILE + TILE / 2, 15))
+      }
+    }
+  }
+
   console.log(
     `[Tilemap] buildMapFromJSON: ${cols}x${rows}, floor=${floorTileCount}, worldSize=${worldW}x${worldH}`
   )
 
-  return { worldW, worldH, walls, animSprites }
+  return { worldW, worldH, walls, animSprites, layerSprites }
 }

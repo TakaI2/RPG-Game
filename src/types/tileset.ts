@@ -1,4 +1,5 @@
 export type TileRole = 'floor' | 'wall'
+export type TileLayer = 'floor' | 'object' | 'overlay'
 
 export interface TileDef {
   id: number
@@ -8,6 +9,7 @@ export interface TileDef {
   color: string
   animated?: boolean
   fps?: number
+  layer?: TileLayer  // 描画レイヤーのヒント（省略時は role に準じる）
 }
 
 export interface EnemySpawn {
@@ -29,6 +31,8 @@ export interface MapData {
   cols: number
   rows: number
   tiles: number[][]
+  objectLayer?: number[][]
+  overlayLayer?: number[][]
   enemySpawns?: EnemySpawn[]
   portals?: Portal[]
   activitySpots?: import('./NPCTypes').ActivitySpot[]

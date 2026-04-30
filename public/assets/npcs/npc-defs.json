@@ -380,5 +380,922 @@
       }
     ],
     "frameRate": 4
+  },
+  {
+    "id": "village_guard_garn",
+    "name": "ガルン",
+    "spriteKey": "npc_villager",
+    "animated": true,
+    "movement": "scheduled",
+    "role": "guard",
+    "homeX": 19,
+    "homeY": 3,
+    "speechLines": [
+      "通るな。",
+      "異常なし。"
+    ],
+    "speechIntervalMs": 8000,
+    "dialogLines": [
+      {
+        "name": "ガルン",
+        "text": "北の門は俺が守る。通行人は要注意だ。"
+      }
+    ],
+    "activitySpeeches": {
+      "watch": [
+        "北門を守るのが俺の仕事だ。",
+        "怪しい者は通さん。"
+      ],
+      "sleep": [
+        "…zz…"
+      ]
+    },
+    "schedule": [
+      {
+        "id": "guard_north_day",
+        "trigger": "time",
+        "timeStart": 7,
+        "timeEnd": 20,
+        "waypoints": [
+          {
+            "x": 19,
+            "y": 1,
+            "spotId": "guard-north",
+            "waitMs": 30000,
+            "activity": "watch",
+            "speechLines": [
+              "北門を守るのが俺の仕事だ。"
+            ]
+          },
+          {
+            "x": 19,
+            "y": 10,
+            "waitMs": 5000,
+            "activity": "walk"
+          },
+          {
+            "x": 19,
+            "y": 1,
+            "spotId": "guard-north",
+            "waitMs": 20000,
+            "activity": "watch"
+          }
+        ]
+      },
+      {
+        "id": "guard_north_night",
+        "trigger": "time",
+        "timeStart": 20,
+        "timeEnd": 7,
+        "waypoints": [
+          {
+            "x": 29,
+            "y": 27,
+            "spotId": "inn-sleep1",
+            "waitMs": 60000,
+            "activity": "sleep",
+            "speechLines": [
+              "…zz…"
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "village_guard_marta",
+    "name": "マルタ",
+    "spriteKey": "npc_villager",
+    "animated": true,
+    "movement": "scheduled",
+    "role": "guard",
+    "homeX": 19,
+    "homeY": 36,
+    "speechLines": [
+      "南門は任せろ。",
+      "何か用か？"
+    ],
+    "speechIntervalMs": 7000,
+    "dialogLines": [
+      {
+        "name": "マルタ",
+        "text": "南の見張りは俺だ。余計なことはするな。"
+      }
+    ],
+    "activitySpeeches": {
+      "watch": [
+        "南門を守るのが俺の役目だ。",
+        "何事もなければそれでいい。"
+      ],
+      "sleep": [
+        "…むにゃ…"
+      ]
+    },
+    "schedule": [
+      {
+        "id": "guard_south_day",
+        "trigger": "time",
+        "timeStart": 9,
+        "timeEnd": 21,
+        "waypoints": [
+          {
+            "x": 19,
+            "y": 38,
+            "spotId": "guard-south",
+            "waitMs": 25000,
+            "activity": "watch"
+          },
+          {
+            "x": 19,
+            "y": 28,
+            "waitMs": 5000,
+            "activity": "walk"
+          },
+          {
+            "x": 19,
+            "y": 38,
+            "spotId": "guard-south",
+            "waitMs": 20000,
+            "activity": "watch"
+          }
+        ]
+      },
+      {
+        "id": "guard_south_night",
+        "trigger": "time",
+        "timeStart": 21,
+        "timeEnd": 9,
+        "waypoints": [
+          {
+            "x": 29,
+            "y": 29,
+            "spotId": "inn-sleep2",
+            "waitMs": 60000,
+            "activity": "sleep"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "village_villager_ellen",
+    "name": "エレン",
+    "spriteKey": "npc_villager",
+    "animated": true,
+    "movement": "scheduled",
+    "role": "villager",
+    "homeX": 5,
+    "homeY": 5,
+    "speechLines": [
+      "今日もいい天気ね。",
+      "お買い物してきたわ。"
+    ],
+    "speechIntervalMs": 6000,
+    "dialogLines": [
+      {
+        "name": "エレン",
+        "text": "民家Aに住んでいるの。バルトとは幼なじみよ。"
+      }
+    ],
+    "activitySpeeches": {
+      "sleep": [
+        "…すやすや…"
+      ],
+      "eat": [
+        "今日のスープ、うまくできたわ。",
+        "いただきます♪"
+      ],
+      "chat": [
+        "今日の広場はにぎやかね。",
+        "クラウスさん、いつも元気ね。"
+      ],
+      "work": [
+        "畑の水やり、終わったかしら。"
+      ]
+    },
+    "schedule": [
+      {
+        "id": "ellen_night",
+        "trigger": "time",
+        "timeStart": 22,
+        "timeEnd": 7,
+        "waypoints": [
+          {
+            "x": 3,
+            "y": 4,
+            "spotId": "spotA-sleep1",
+            "waitMs": 60000,
+            "activity": "sleep"
+          }
+        ]
+      },
+      {
+        "id": "ellen_morning",
+        "trigger": "time",
+        "timeStart": 7,
+        "timeEnd": 13,
+        "waypoints": [
+          {
+            "x": 6,
+            "y": 7,
+            "spotId": "spotA-eat1",
+            "waitMs": 10000,
+            "activity": "eat"
+          },
+          {
+            "x": 10,
+            "y": 8,
+            "waitMs": 5000,
+            "activity": "work"
+          },
+          {
+            "x": 14,
+            "y": 15,
+            "waitMs": 5000,
+            "activity": "walk"
+          }
+        ]
+      },
+      {
+        "id": "ellen_afternoon",
+        "trigger": "time",
+        "timeStart": 13,
+        "timeEnd": 22,
+        "waypoints": [
+          {
+            "x": 21,
+            "y": 21,
+            "spotId": "plaza-chat",
+            "waitMs": 20000,
+            "activity": "chat"
+          },
+          {
+            "x": 5,
+            "y": 5,
+            "waitMs": 5000,
+            "activity": "walk"
+          },
+          {
+            "x": 6,
+            "y": 7,
+            "spotId": "spotA-eat1",
+            "waitMs": 8000,
+            "activity": "eat"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "village_villager_bart",
+    "name": "バルト",
+    "spriteKey": "npc_villager",
+    "animated": true,
+    "movement": "scheduled",
+    "role": "villager",
+    "homeX": 32,
+    "homeY": 5,
+    "speechLines": [
+      "やあ。",
+      "今日も仕事仕事だ。"
+    ],
+    "speechIntervalMs": 7000,
+    "dialogLines": [
+      {
+        "name": "バルト",
+        "text": "民家Bに住んでる。農作業が俺の仕事だ。"
+      }
+    ],
+    "activitySpeeches": {
+      "sleep": [
+        "…ぐぅ…"
+      ],
+      "eat": [
+        "腹減った。",
+        "うまい！"
+      ],
+      "work": [
+        "畑仕事は休まれん。",
+        "もうひとふんばりだ。"
+      ]
+    },
+    "schedule": [
+      {
+        "id": "bart_night",
+        "trigger": "time",
+        "timeStart": 20,
+        "timeEnd": 6,
+        "waypoints": [
+          {
+            "x": 29,
+            "y": 4,
+            "spotId": "spotB-sleep1",
+            "waitMs": 60000,
+            "activity": "sleep"
+          }
+        ]
+      },
+      {
+        "id": "bart_morning",
+        "trigger": "time",
+        "timeStart": 6,
+        "timeEnd": 12,
+        "waypoints": [
+          {
+            "x": 32,
+            "y": 7,
+            "spotId": "spotB-eat1",
+            "waitMs": 8000,
+            "activity": "eat"
+          },
+          {
+            "x": 35,
+            "y": 12,
+            "waitMs": 15000,
+            "activity": "work"
+          },
+          {
+            "x": 26,
+            "y": 15,
+            "waitMs": 10000,
+            "activity": "work"
+          }
+        ]
+      },
+      {
+        "id": "bart_afternoon",
+        "trigger": "time",
+        "timeStart": 12,
+        "timeEnd": 20,
+        "waypoints": [
+          {
+            "x": 32,
+            "y": 7,
+            "spotId": "spotB-eat1",
+            "waitMs": 8000,
+            "activity": "eat"
+          },
+          {
+            "x": 28,
+            "y": 20,
+            "waitMs": 12000,
+            "activity": "work"
+          },
+          {
+            "x": 32,
+            "y": 5,
+            "waitMs": 5000,
+            "activity": "rest"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "village_elder_arno",
+    "name": "アーノ",
+    "spriteKey": "npc_villager",
+    "animated": true,
+    "movement": "scheduled",
+    "role": "elder",
+    "homeX": 5,
+    "homeY": 30,
+    "speechLines": [
+      "儂はもう年じゃ…。",
+      "この村も変わったのう。"
+    ],
+    "speechIntervalMs": 10000,
+    "dialogLines": [
+      {
+        "name": "アーノ",
+        "text": "わしはこの村で生まれ、この村で老いた。長老として村の安寧を祈るだけじゃ。"
+      }
+    ],
+    "activitySpeeches": {
+      "sleep": [
+        "…むにゃ…老いると夢もうるさくてな…"
+      ],
+      "eat": [
+        "最近は食欲もなくなってきた。",
+        "ゆっくり食べんとな。"
+      ],
+      "rest": [
+        "日向ぼっこが一番の薬じゃ。"
+      ],
+      "chat": [
+        "村のことが心配じゃ。",
+        "若い衆に話しかけても聞いてくれんのう。"
+      ]
+    },
+    "schedule": [
+      {
+        "id": "arno_night",
+        "trigger": "time",
+        "timeStart": 21,
+        "timeEnd": 9,
+        "waypoints": [
+          {
+            "x": 3,
+            "y": 27,
+            "spotId": "spotC-sleep1",
+            "waitMs": 60000,
+            "activity": "sleep"
+          }
+        ]
+      },
+      {
+        "id": "arno_day",
+        "trigger": "time",
+        "timeStart": 9,
+        "timeEnd": 21,
+        "waypoints": [
+          {
+            "x": 6,
+            "y": 33,
+            "spotId": "spotC-eat1",
+            "waitMs": 10000,
+            "activity": "eat"
+          },
+          {
+            "x": 19,
+            "y": 19,
+            "spotId": "plaza-watch",
+            "waitMs": 30000,
+            "activity": "rest"
+          },
+          {
+            "x": 21,
+            "y": 21,
+            "spotId": "plaza-chat",
+            "waitMs": 20000,
+            "activity": "chat"
+          },
+          {
+            "x": 5,
+            "y": 30,
+            "waitMs": 5000,
+            "activity": "walk"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "village_innkeeper_lise",
+    "name": "リース",
+    "spriteKey": "npc_merchant",
+    "animated": true,
+    "movement": "scheduled",
+    "role": "innkeeper",
+    "homeX": 32,
+    "homeY": 30,
+    "speechLines": [
+      "いらっしゃい！",
+      "一泊いかが？"
+    ],
+    "speechIntervalMs": 5000,
+    "dialogLines": [
+      {
+        "name": "リース",
+        "text": "ここが村唯一の宿屋よ。疲れた旅人はゆっくり休んでいって。"
+      }
+    ],
+    "activitySpeeches": {
+      "sleep": [
+        "…zzz…明日も頑張らないと…"
+      ],
+      "work": [
+        "いらっしゃいませ！",
+        "ごゆっくりどうぞ。",
+        "今日のスペシャルは魚のシチューよ。"
+      ],
+      "eat": [
+        "仕事前に腹ごしらえ。"
+      ]
+    },
+    "schedule": [
+      {
+        "id": "lise_night",
+        "trigger": "time",
+        "timeStart": 23,
+        "timeEnd": 6,
+        "waypoints": [
+          {
+            "x": 29,
+            "y": 29,
+            "spotId": "inn-sleep2",
+            "waitMs": 60000,
+            "activity": "sleep"
+          }
+        ]
+      },
+      {
+        "id": "lise_day",
+        "trigger": "time",
+        "timeStart": 6,
+        "timeEnd": 23,
+        "waypoints": [
+          {
+            "x": 31,
+            "y": 33,
+            "spotId": "inn-eat1",
+            "waitMs": 8000,
+            "activity": "eat"
+          },
+          {
+            "x": 31,
+            "y": 33,
+            "spotId": "inn-eat1",
+            "waitMs": 60000,
+            "activity": "work",
+            "speechLines": [
+              "いらっしゃいませ！",
+              "ごゆっくりどうぞ。"
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "village_villager_sofi",
+    "name": "ゾフィ",
+    "spriteKey": "npc_villager",
+    "animated": true,
+    "movement": "scheduled",
+    "role": "villager",
+    "homeX": 6,
+    "homeY": 4,
+    "speechLines": [
+      "おはよう！",
+      "いい日ね。"
+    ],
+    "speechIntervalMs": 5500,
+    "dialogLines": [
+      {
+        "name": "ゾフィ",
+        "text": "エレンと同じ家に住んでるの。仲良くしてね。"
+      }
+    ],
+    "activitySpeeches": {
+      "sleep": [
+        "…すー…"
+      ],
+      "eat": [
+        "ごはんだ♪"
+      ],
+      "work": [
+        "今日もせっせと働くわよ！"
+      ],
+      "chat": [
+        "ねえ聞いて、昨日のこと！"
+      ]
+    },
+    "schedule": [
+      {
+        "id": "sofi_night",
+        "trigger": "time",
+        "timeStart": 22,
+        "timeEnd": 7,
+        "waypoints": [
+          {
+            "x": 3,
+            "y": 4,
+            "spotId": "spotA-sleep1",
+            "waitMs": 60000,
+            "activity": "sleep"
+          }
+        ]
+      },
+      {
+        "id": "sofi_day",
+        "trigger": "time",
+        "timeStart": 7,
+        "timeEnd": 22,
+        "waypoints": [
+          {
+            "x": 6,
+            "y": 7,
+            "spotId": "spotA-eat1",
+            "waitMs": 8000,
+            "activity": "eat"
+          },
+          {
+            "x": 12,
+            "y": 10,
+            "waitMs": 10000,
+            "activity": "work"
+          },
+          {
+            "x": 19,
+            "y": 19,
+            "spotId": "plaza-watch",
+            "waitMs": 5000,
+            "activity": "walk"
+          },
+          {
+            "x": 21,
+            "y": 21,
+            "spotId": "plaza-chat",
+            "waitMs": 15000,
+            "activity": "chat"
+          },
+          {
+            "x": 6,
+            "y": 7,
+            "spotId": "spotA-eat1",
+            "waitMs": 8000,
+            "activity": "eat"
+          },
+          {
+            "x": 5,
+            "y": 5,
+            "waitMs": 10000,
+            "activity": "rest"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "village_merchant_claus",
+    "name": "クラウス",
+    "spriteKey": "npc_merchant",
+    "animated": true,
+    "movement": "scheduled",
+    "role": "merchant",
+    "homeX": 20,
+    "homeY": 20,
+    "speechLines": [
+      "さあ買った買った！",
+      "何が要る？"
+    ],
+    "speechIntervalMs": 4000,
+    "dialogLines": [
+      {
+        "name": "クラウス",
+        "text": "旅する行商人さ。この村の広場で商売してるよ。"
+      }
+    ],
+    "activitySpeeches": {
+      "work": [
+        "さあ買った買った！",
+        "新鮮な品揃えだよ！",
+        "お得な商品はいかが？"
+      ],
+      "eat": [
+        "商売の合間に一息。"
+      ],
+      "sleep": [
+        "今日の稼ぎは…zz…"
+      ]
+    },
+    "schedule": [
+      {
+        "id": "claus_night",
+        "trigger": "time",
+        "timeStart": 20,
+        "timeEnd": 8,
+        "waypoints": [
+          {
+            "x": 29,
+            "y": 27,
+            "spotId": "inn-sleep1",
+            "waitMs": 60000,
+            "activity": "sleep"
+          }
+        ]
+      },
+      {
+        "id": "claus_day",
+        "trigger": "time",
+        "timeStart": 8,
+        "timeEnd": 20,
+        "waypoints": [
+          {
+            "x": 31,
+            "y": 33,
+            "spotId": "inn-eat1",
+            "waitMs": 6000,
+            "activity": "eat"
+          },
+          {
+            "x": 19,
+            "y": 19,
+            "spotId": "plaza-watch",
+            "waitMs": 60000,
+            "activity": "work",
+            "speechLines": [
+              "さあ買った買った！",
+              "いい品揃えだよ！"
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "village_villager_hana",
+    "name": "ハナ",
+    "spriteKey": "npc_villager",
+    "animated": true,
+    "movement": "scheduled",
+    "role": "villager",
+    "homeX": 31,
+    "homeY": 4,
+    "speechLines": [
+      "こんにちは！",
+      "バルトのお嫁さんよ。"
+    ],
+    "speechIntervalMs": 5000,
+    "dialogLines": [
+      {
+        "name": "ハナ",
+        "text": "バルトの妻のハナです。村のみなさんのために料理を作るのが大好きなの。"
+      }
+    ],
+    "activitySpeeches": {
+      "sleep": [
+        "…すやすや…"
+      ],
+      "eat": [
+        "今日も美味しくできたわ！"
+      ],
+      "work": [
+        "料理は愛情よ！",
+        "パンが焼けたわ♪"
+      ],
+      "chat": [
+        "最近どう？元気してる？"
+      ]
+    },
+    "schedule": [
+      {
+        "id": "hana_night",
+        "trigger": "time",
+        "timeStart": 21,
+        "timeEnd": 6,
+        "waypoints": [
+          {
+            "x": 29,
+            "y": 4,
+            "spotId": "spotB-sleep1",
+            "waitMs": 60000,
+            "activity": "sleep"
+          }
+        ]
+      },
+      {
+        "id": "hana_morning",
+        "trigger": "time",
+        "timeStart": 6,
+        "timeEnd": 13,
+        "waypoints": [
+          {
+            "x": 32,
+            "y": 7,
+            "spotId": "spotB-eat1",
+            "waitMs": 6000,
+            "activity": "eat"
+          },
+          {
+            "x": 32,
+            "y": 7,
+            "spotId": "spotB-eat1",
+            "waitMs": 15000,
+            "activity": "work",
+            "speechLines": [
+              "パンが焼けたわ♪"
+            ]
+          },
+          {
+            "x": 24,
+            "y": 12,
+            "waitMs": 8000,
+            "activity": "work"
+          }
+        ]
+      },
+      {
+        "id": "hana_afternoon",
+        "trigger": "time",
+        "timeStart": 13,
+        "timeEnd": 21,
+        "waypoints": [
+          {
+            "x": 32,
+            "y": 7,
+            "spotId": "spotB-eat1",
+            "waitMs": 6000,
+            "activity": "eat"
+          },
+          {
+            "x": 21,
+            "y": 21,
+            "spotId": "plaza-chat",
+            "waitMs": 15000,
+            "activity": "chat"
+          },
+          {
+            "x": 31,
+            "y": 4,
+            "waitMs": 5000,
+            "activity": "rest"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "village_guard_otto",
+    "name": "オットー",
+    "spriteKey": "npc_villager",
+    "animated": true,
+    "movement": "scheduled",
+    "role": "guard",
+    "homeX": 10,
+    "homeY": 19,
+    "speechLines": [
+      "巡回中だ。",
+      "村は俺が守る。"
+    ],
+    "speechIntervalMs": 8000,
+    "dialogLines": [
+      {
+        "name": "オットー",
+        "text": "村の西側を巡回している。変な奴を見たら報告してくれ。"
+      }
+    ],
+    "activitySpeeches": {
+      "watch": [
+        "西側に異常なし。",
+        "油断は禁物だ。"
+      ],
+      "sleep": [
+        "…起きてる…zzz…"
+      ]
+    },
+    "schedule": [
+      {
+        "id": "otto_day",
+        "trigger": "time",
+        "timeStart": 6,
+        "timeEnd": 20,
+        "waypoints": [
+          {
+            "x": 1,
+            "y": 10,
+            "waitMs": 8000,
+            "activity": "watch"
+          },
+          {
+            "x": 1,
+            "y": 19,
+            "waitMs": 8000,
+            "activity": "watch"
+          },
+          {
+            "x": 1,
+            "y": 30,
+            "waitMs": 8000,
+            "activity": "watch"
+          },
+          {
+            "x": 10,
+            "y": 19,
+            "waitMs": 5000,
+            "activity": "walk"
+          },
+          {
+            "x": 19,
+            "y": 19,
+            "spotId": "plaza-watch",
+            "waitMs": 6000,
+            "activity": "watch"
+          },
+          {
+            "x": 10,
+            "y": 10,
+            "waitMs": 5000,
+            "activity": "walk"
+          }
+        ]
+      },
+      {
+        "id": "otto_night",
+        "trigger": "time",
+        "timeStart": 20,
+        "timeEnd": 6,
+        "waypoints": [
+          {
+            "x": 3,
+            "y": 27,
+            "spotId": "spotC-sleep1",
+            "waitMs": 60000,
+            "activity": "sleep"
+          }
+        ]
+      }
+    ]
   }
 ]

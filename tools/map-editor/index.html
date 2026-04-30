@@ -366,6 +366,27 @@
             font-size: 0.82rem;
         }
         .btn-delete-spot:hover { background: #f38ba822; }
+
+        .layer-tabs {
+            display: flex;
+            gap: 6px;
+            padding: 8px 16px;
+            background: #181825;
+            border-bottom: 2px solid #45475a;
+        }
+        .layer-tab {
+            padding: 6px 16px;
+            border-radius: 6px 6px 0 0;
+            border: 1px solid #45475a;
+            border-bottom: none;
+            background: #313244;
+            color: #a6adc8;
+            cursor: pointer;
+            font-size: 0.85rem;
+            transition: background 0.15s;
+        }
+        .layer-tab:hover { background: #45475a; }
+        .layer-tab.active { background: #1e3a5f; color: #89b4fa; border-color: #89b4fa; }
     </style>
 </head>
 <body>
@@ -400,6 +421,12 @@
             <button class="primary" onclick="saveMapToGame()" style="margin-left:8px;">ゲームに保存</button>
             <span style="color:#6c7086; font-size:0.8rem; margin-left:6px;">→ assets/maps/{mapId}.json</span>
         </div>
+    </div>
+
+    <div class="layer-tabs" id="layerTabs">
+        <button class="layer-tab active" data-layer="floor" onclick="setActiveLayer('floor')">🟫 Floor（床）</button>
+        <button class="layer-tab" data-layer="object" onclick="setActiveLayer('object')">🟦 Object（プレイヤー手前）</button>
+        <button class="layer-tab" data-layer="overlay" onclick="setActiveLayer('overlay')">🟪 Overlay（プレイヤー背後）</button>
     </div>
 
     <div class="tile-palette">
@@ -594,6 +621,9 @@
     let npcSpawns = []     // { x, y, npcDefId: string }
     let portals = []       // { x, y }
     let activitySpots = [] // { id, type, x, y, label?, roleFilter? }
+    let objectData = []   // objectLayer tiles (0 = empty)
+    let overlayData = []  // overlayLayer tiles (0 = empty)
+    let activeLayer = 'floor'
     let selectedTile = 0
     let isDrawing = false
     let selectedSpotId = null  // 選択中のスポットid
@@ -638,6 +668,13 @@
         loadNPCDefs()
         loadPortalDefs()
         loadTilesets()  // パレットを動的生成（完了後に createNewMap を呼ぶ）
+    }
+
+    // ---- Layer ----
+    function setActiveLayer(layer) {
+        activeLayer = layer
+        document.querySelectorAll('.layer-tab').forEach(t => t.classList.toggle('active', t.dataset.layer === layer))
+        drawMap()
     }
 
     // ---- Tileset ----
@@ -1053,6 +1090,8 @@
         cols = parseInt(document.getElementById('cols').value)
         rows = parseInt(document.getElementById('rows').value)
         mapData = Array(rows).fill(null).map(() => Array(cols).fill(0))
+        objectData = Array(rows).fill(null).map(() => Array(cols).fill(0))
+        overlayData = Array(rows).fill(null).map(() => Array(cols).fill(0))
         enemySpawns = []
         npcSpawns = []
         portals = []
@@ -1067,6 +1106,8 @@
     function clearMap() {
         if (!confirm('マップをクリアしますか？')) return
         mapData = Array(rows).fill(null).map(() => Array(cols).fill(0))
+        objectData = Array(rows).fill(null).map(() => Array(cols).fill(0))
+        overlayData = Array(rows).fill(null).map(() => Array(cols).fill(0))
         enemySpawns = []
         npcSpawns = []
         portals = []
@@ -1079,14 +1120,52 @@
     // ---- Draw ----
     function drawMap() {
         ctx.clearRect(0, 0, canvas.width, canvas.height)
+        // floor layer
         for (let y = 0; y < rows; y++)
             for (let x = 0; x < cols; x++)
                 drawTile(x, y, mapData[y][x])
+        // object layer
+        for (let y = 0; y < rows; y++)
+            for (let x = 0; x < cols; x++) {
+                const tileId = objectData[y]?.[x] ?? 0
+                if (tileId !== 0) drawLayerTile(x, y, tileId, 'object')
+            }
+        // overlay layer
+        for (let y = 0; y < rows; y++)
+            for (let x = 0; x < cols; x++) {
+                const tileId = overlayData[y]?.[x] ?? 0
+                if (tileId !== 0) drawLayerTile(x, y, tileId, 'overlay')
+            }
         enemySpawns.forEach(s => drawSpawn(s))
         npcSpawns.forEach(s => drawNPCSpawn(s))
         portals.forEach(p => drawPortal(p))
         activitySpots.forEach(s => drawActivitySpot(s))
         drawGrid()
+    }
+
+    function drawLayerTile(x, y, tileId, layer) {
+        const px = x * TILE_SIZE, py = y * TILE_SIZE
+        const isActive = activeLayer === layer
+        ctx.save()
+        ctx.globalAlpha = isActive ? 1.0 : 0.5
+        const img = tileImageCache[tileId]
+        if (img) {
+            ctx.imageSmoothingEnabled = false
+            ctx.drawImage(img, 0, 0, 64, 64, px, py, TILE_SIZE, TILE_SIZE)
+        } else {
+            const def = allDefs.find(d => d.id === tileId)
+            ctx.fillStyle = def ? def.color : '#888888'
+            ctx.fillRect(px, py, TILE_SIZE, TILE_SIZE)
+        }
+        // レイヤー識別カラーオーバーレイ
+        ctx.fillStyle = layer === 'object' ? 'rgba(100,150,255,0.25)' : 'rgba(180,100,255,0.25)'
+        ctx.fillRect(px, py, TILE_SIZE, TILE_SIZE)
+        if (isActive) {
+            ctx.strokeStyle = layer === 'object' ? '#5599ff' : '#aa55ff'
+            ctx.lineWidth = 2
+            ctx.strokeRect(px + 1, py + 1, TILE_SIZE - 2, TILE_SIZE - 2)
+        }
+        ctx.restore()
     }
 
     function drawTile(x, y, tileId) {
@@ -1338,17 +1417,25 @@
 
         if (e.button === 2) {
             // 右クリック: 削除（タイル・敵スポーン・ポータル・スポット）
-            mapData[y][x] = 0
-            enemySpawns = enemySpawns.filter(s => !(s.x === x && s.y === y))
-            npcSpawns = npcSpawns.filter(s => !(s.x === x && s.y === y))
-            portals = portals.filter(p => !(p.x === x && p.y === y))
-            activitySpots = activitySpots.filter(s => !(s.x === x && s.y === y))
-            if (selectedSpotId !== null) {
-                const still = activitySpots.find(s => s.id === selectedSpotId)
-                if (!still) { selectedSpotId = null; hideSpotInfoPanel() }
+            if (activeLayer === 'floor') {
+                mapData[y][x] = 0
+                enemySpawns = enemySpawns.filter(s => !(s.x === x && s.y === y))
+                npcSpawns = npcSpawns.filter(s => !(s.x === x && s.y === y))
+                portals = portals.filter(p => !(p.x === x && p.y === y))
+                activitySpots = activitySpots.filter(s => !(s.x === x && s.y === y))
+                if (selectedSpotId !== null) {
+                    const still = activitySpots.find(s => s.id === selectedSpotId)
+                    if (!still) { selectedSpotId = null; hideSpotInfoPanel() }
+                }
+            } else if (activeLayer === 'object') {
+                objectData[y][x] = 0
+            } else if (activeLayer === 'overlay') {
+                overlayData[y][x] = 0
             }
             drawMap()
+            return
         } else if (selectedTile === 'spot') {
+            if (activeLayer !== 'floor') { drawMap(); return }
             // スポットモード: クリック位置にすでにスポットがあれば選択、なければ配置モーダル
             const existing = activitySpots.find(s => s.x === x && s.y === y)
             if (existing) {
@@ -1360,6 +1447,7 @@
                 openSpotModal(x, y)
             }
         } else if (selectedTile === 'portal') {
+            if (activeLayer !== 'floor') { drawMap(); return }
             // ポータル配置 → デザイン選択モーダル
             const exists = portals.some(p => p.x === x && p.y === y)
             if (!exists) {
@@ -1367,6 +1455,7 @@
                 openPortalModal(x, y)
             }
         } else if (selectedTile === 'spawn') {
+            if (activeLayer !== 'floor') { drawMap(); return }
             // 左クリック: 敵スポーン → モーダルを開く
             const exists = enemySpawns.some(s => s.x === x && s.y === y)
             if (!exists) {
@@ -1374,6 +1463,7 @@
                 openEnemyModal(x, y)
             }
         } else if (selectedTile === 'npc-spawn') {
+            if (activeLayer !== 'floor') { drawMap(); return }
             // 左クリック: NPCスポーン → モーダルを開く
             const exists = npcSpawns.some(s => s.x === x && s.y === y)
             if (!exists) {
@@ -1381,7 +1471,13 @@
                 openNPCModal(x, y)
             }
         } else {
-            mapData[y][x] = selectedTile
+            if (activeLayer === 'floor') {
+                mapData[y][x] = selectedTile
+            } else if (activeLayer === 'object') {
+                objectData[y][x] = selectedTile
+            } else if (activeLayer === 'overlay') {
+                overlayData[y][x] = selectedTile
+            }
             drawMap()
         }
     }
@@ -1532,8 +1628,17 @@
     }
 
     // ---- Export / Import ----
+    function hasNonZero(grid) {
+        return grid.some(row => row.some(v => v !== 0))
+    }
+
     function exportMap() {
-        const mapJSON = { cols, rows, tiles: mapData, enemySpawns, npcSpawns, portals, activitySpots }
+        const mapJSON = {
+            cols, rows, tiles: mapData,
+            ...(hasNonZero(objectData) ? { objectLayer: objectData } : {}),
+            ...(hasNonZero(overlayData) ? { overlayLayer: overlayData } : {}),
+            enemySpawns, npcSpawns, portals, activitySpots
+        }
         const json = JSON.stringify(mapJSON, null, 2)
         const blob = new Blob([json], { type: 'application/json' })
         const url = URL.createObjectURL(blob)
@@ -1552,6 +1657,12 @@
                 const j = JSON.parse(e.target.result)
                 cols = j.cols; rows = j.rows
                 mapData = j.tiles
+                objectData = j.objectLayer
+                    ? j.objectLayer.map(row => [...row])
+                    : Array(rows).fill(null).map(() => Array(cols).fill(0))
+                overlayData = j.overlayLayer
+                    ? j.overlayLayer.map(row => [...row])
+                    : Array(rows).fill(null).map(() => Array(cols).fill(0))
                 enemySpawns = (j.enemySpawns || []).map(s => ({
                     x: s.x, y: s.y,
                     ...(s.enemyDefId ? { enemyDefId: s.enemyDefId } : {})
@@ -1582,6 +1693,12 @@
         try {
             cols = j.cols; rows = j.rows
             mapData = j.tiles
+            objectData = j.objectLayer
+                ? j.objectLayer.map(row => [...row])
+                : Array(rows).fill(null).map(() => Array(cols).fill(0))
+            overlayData = j.overlayLayer
+                ? j.overlayLayer.map(row => [...row])
+                : Array(rows).fill(null).map(() => Array(cols).fill(0))
             enemySpawns = (j.enemySpawns || []).map(s => ({
                 x: s.x, y: s.y,
                 ...(s.enemyDefId ? { enemyDefId: s.enemyDefId } : {})
@@ -1606,7 +1723,12 @@
     function saveMapToGame() {
         const mapId = document.getElementById('mapId').value.trim()
         if (!mapId) { alert('マップIDを入力してください'); return }
-        const mapJSON = { cols, rows, tiles: mapData, enemySpawns, npcSpawns, portals, activitySpots }
+        const mapJSON = {
+            cols, rows, tiles: mapData,
+            ...(hasNonZero(objectData) ? { objectLayer: objectData } : {}),
+            ...(hasNonZero(overlayData) ? { overlayLayer: overlayData } : {}),
+            enemySpawns, npcSpawns, portals, activitySpots
+        }
         window.saveToGame(`assets/maps/${mapId}.json`, mapJSON)
     }
 
