@@ -50,22 +50,38 @@ export default class TitleScene extends Phaser.Scene {
     this.playButton.on('pointerdown', () => { this.playButton.setScale(1.9) })
     this.playButton.on('pointerup',   () => {
       this.playButton.setScale(2.2)
+      this.playButton.disableInteractive()
 
-      // iOS: Phaser の sound.play() はロック状態を介するため鳴らないことがある。
-      // ネイティブ Audio API を直接使い、ユーザージェスチャー内で再生することで
-      // ページ全体のオーディオをアンロックする（iOS仕様: 一度でも鳴らせば以降は自由）。
-      const iosUnlock = new Audio('assets/sounds/se/charm.m4a')
-      iosUnlock.volume = 1.0
-      iosUnlock.play().then(() => {
-        console.log('[TitleScene] iOS audio unlock: charm played OK')
-      }).catch((e: Error) => {
-        console.warn('[TitleScene] iOS audio unlock failed:', e.message)
-      })
-
-      // ChapterLoadingScene で第一章アセットをプリロードしてから MainScene へ
       const config = this.cache.json.get('gameflow')
       const firstChapterId = config?.chapters?.[0]?.id ?? 'chapter1'
-      this.scene.start('ChapterLoadingScene', { chapterId: firstChapterId })
+      const startScene = () => this.scene.start('ChapterLoadingScene', { chapterId: firstChapterId })
+
+      // 画面上に結果を表示（iPhoneでコンソールが見えないため）
+      const resultText = this.add.text(960, 650, '...', {
+        fontSize: '28px', fontFamily: 'monospace', color: '#ffffff',
+        backgroundColor: '#000000cc', align: 'center', padding: { x: 12, y: 6 }
+      }).setOrigin(0.5).setDepth(9999)
+
+      // キャッシュから HTMLAudioElement を直接取得して readyState を確認
+      const cachedEl = this.cache.audio.get('se_charm') as HTMLAudioElement | null
+      const rs = cachedEl ? cachedEl.readyState : -1
+      resultText.setText(`se_charm readyState=${rs}\ntrying play()...`)
+
+      // ネイティブ Audio で直接再生を試みる
+      const audio = new Audio('assets/sounds/se/charm.m4a')
+      audio.volume = 1.0
+      audio.play()
+        .then(() => {
+          resultText.setText('charm play(): OK!').setColor('#88ff88')
+          this.time.delayedCall(800, startScene)
+        })
+        .catch((e: Error) => {
+          // エラー名が原因を示す：
+          //   NotAllowedError  → ユーザージェスチャーとして認識されていない
+          //   NotSupportedError → フォーマット非対応
+          resultText.setText(`charm play(): FAIL\n${e.name}\n${e.message.substring(0, 60)}`).setColor('#ff4444')
+          this.time.delayedCall(3000, startScene)
+        })
     })
   }
 
