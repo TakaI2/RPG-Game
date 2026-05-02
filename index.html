@@ -2,12 +2,26 @@
 <html lang="ja">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
     <title>Top‑Down Adventure</title>
     <style>
-      html,body { margin:0; height:100%; background:#0b0f14; }
-      #app { width:100vw; height:100vh; }
+      html, body { margin: 0; height: 100%; background: #0b0f14; overflow: hidden; }
+      #app { position: fixed; top: 0; left: 0; right: 0; bottom: 0; }
       canvas { image-rendering: pixelated; image-rendering: crisp-edges; }
+      /* オリエンテーションオーバーレイ: CSSメディアクエリで制御 */
+      #orientation-overlay {
+        display: flex;
+        position: fixed; inset: 0;
+        background: #000; color: #fff;
+        font-size: 5vw; text-align: center;
+        align-items: center; justify-content: center;
+        flex-direction: column; gap: 16px;
+        z-index: 99999; font-family: sans-serif;
+        cursor: pointer;
+      }
+      @media (orientation: landscape) {
+        #orientation-overlay { display: none; }
+      }
     </style>
   </head>
   <body>

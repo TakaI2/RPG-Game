@@ -151,6 +151,8 @@
           <div class="section-card">
             <div class="section-title">セリフ集</div>
             <div class="section-body" style="display:flex;flex-direction:column;gap:10px;">
+              <div id="langTabs" style="display:flex;gap:6px;flex-wrap:wrap;"></div>
+              <div style="font-size:0.72rem;color:#6c7086;">JA 以外を選択すると翻訳データを編集できます。攻撃セリフも連動します。</div>
               <div class="form-field"><label>登場時（intro）</label><textarea id="fSpeechIntro" rows="2"></textarea></div>
               <div class="form-field"><label>フェーズ2突入時（phase2）</label><textarea id="fSpeechPhase2" rows="2"></textarea></div>
               <div class="form-field"><label>低HP時（lowHp）</label><textarea id="fSpeechLowHp" rows="2"></textarea></div>
@@ -217,6 +219,49 @@ let bossFiles = []     // [{filename, configKey}]
 let currentFile = null // 現在開いているファイル名
 let boss = null        // 現在編集中のBossConfig
 let seFiles = []       // ['boss_belladonna_damage.ogg', ...]
+let currentLang = 'ja'
+
+const LANGS = [
+  { code: 'ja', label: 'JA 日本語' },
+  { code: 'en', label: 'EN English' },
+  { code: 'zh', label: 'ZH 中文' },
+  { code: 'es', label: 'ES Español' },
+]
+
+function renderLangTabs() {
+  const container = document.getElementById('langTabs')
+  if (!container) return
+  container.innerHTML = ''
+  LANGS.forEach(({ code, label }) => {
+    const btn = document.createElement('button')
+    btn.textContent = label
+    const active = code === currentLang
+    btn.style.cssText = `font-size:0.78rem;padding:5px 12px;border-radius:4px;cursor:pointer;border:1px solid ${active ? '#89b4fa' : '#45475a'};background:${active ? '#89b4fa22' : '#1e1e2e'};color:${active ? '#89b4fa' : '#6c7086'};`
+    btn.addEventListener('click', () => switchLang(code))
+    container.appendChild(btn)
+  })
+}
+
+function switchLang(lang) {
+  formToBoss()
+  currentLang = lang
+  renderLangTabs()
+  loadBossSpeeches()
+  renderAttacks()
+}
+
+function getSpeechesForLang() {
+  if (currentLang === 'ja') return boss?.speeches ?? {}
+  return boss?.speeches?.i18n?.[currentLang] ?? {}
+}
+
+function loadBossSpeeches() {
+  const sp = getSpeechesForLang()
+  set('fSpeechIntro',  sp.intro  ?? '')
+  set('fSpeechPhase2', sp.phase2 ?? '')
+  set('fSpeechLowHp',  sp.lowHp  ?? '')
+  set('fSpeechDefeat', sp.defeat ?? '')
+}
 
 // ─── SE ファイル一覧取得 ───
 async function loadSeFiles() {
@@ -341,11 +386,23 @@ function formToBoss() {
   boss.stats   = { hp: n('fHp'), speed: n('fSpeed'), scale: n('fScale'), damage: n('fDamage') }
   boss.sprite  = { key: v('fSpriteKey'), animKey: v('fAnimKey') || undefined, tint: v('fTint') || undefined }
   boss.se      = { damage: v('fSeDamage'), defeat: v('fSeDefeat') }
-  boss.speeches = {
-    intro:   v('fSpeechIntro') || undefined,
-    phase2:  v('fSpeechPhase2') || undefined,
-    lowHp:   v('fSpeechLowHp') || undefined,
-    defeat:  v('fSpeechDefeat') || undefined,
+  if (currentLang === 'ja') {
+    boss.speeches = {
+      ...(boss.speeches ?? {}),
+      intro:  v('fSpeechIntro')  || undefined,
+      phase2: v('fSpeechPhase2') || undefined,
+      lowHp:  v('fSpeechLowHp')  || undefined,
+      defeat: v('fSpeechDefeat') || undefined,
+    }
+  } else {
+    if (!boss.speeches) boss.speeches = {}
+    if (!boss.speeches.i18n) boss.speeches.i18n = {}
+    boss.speeches.i18n[currentLang] = {
+      intro:  v('fSpeechIntro')  || undefined,
+      phase2: v('fSpeechPhase2') || undefined,
+      lowHp:  v('fSpeechLowHp')  || undefined,
+      defeat: v('fSpeechDefeat') || undefined,
+    }
   }
   // cutin
   boss.cutin = { image: v('fCutinImage'), position: v('fCutinPosition') }
@@ -371,10 +428,8 @@ function loadBossToForm() {
   set('fTint',      boss.sprite?.tint ?? '')
   set('fSeDamage',  boss.se?.damage ?? '')
   set('fSeDefeat',  boss.se?.defeat ?? '')
-  set('fSpeechIntro',  boss.speeches?.intro  ?? '')
-  set('fSpeechPhase2', boss.speeches?.phase2 ?? '')
-  set('fSpeechLowHp',  boss.speeches?.lowHp  ?? '')
-  set('fSpeechDefeat', boss.speeches?.defeat ?? '')
+  loadBossSpeeches()
+  renderLangTabs()
   // cutin
   set('fCutinImage',    boss.cutin?.image    ?? '')
   set('fCutinPosition', boss.cutin?.position ?? 'right')
@@ -600,6 +655,7 @@ function renderAttackCard(container, atk, ai) {
 function buildAttackForm(atk, ai) {
   const cfg = atk.config || {}
   const sp = atk.speech || {}
+  const spText = currentLang === 'ja' ? (sp.text ?? '') : (sp.i18n?.[currentLang]?.text ?? '')
   const isUlt = atk.type === 'ultimate'
   const cutin = atk.cutin || {}
   const cam = atk.cameraEffects || {}
@@ -641,7 +697,7 @@ function buildAttackForm(atk, ai) {
     <div class="config-section">
       <div class="config-section-label">セリフ（省略可）</div>
       <div class="form-grid">
-        <div class="form-field full-width"><label>テキスト</label><input type="text" data-ai="${ai}" data-key="speech.text" value="${esc(sp.text)}"></div>
+        <div class="form-field full-width"><label>テキスト</label><input type="text" data-ai="${ai}" data-key="speech.text" value="${esc(spText)}"></div>
         <div class="form-field"><label>表示時間 (ms)</label><input type="number" data-ai="${ai}" data-key="speech.duration" value="${sp.duration||1000}"></div>
         <div class="form-field"><label>色 (例: #cc88ff)</label><input type="text" data-ai="${ai}" data-key="speech.color" value="${esc(sp.color)}"></div>
       </div>
@@ -828,11 +884,22 @@ function applyAttackField(ai, key, val) {
   if (key.startsWith('speech.')) {
     const k = key.slice(7)
     if (!atk.speech) atk.speech = {}
-    if (k === 'text') atk.speech.text = val
-    if (k === 'duration') atk.speech.duration = parseInt(val) || 1000
-    if (k === 'color') atk.speech.color = val || undefined
-    // セリフが空ならnullに
-    if (!atk.speech.text) atk.speech = null
+    if (k === 'text') {
+      if (currentLang === 'ja') {
+        atk.speech.text = val
+        if (!atk.speech.text) {
+          const hasI18n = atk.speech.i18n && Object.values(atk.speech.i18n).some(e => e?.text)
+          if (!hasI18n) atk.speech = null
+        }
+      } else {
+        if (!atk.speech.i18n) atk.speech.i18n = {}
+        if (!atk.speech.i18n[currentLang]) atk.speech.i18n[currentLang] = {}
+        atk.speech.i18n[currentLang].text = val
+        if (!val) delete atk.speech.i18n[currentLang]
+      }
+    }
+    if (atk.speech && k === 'duration') atk.speech.duration = parseInt(val) || 1000
+    if (atk.speech && k === 'color') atk.speech.color = val || undefined
   }
 
   if (key.startsWith('cutin.')) {

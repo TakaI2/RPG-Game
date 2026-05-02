@@ -16,6 +16,8 @@ export class CutinSystem {
     this.container.setVisible(false)
   }
 
+  getContainer(): Phaser.GameObjects.Container { return this.container }
+
   /**
    * カットイン表示
    * @param imageKey ボスの顔グラフィックキー

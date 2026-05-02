@@ -3,6 +3,7 @@ import Phaser from 'phaser'
 // MainScene の projectiles グループへのアクセス用インターフェース
 interface SceneWithProjectiles extends Phaser.Scene {
   projectiles?: Phaser.Physics.Arcade.Group
+  addWorldObject?: (go: Phaser.GameObjects.GameObject) => void
 }
 
 // アニメーション+回転飛び道具の型（SpriteWithDynamicBody ベース）
@@ -17,6 +18,7 @@ export type RotatingProjectile = Phaser.Types.Physics.Arcade.SpriteWithDynamicBo
 
 interface SceneWithRotatingProjectiles extends Phaser.Scene {
   rotatingProjectiles?: RotatingProjectile[]
+  addWorldObject?: (go: Phaser.GameObjects.GameObject) => void
 }
 
 // 飛び道具の基本型
@@ -75,6 +77,7 @@ export function fireArrow(
     scene.sound.play('sfx_arrow', { volume: 0.7 })
   }
 
+  ;(scene as SceneWithProjectiles).addWorldObject?.(proj)
   return proj
 }
 
@@ -126,6 +129,7 @@ export function fireHomingOrb(
   }
   (scene as any).homingOrbs.push(orb)
 
+  ;(scene as SceneWithProjectiles).addWorldObject?.(orb)
   return orb
 }
 
@@ -211,6 +215,7 @@ export function fireArrowAngle(
     if (proj.active) proj.destroy()
   })
 
+  ;(scene as SceneWithProjectiles).addWorldObject?.(proj)
   return proj
 }
 
@@ -257,6 +262,7 @@ export function fireOrbAt(
   }
   (scene as any).homingOrbs.push(orb)
 
+  ;(scene as SceneWithProjectiles).addWorldObject?.(orb)
   return orb
 }
 
@@ -316,6 +322,7 @@ export function createAnimatedOrbAt(
     if (sprite.active) sprite.destroy()
   })
 
+  sceneExt.addWorldObject?.(sprite)
   return sprite
 }
 

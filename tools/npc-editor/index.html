@@ -141,6 +141,15 @@
             </div>
           </div>
 
+          <!-- 言語選択 -->
+          <div class="section-card">
+            <div class="section-title">言語 / Language</div>
+            <div class="section-body">
+              <div id="langTabs" style="display:flex;gap:6px;flex-wrap:wrap;"></div>
+              <div style="font-size:0.72rem;color:#6c7086;margin-top:6px;">JA 以外を選択すると、その言語の翻訳データを編集できます（speechLines / dialogLines / activitySpeeches）</div>
+            </div>
+          </div>
+
           <!-- 状況別セリフ -->
           <div class="section-card">
             <div class="section-title">状況別セリフ (activitySpeeches)</div>
@@ -213,10 +222,57 @@
   let npcDefs = []
   let selectedIdx = -1
   let spriteCache = {}
+  let currentLang = 'ja'
+
+  const LANGS = [
+    { code: 'ja', label: 'JA 日本語' },
+    { code: 'en', label: 'EN English' },
+    { code: 'zh', label: 'ZH 中文' },
+    { code: 'es', label: 'ES Español' },
+  ]
+
+  function getLangTarget(def) {
+    if (currentLang === 'ja') return def
+    if (!def.i18n) def.i18n = {}
+    if (!def.i18n[currentLang]) def.i18n[currentLang] = {}
+    return def.i18n[currentLang]
+  }
+
+  function getCurrentLangData(def) {
+    if (currentLang === 'ja') return def
+    return def.i18n?.[currentLang] ?? {}
+  }
+
+  function switchLang(lang) {
+    currentLang = lang
+    renderLangTabs()
+    if (selectedIdx >= 0) {
+      const def = npcDefs[selectedIdx]
+      const src = getCurrentLangData(def)
+      renderSpeechLines(src.speechLines || [])
+      renderDialogLines(src.dialogLines || [])
+      renderActivitySpeeches(src.activitySpeeches || {})
+    }
+  }
+
+  function renderLangTabs() {
+    const container = document.getElementById('langTabs')
+    if (!container) return
+    container.innerHTML = ''
+    LANGS.forEach(({ code, label }) => {
+      const btn = document.createElement('button')
+      btn.textContent = label
+      const active = code === currentLang
+      btn.style.cssText = `font-size:0.78rem;padding:5px 12px;border-radius:4px;cursor:pointer;border:1px solid ${active ? '#89b4fa' : '#45475a'};background:${active ? '#89b4fa22' : '#1e1e2e'};color:${active ? '#89b4fa' : '#6c7086'};`
+      btn.addEventListener('click', () => switchLang(code))
+      container.appendChild(btn)
+    })
+  }
 
   // ---- Init ----
   window.addEventListener('DOMContentLoaded', () => {
     loadDefsFromAPI()
+    renderLangTabs()
 
     document.getElementById('btnNew').addEventListener('click', createNew)
     document.getElementById('btnOpen').addEventListener('click', () => {
@@ -351,7 +407,6 @@
     document.getElementById('fieldHomeX').value = def.homeX ?? ''
     document.getElementById('fieldHomeY').value = def.homeY ?? ''
     renderScheduleList(def.schedule || [])
-    renderActivitySpeeches(def.activitySpeeches || {})
     const w = def.utilityWeights || {}
     document.getElementById('fieldFleeWeight').value = w.fleeWeight ?? 1.0
     document.getElementById('fieldScheduleWeight').value = w.scheduleWeight ?? 1.0
@@ -360,8 +415,11 @@
     toggleAnimFields(def.animated)
     togglePatrolFields(def.movement === 'patrol')
     toggleScheduleSection(def.movement === 'scheduled')
-    renderSpeechLines(def.speechLines || [])
-    renderDialogLines(def.dialogLines || [])
+    const src = getCurrentLangData(def)
+    renderSpeechLines(src.speechLines || [])
+    renderDialogLines(src.dialogLines || [])
+    renderActivitySpeeches(src.activitySpeeches || {})
+    renderLangTabs()
     loadSpritePreview(def.spriteKey)
   }
 
@@ -393,9 +451,10 @@
   function addSpeechLine() {
     if (selectedIdx < 0) return
     const def = npcDefs[selectedIdx]
-    if (!def.speechLines) def.speechLines = []
-    def.speechLines.push('')
-    renderSpeechLines(def.speechLines)
+    const target = getLangTarget(def)
+    if (!target.speechLines) target.speechLines = []
+    target.speechLines.push('')
+    renderSpeechLines(target.speechLines)
   }
 
   // ---- Dialog Lines ----
@@ -408,9 +467,10 @@
   function addDialogLine() {
     if (selectedIdx < 0) return
     const def = npcDefs[selectedIdx]
-    if (!def.dialogLines) def.dialogLines = []
-    def.dialogLines.push('')
-    renderDialogLines(def.dialogLines)
+    const target = getLangTarget(def)
+    if (!target.dialogLines) target.dialogLines = []
+    target.dialogLines.push('')
+    renderDialogLines(target.dialogLines)
   }
 
   function addDialogLineRow(container, value, idx) {
@@ -451,17 +511,20 @@
 
     const sync = () => {
       const def = npcDefs[selectedIdx]
-      if (!def.dialogLines) def.dialogLines = []
+      const target = getLangTarget(def)
+      if (!target.dialogLines) target.dialogLines = []
       const n = nameInput.value.trim()
-      def.dialogLines[idx] = n ? { name: n, text: textInput.value } : textInput.value
+      target.dialogLines[idx] = n ? { name: n, text: textInput.value } : textInput.value
     }
     nameInput.addEventListener('input', sync)
     textInput.addEventListener('input', sync)
 
     del.addEventListener('click', () => {
       const def = npcDefs[selectedIdx]
-      def.dialogLines.splice(idx, 1)
-      renderDialogLines(def.dialogLines)
+      const target = getLangTarget(def)
+      if (!target.dialogLines) return
+      target.dialogLines.splice(idx, 1)
+      renderDialogLines(target.dialogLines)
     })
 
     row.appendChild(topRow)
@@ -478,16 +541,19 @@
     input.placeholder = 'セリフを入力...'
     input.addEventListener('input', () => {
       const def = npcDefs[selectedIdx]
-      if (!def.speechLines) def.speechLines = []
-      def.speechLines[idx] = input.value
+      const target = getLangTarget(def)
+      if (!target.speechLines) target.speechLines = []
+      target.speechLines[idx] = input.value
     })
     const del = document.createElement('button')
     del.className = 'btn-del-line'
     del.textContent = '✕'
     del.addEventListener('click', () => {
       const def = npcDefs[selectedIdx]
-      def.speechLines.splice(idx, 1)
-      renderSpeechLines(def.speechLines)
+      const target = getLangTarget(def)
+      if (!target.speechLines) return
+      target.speechLines.splice(idx, 1)
+      renderSpeechLines(target.speechLines)
     })
     row.appendChild(input)
     row.appendChild(del)
@@ -832,7 +898,9 @@
       btn.style.cssText = `font-size:0.75rem; padding:4px 10px; border-radius:4px; cursor:pointer; border:1px solid #45475a; background:${tab === currentActivityTab ? '#313244' : '#1e1e2e'}; color:${tab === currentActivityTab ? '#cdd6f4' : '#6c7086'};`
       btn.addEventListener('click', () => {
         currentActivityTab = tab
-        renderActivitySpeeches(npcDefs[selectedIdx].activitySpeeches || {})
+        const def = npcDefs[selectedIdx]
+        const src = getCurrentLangData(def)
+        renderActivitySpeeches(src.activitySpeeches || {})
       })
       tabsEl.appendChild(btn)
     })
@@ -851,17 +919,20 @@
       input.placeholder = 'セリフを入力...'
       input.addEventListener('input', () => {
         const def = npcDefs[selectedIdx]
-        if (!def.activitySpeeches) def.activitySpeeches = {}
-        if (!def.activitySpeeches[currentActivityTab]) def.activitySpeeches[currentActivityTab] = []
-        def.activitySpeeches[currentActivityTab][i] = input.value
+        const target = getLangTarget(def)
+        if (!target.activitySpeeches) target.activitySpeeches = {}
+        if (!target.activitySpeeches[currentActivityTab]) target.activitySpeeches[currentActivityTab] = []
+        target.activitySpeeches[currentActivityTab][i] = input.value
       })
       const del = document.createElement('button')
       del.className = 'btn-del-line'
       del.textContent = '✕'
       del.addEventListener('click', () => {
         const def = npcDefs[selectedIdx]
-        def.activitySpeeches[currentActivityTab].splice(i, 1)
-        renderActivitySpeeches(def.activitySpeeches || {})
+        const target = getLangTarget(def)
+        if (!target.activitySpeeches?.[currentActivityTab]) return
+        target.activitySpeeches[currentActivityTab].splice(i, 1)
+        renderActivitySpeeches(target.activitySpeeches)
       })
       row.appendChild(input); row.appendChild(del)
       linesContainer.appendChild(row)
@@ -873,10 +944,11 @@
     addBtn.textContent = `+ ${currentActivityTab} セリフ追加`
     addBtn.addEventListener('click', () => {
       const def = npcDefs[selectedIdx]
-      if (!def.activitySpeeches) def.activitySpeeches = {}
-      if (!def.activitySpeeches[currentActivityTab]) def.activitySpeeches[currentActivityTab] = []
-      def.activitySpeeches[currentActivityTab].push('')
-      renderActivitySpeeches(def.activitySpeeches)
+      const target = getLangTarget(def)
+      if (!target.activitySpeeches) target.activitySpeeches = {}
+      if (!target.activitySpeeches[currentActivityTab]) target.activitySpeeches[currentActivityTab] = []
+      target.activitySpeeches[currentActivityTab].push('')
+      renderActivitySpeeches(target.activitySpeeches)
     })
     contentEl.appendChild(addBtn)
   }

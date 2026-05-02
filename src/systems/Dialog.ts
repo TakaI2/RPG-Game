@@ -43,6 +43,8 @@ export default class DialogUI {
 
   get visible() { return this.container.visible }
 
+  getContainer(): Phaser.GameObjects.Container { return this.container }
+
   show(name: string, data: DialogData) {
     console.log('[DialogUI] show called with:', { name, lines: data.lines })
     this.lines = data.lines.slice()

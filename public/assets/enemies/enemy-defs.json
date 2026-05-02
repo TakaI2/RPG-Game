@@ -16,27 +16,37 @@
     },
     "dialogs": {
       "patrol": {
-        "lines": [
-          "血が欲しいな",
-          "また、人間を襲いに行こうかしら。"
-        ],
-        "intervalMs": 600
+        "lines": ["血が欲しいな", "また、人間を襲いに行こうかしら。"],
+        "intervalMs": 600,
+        "i18n": {
+          "en": { "lines": ["I could go for some blood.", "Shall I go hunt some humans again?"] },
+          "zh": { "lines": ["好想喝点血啊。", "要不要再去袭击一下人类呢？"] },
+          "es": { "lines": ["Me apetece un poco de sangre.", "¿Y si voy a atacar humanos otra vez?"] }
+        }
       },
       "aim": {
-        "lines": [
-          "逃げられる？"
-        ]
+        "lines": ["逃げられる？"],
+        "i18n": {
+          "en": { "lines": ["Think you can escape?"] },
+          "zh": { "lines": ["你能逃得了吗？"] },
+          "es": { "lines": ["¿Crees que puedes escapar?"] }
+        }
       },
       "cooldown": {
-        "lines": [
-          "まだまだ！"
-        ]
+        "lines": ["まだまだ！"],
+        "i18n": {
+          "en": { "lines": ["Not yet!"] },
+          "zh": { "lines": ["还没完！"] },
+          "es": { "lines": ["¡Aún no he terminado!"] }
+        }
       },
       "return": {
-        "lines": [
-          "にげられたか・・・",
-          "ああもう・・・"
-        ]
+        "lines": ["にげられたか・・・", "ああもう・・・"],
+        "i18n": {
+          "en": { "lines": ["They got away...", "Oh, come on..."] },
+          "zh": { "lines": ["跑掉了吗……", "哎，算了……"] },
+          "es": { "lines": ["Se escaparon...", "Ay, qué fastidio..."] }
+        }
       }
     },
     "hitSound": "beat.ogg",
@@ -59,27 +69,36 @@
     },
     "dialogs": {
       "patrol": {
-        "lines": [
-          "ハルカ姉様～♥",
-          "あま～い血がのみたい・・・"
-        ]
+        "lines": ["ハルカ姉様～♥", "あま～い血がのみたい・・・"],
+        "i18n": {
+          "en": { "lines": ["Big sis Haruka~♥", "I want to drink some sweet blood..."] },
+          "zh": { "lines": ["晴香姐姐～♥", "好想喝到甜甜的血……"] },
+          "es": { "lines": ["¡Hermanita Haruka~♥", "Quiero beber sangre dulce..."] }
+        }
       },
       "aim": {
-        "lines": [
-          "ふふふ・・・",
-          "逃げられるかしら・・・♥"
-        ]
+        "lines": ["ふふふ・・・", "逃げられるかしら・・・♥"],
+        "i18n": {
+          "en": { "lines": ["Hehehe...", "I wonder if you can escape...♥"] },
+          "zh": { "lines": ["呵呵呵……", "你能逃掉吗……♥"] },
+          "es": { "lines": ["Jeje...", "¿Acaso puedes escapar...♥"] }
+        }
       },
       "cooldown": {
-        "lines": [
-          "これで終わりだとおもう？"
-        ]
+        "lines": ["これで終わりだとおもう？"],
+        "i18n": {
+          "en": { "lines": ["You think that's the end?"] },
+          "zh": { "lines": ["你以为这就结束了？"] },
+          "es": { "lines": ["¿Crees que ya terminó?"] }
+        }
       },
       "return": {
-        "lines": [
-          "あ～ん、にげちゃった。",
-          "逃げても無駄なのに・・・♥"
-        ]
+        "lines": ["あ～ん、にげちゃった。", "逃げても無駄なのに・・・♥"],
+        "i18n": {
+          "en": { "lines": ["Aww, they got away.", "Running's useless, you know...♥"] },
+          "zh": { "lines": ["哎呀，跑掉啦。", "逃跑也没用的……♥"] },
+          "es": { "lines": ["Ay, se escaparon.", "Huir es inútil, de todas formas...♥"] }
+        }
       }
     },
     "hitSound": "beat.ogg",
@@ -108,20 +127,53 @@
           "あれ～？さっき捕まえた子、どこ行ったかな～？逃がしちゃったかも～。",
           "この村の男の子たち、みんなおいしそう～♥"
         ],
-        "intervalMs": 4200
+        "intervalMs": 4200,
+        "i18n": {
+          "en": {
+            "lines": [
+              "Ahh, I'm so hungry~♥",
+              "Young vitality is just so delicious~♥",
+              "Hmm~ where did that one I caught go? Maybe they got away~.",
+              "All the boys in this village look so tasty~♥"
+            ]
+          },
+          "zh": {
+            "lines": [
+              "哎呀～好饿好饿～♥",
+              "年轻人的精气真的好美味呀～♥",
+              "咦～刚才抓到的那个去哪了呀？可能逃掉了～。",
+              "这个村子的男孩子们，看起来个个都很美味～♥"
+            ]
+          },
+          "es": {
+            "lines": [
+              "Aaah, tengo mucha hambre~♥",
+              "La vitalidad de los jóvenes es tan deliciosa~♥",
+              "Hmm~ ¿a dónde fue el que acabo de atrapar? Quizás escapó~.",
+              "Los chicos de este pueblo, todos parecen tan sabrosos~♥"
+            ]
+          }
+        }
       },
       "chase": {
         "lines": [
           "ふふ・・・♥　まだ生き残ってたんだ",
           "お口直しに女の子もいいわね♥",
           "まてまて～♥"
-        ]
+        ],
+        "i18n": {
+          "en": { "lines": ["Hehe~♥ Still alive, are you?", "A girl makes for a nice change♥", "Wait for me~♥"] },
+          "zh": { "lines": ["呵呵……♥ 还没死啊", "换个口味来个女孩子也不错♥", "等等我～♥"] },
+          "es": { "lines": ["Jeje~♥ Así que todavía vives.", "Una chica también está bien♥", "¡Espérate~♥"] }
+        }
       },
       "return": {
-        "lines": [
-          "え、いなくなっちゃった～？",
-          "逃げ足早いな～。もう～。"
-        ]
+        "lines": ["え、いなくなっちゃった～？", "逃げ足早いな～。もう～。"],
+        "i18n": {
+          "en": { "lines": ["Huh, they disappeared~?", "They sure are fast~ Hmph~."] },
+          "zh": { "lines": ["咦，不见了～？", "跑得好快啊～。哎～。"] },
+          "es": { "lines": ["¿Eh, desaparecieron~?", "Corren muy rápido~. Vaya~."] }
+        }
       }
     },
     "hitSound": "beat.ogg",
@@ -149,24 +201,76 @@
           "人間って、なんでこんなに弱いのかしら。抵抗する気概くらい見せなさいよ。",
           "私がこんな場所で見張りをしなければならないなんて・・・屈辱だわ。"
         ],
-        "intervalMs": 7800
+        "intervalMs": 7800,
+        "i18n": {
+          "en": {
+            "lines": [
+              "Good grief... what a filthy village.",
+              "Why are humans so weak? At least show some spirit to resist.",
+              "To think I have to stand guard in a place like this... humiliating."
+            ]
+          },
+          "zh": {
+            "lines": [
+              "真是的……肮脏的村子。",
+              "人类为什么这么弱呢。至少表现出一点抵抗的意志啊。",
+              "没想到我居然要在这种地方放哨……真是屈辱。"
+            ]
+          },
+          "es": {
+            "lines": [
+              "En serio... qué aldea tan asquerosa.",
+              "¿Por qué son los humanos tan débiles? Al menos muestren algo de resistencia.",
+              "Que yo tenga que hacer guardia en un lugar así... es humillante."
+            ]
+          }
+        }
       },
       "aim": {
         "lines": [
           "貴女が例のハンター？思ったより大したことなさそうね。",
           "あら、カワイイボウヤを連れているじゃない。",
           "奴隷にしてあげてもいいわ。"
-        ]
+        ],
+        "i18n": {
+          "en": {
+            "lines": [
+              "So you're that hunter? You look less impressive than I imagined.",
+              "Oh, you've brought a pretty little boy along.",
+              "I'll make you my slave."
+            ]
+          },
+          "zh": {
+            "lines": [
+              "你就是那个猎人？感觉没什么了不起的嘛。",
+              "哎呀，带着个可爱的小男孩呢。",
+              "就把你变成我的奴隶吧。"
+            ]
+          },
+          "es": {
+            "lines": [
+              "¿Así que tú eres la cazadora? Pareces menos impresionante de lo que imaginaba.",
+              "Oh, traes a un chico bastante lindo.",
+              "Te convertiré en mi esclava."
+            ]
+          }
+        }
       },
       "cooldown": {
-        "lines": [
-          "これで終わりではないわよ。"
-        ]
+        "lines": ["これで終わりではないわよ。"],
+        "i18n": {
+          "en": { "lines": ["This is far from over."] },
+          "zh": { "lines": ["还没结束哦。"] },
+          "es": { "lines": ["Esto está lejos de haber terminado."] }
+        }
       },
       "return": {
-        "lines": [
-          "ふん。運がよかっただけよ。"
-        ]
+        "lines": ["ふん。運がよかっただけよ。"],
+        "i18n": {
+          "en": { "lines": ["Hmph. You were just lucky."] },
+          "zh": { "lines": ["哼。不过是运气好罢了。"] },
+          "es": { "lines": ["Hmph. Solo tuviste suerte."] }
+        }
       }
     },
     "hitSound": "beat.ogg",
@@ -194,18 +298,46 @@
           "また逃げた。まあいいか・・・。",
           "ちょっとだけ座っていい・・・？"
         ],
-        "intervalMs": 9500
+        "intervalMs": 9500,
+        "i18n": {
+          "en": {
+            "lines": [
+              "Hmm... being on watch is so boring...",
+              "Another escape. Oh well...",
+              "Can I just sit down for a bit...?"
+            ]
+          },
+          "zh": {
+            "lines": [
+              "哈……放哨好无聊啊……。",
+              "又跑掉了。算了……。",
+              "能稍微坐一会儿吗……？"
+            ]
+          },
+          "es": {
+            "lines": [
+              "Uf... hacer guardia es tan aburrido...",
+              "Se escapó otra vez. Bueno, da igual...",
+              "¿Puedo sentarme un momento...?"
+            ]
+          }
+        }
       },
       "chase": {
-        "lines": [
-          "はぁ、せめて美味しい獲物ならいいな・・・",
-          "めんどくさ・・・"
-        ]
+        "lines": ["はぁ、せめて美味しい獲物ならいいな・・・", "めんどくさ・・・"],
+        "i18n": {
+          "en": { "lines": ["Sigh, at least I hope it's a tasty one...", "This is such a pain..."] },
+          "zh": { "lines": ["哈，至少希望是个好吃的猎物……", "好麻烦……"] },
+          "es": { "lines": ["Uf, espero que al menos sea una presa sabrosa...", "Qué fastidio..."] }
+        }
       },
       "return": {
-        "lines": [
-          "まあいいか・・・ねむ・・・。"
-        ]
+        "lines": ["まあいいか・・・ねむ・・・。"],
+        "i18n": {
+          "en": { "lines": ["Oh well... sleepy..."] },
+          "zh": { "lines": ["算了……困……。"] },
+          "es": { "lines": ["Da igual... tengo sueño..."] }
+        }
       }
     },
     "hitSound": "beat.ogg",
@@ -233,19 +365,68 @@
           "この村の男、みんなすぐへたれるのよね。もう少し抵抗してくれてもいいのに",
           "もっと虐めてあげようかしら♥"
         ],
-        "intervalMs": 5300
+        "intervalMs": 5300,
+        "i18n": {
+          "en": {
+            "lines": [
+              "Haha, getting to attack the boys I had my eye on is the best♥",
+              "All the men in this village give up so quickly. They could at least put up a little more resistance.",
+              "Maybe I should tease them a little more♥"
+            ]
+          },
+          "zh": {
+            "lines": [
+              "哈哈，能袭击我看上的男人们，真是太棒了♥",
+              "这个村的男人，全都那么快就软掉了。好歹多抵抗一下嘛",
+              "要不要再多欺负一下他们呢♥"
+            ]
+          },
+          "es": {
+            "lines": [
+              "¡Jaja, poder atacar a los chicos que tenía en mente es lo mejor♥",
+              "Todos los hombres de este pueblo se rinden tan rápido. Podrían resistir un poco más.",
+              "Quizás debería torturarlos un poco más♥"
+            ]
+          }
+        }
       },
       "windup": {
         "lines": [
           "あら、女の子？　仲良くしましょうよ♥",
           "ふふふ・・・♥　可愛い娘を襲うのも悪くない♥",
           "捕まえてキス痕まみれにしてあげる♥"
-        ]
+        ],
+        "i18n": {
+          "en": {
+            "lines": [
+              "Oh, a girl? Let's be friends♥",
+              "Hehehe~♥ Attacking a cute girl isn't bad either♥",
+              "I'll catch you and cover you with kiss marks♥"
+            ]
+          },
+          "zh": {
+            "lines": [
+              "哎，是个女孩子？我们做朋友吧♥",
+              "呵呵呵……♥　袭击可爱的女孩子也不赖♥",
+              "抓住你，给你盖满吻痕♥"
+            ]
+          },
+          "es": {
+            "lines": [
+              "Oh, ¿una chica? ¡Hagámonos amigas♥",
+              "Jeje~♥ Atacar a una chica linda tampoco está mal♥",
+              "¡Te atraparé y te llenaré de marcas de besos♥"
+            ]
+          }
+        }
       },
       "return": {
-        "lines": [
-          "もう終わり？物足りないな！"
-        ]
+        "lines": ["もう終わり？物足りないな！"],
+        "i18n": {
+          "en": { "lines": ["Already done? Not satisfied yet!"] },
+          "zh": { "lines": ["就这样结束了？还不过瘾！"] },
+          "es": { "lines": ["¿Ya terminó? ¡No me he saciado aún!"] }
+        }
       }
     },
     "hitSound": "beat.ogg",
@@ -273,25 +454,94 @@
           "逃げなくていいのに。ちゃんと優しくするから♥",
           "でも抵抗するの、見るの好きなんだよね。いつか諦めて成すがままになるし♥"
         ],
-        "intervalMs": 6100
+        "intervalMs": 6100,
+        "i18n": {
+          "en": {
+            "lines": [
+              "I've attacked everyone~♥ All such tasty males.",
+              "You don't have to run. I'll be gentle~♥",
+              "But I do love watching them resist. Eventually they all give in and submit~♥"
+            ]
+          },
+          "zh": {
+            "lines": [
+              "把所有人都袭击啦～♥　全都是美味的男性。",
+              "不用逃哦。我会温柔对待你的♥",
+              "不过，看他们挣扎的样子真的很喜欢。迟早都会放弃，任我摆布的♥"
+            ]
+          },
+          "es": {
+            "lines": [
+              "He atacado a todos~♥ Solo machos deliciosos.",
+              "No tienes que huir. Seré amable~♥",
+              "Pero me encanta verlos resistir. Al final todos se rinden y se someten~♥"
+            ]
+          }
+        }
       },
       "aim": {
         "lines": [
           "ふふふ・・・♥　私の誘惑から逃げられる？",
           "私の魅了に、どこまで抵抗できるかな？"
-        ]
+        ],
+        "i18n": {
+          "en": {
+            "lines": [
+              "Hehehe~♥ Can you escape my temptation?",
+              "How long can you resist my charm?"
+            ]
+          },
+          "zh": {
+            "lines": [
+              "呵呵呵……♥　你能逃脱我的诱惑吗？",
+              "你能抵抗我的魅惑多久呢？"
+            ]
+          },
+          "es": {
+            "lines": [
+              "Jeje~♥ ¿Puedes escapar de mi tentación?",
+              "¿Cuánto tiempo puedes resistir mi encanto?"
+            ]
+          }
+        }
       },
       "cooldown": {
-        "lines": [
-          "あ～あ♥　隠れても無駄なのに"
-        ]
+        "lines": ["あ～あ♥　隠れても無駄なのに"],
+        "i18n": {
+          "en": { "lines": ["Oh~♥ Hiding is useless, you know."] },
+          "zh": { "lines": ["哎～♥　躲起来也没用哦"] },
+          "es": { "lines": ["Oh~♥ Esconderte es inútil, ¿sabes?"] }
+        }
       },
       "return": {
         "lines": [
           "あれ～、もう行っちゃうの？残念。",
           "どこなの～？　お姉さんと遊ぼうよ♥",
           "ふふ・・・♥　鬼ごっこのつもり？"
-        ]
+        ],
+        "i18n": {
+          "en": {
+            "lines": [
+              "Already leaving~? What a shame.",
+              "Where are you~? Come play with big sis♥",
+              "Hehe~♥ Are you trying to play tag?"
+            ]
+          },
+          "zh": {
+            "lines": [
+              "哎～，已经走了吗？真可惜。",
+              "在哪里～？来跟姐姐玩嘛♥",
+              "呵呵……♥　想玩捉迷藏吗？"
+            ]
+          },
+          "es": {
+            "lines": [
+              "¿Ya te vas~? Qué lástima.",
+              "¿Dónde estás~? ¡Ven a jugar con la hermana mayor♥",
+              "Jeje~♥ ¿Estás intentando jugar al escondite?"
+            ]
+          }
+        }
       }
     },
     "hitSound": "beat.ogg",
@@ -319,19 +569,68 @@
           "お兄さんたち、ミミに襲われたらみ～んな喜んでた！　えへ♥",
           "強い人間、来るんだって？　ミミ、会いたい！いじめちゃおっと♥"
         ],
-        "intervalMs": 3700
+        "intervalMs": 3700,
+        "i18n": {
+          "en": {
+            "lines": [
+              "Hey, wanna play~? Are there no more survivors~?",
+              "All the guys that Mimi attacked were so happy! Ehehe♥",
+              "I heard a strong human is coming? I wanna meet them! Let me bully them~♥"
+            ]
+          },
+          "zh": {
+            "lines": [
+              "嘿，一起玩嘛～？已经没有幸存者了吗～？",
+              "被咪咪袭击的哥哥们，都好高兴哦！嘿嘿♥",
+              "听说有强大的人类要来？咪咪想见见！要好好欺负他～♥"
+            ]
+          },
+          "es": {
+            "lines": [
+              "Oye, ¿jugamos~? ¿Ya no hay más supervivientes~?",
+              "¡Todos los chicos que Mimi atacó estaban tan felices! Jejé♥",
+              "¿Dicen que viene un humano fuerte? ¡Mimi quiere conocerlo! Le daré su merecido~♥"
+            ]
+          }
+        }
       },
       "chase": {
         "lines": [
           "ミミとあそぼうよ♥　気持ちよくしてあげる♥",
           "お姉さんも柔らかくて美味しそう♥",
           "そこのボウヤも、この子達みたいにどっぴゅどっぴゅ吸ってあげる♥"
-        ]
+        ],
+        "i18n": {
+          "en": {
+            "lines": [
+              "Come play with Mimi♥ I'll make you feel good♥",
+              "Big sis looks soft and delicious too♥",
+              "And that boy over there — I'll drain him dry just like the others♥"
+            ]
+          },
+          "zh": {
+            "lines": [
+              "来跟咪咪玩嘛♥　会让你很舒服的♥",
+              "那位姐姐看起来也软软的很好吃♥",
+              "那边的男孩，也给你像他们一样吸个干干净净♥"
+            ]
+          },
+          "es": {
+            "lines": [
+              "¡Ven a jugar con Mimi♥ Te haré sentir bien♥",
+              "La hermana mayor también parece suave y deliciosa♥",
+              "Y ese chico de allí, lo vaciaré igual que a los demás♥"
+            ]
+          }
+        }
       },
       "return": {
-        "lines": [
-          "む～！覚えてろ～！！"
-        ]
+        "lines": ["む～！覚えてろ～！！"],
+        "i18n": {
+          "en": { "lines": ["Hmph~! You'll regret this~!!"] },
+          "zh": { "lines": ["哼～！给我记住了～！！"] },
+          "es": { "lines": ["¡Hm~! ¡Me las pagarás~!!"] }
+        }
       }
     },
     "hitSound": "beat.ogg",
@@ -359,24 +658,76 @@
           "ハンターが侵入したなら、逃げ道を塞ぐべきね。",
           "他の子達より沢山おそわないと。"
         ],
-        "intervalMs": 11000
+        "intervalMs": 11000,
+        "i18n": {
+          "en": {
+            "lines": [
+              "Lady Reala...♥ I wonder if she'll praise me when I take this village.",
+              "If a hunter has infiltrated, I should seal off the escape routes.",
+              "I need to hunt more than the others."
+            ]
+          },
+          "zh": {
+            "lines": [
+              "丽阿拉大人……♥　拿下这个村子的话，她会夸奖我吗",
+              "如果猎人已经侵入，就应该封锁逃跑路线。",
+              "我得比其他人袭击更多才行。"
+            ]
+          },
+          "es": {
+            "lines": [
+              "La señora Reala...♥ Me pregunto si me elogiará cuando tome esta aldea.",
+              "Si un cazador ha infiltrado, debería bloquear las rutas de escape.",
+              "Necesito atacar más que las demás."
+            ]
+          }
+        }
       },
       "aim": {
         "lines": [
           "リアラ様以外に私の愛をあげるのは癪だけど！",
           "そこのボウヤもリアラ様に献上するわ！",
           "これは、お前ではなくリアラ様への愛よ！"
-        ]
+        ],
+        "i18n": {
+          "en": {
+            "lines": [
+              "It irritates me to give my love to anyone other than Lady Reala!",
+              "That boy there — I'll offer him to Lady Reala!",
+              "This is love for Lady Reala, not for you!"
+            ]
+          },
+          "zh": {
+            "lines": [
+              "把我的爱给除了丽阿拉大人之外的人，真是让人不爽！",
+              "那边的男孩，献给丽阿拉大人！",
+              "这是对丽阿拉大人的爱，不是为了你！"
+            ]
+          },
+          "es": {
+            "lines": [
+              "¡Me irrita tener que dar mi amor a alguien que no sea la señora Reala!",
+              "¡A ese chico de allí, lo ofrezco a la señora Reala!",
+              "¡Este es amor por la señora Reala, no por ti!"
+            ]
+          }
+        }
       },
       "cooldown": {
-        "lines": [
-          "・・・生意気ね"
-        ]
+        "lines": ["・・・生意気ね"],
+        "i18n": {
+          "en": { "lines": ["...Insolent."] },
+          "zh": { "lines": ["……真是嚣张"] },
+          "es": { "lines": ["...Insolente."] }
+        }
       },
       "return": {
-        "lines": [
-          "リアラ様には近づけないから・・・"
-        ]
+        "lines": ["リアラ様には近づけないから・・・"],
+        "i18n": {
+          "en": { "lines": ["I can't let anyone get near Lady Reala..."] },
+          "zh": { "lines": ["不能让任何人靠近丽阿拉大人……"] },
+          "es": { "lines": ["No puedo dejar que nadie se acerque a la señora Reala..."] }
+        }
       }
     },
     "hitSound": "beat.ogg",
@@ -404,25 +755,76 @@
           "逃げないで。逃げても追いかけるだけよ。",
           "あの子に他のコが近づいた。・・・だめ。あの子はわたしの。"
         ],
-        "intervalMs": 8400
+        "intervalMs": 8400,
+        "i18n": {
+          "en": {
+            "lines": [
+              "Where could that boy be...?",
+              "Don't run. Even if you run, I'll just chase you.",
+              "Another girl got close to him... No. He's mine."
+            ]
+          },
+          "zh": {
+            "lines": [
+              "那个男孩在哪里呢？",
+              "别逃。就算逃也只会被追上的。",
+              "有其他女孩子靠近了那个孩子。……不行。那个孩子是我的。"
+            ]
+          },
+          "es": {
+            "lines": [
+              "¿Dónde estará ese chico...?",
+              "No corras. Aunque huyas, solo te perseguiré.",
+              "Otra chica se acercó a él... No. Ese chico es mío."
+            ]
+          }
+        }
       },
       "windup": {
-        "lines": [
-          "いた・・・！"
-        ]
+        "lines": ["いた・・・！"],
+        "i18n": {
+          "en": { "lines": ["There...!"] },
+          "zh": { "lines": ["找到了……！"] },
+          "es": { "lines": ["¡Ahí...!"] }
+        }
       },
       "dash": {
-        "lines": [
-          "ボウヤをよこしなさい！",
-          "ボウヤぁ！　私の物になりなさい！"
-        ]
+        "lines": ["ボウヤをよこしなさい！", "ボウヤぁ！　私の物になりなさい！"],
+        "i18n": {
+          "en": { "lines": ["Hand over that boy!", "Boy~! Become mine!"] },
+          "zh": { "lines": ["把那个男孩交出来！", "男孩啊！成为我的人吧！"] },
+          "es": { "lines": ["¡Dame a ese chico!", "¡Chico~! ¡Serás mío!"] }
+        }
       },
       "return": {
         "lines": [
           "・・・逃げた。でも、また見つける。",
           "ボウヤ、ボウヤボウヤボウヤボウヤ・・・！！",
           "ぐちゃぐちゃに犯して・・・めちゃくちゃに穢して・・・"
-        ]
+        ],
+        "i18n": {
+          "en": {
+            "lines": [
+              "...Got away. But I'll find them again.",
+              "Boy, boy, boy, boy, boy...!!",
+              "I'll violate you completely... defile you utterly..."
+            ]
+          },
+          "zh": {
+            "lines": [
+              "……逃了。但我还会找到的。",
+              "男孩，男孩男孩男孩男孩……！！",
+              "把你彻底侵犯……彻底玷污……"
+            ]
+          },
+          "es": {
+            "lines": [
+              "...Se escapó. Pero lo encontraré de nuevo.",
+              "¡Chico, chico, chico, chico, chico...!!",
+              "Te profanaré por completo... te mancharé de forma irreparable..."
+            ]
+          }
+        }
       }
     },
     "hitSound": "beat.ogg",

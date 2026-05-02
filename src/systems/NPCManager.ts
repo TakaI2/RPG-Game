@@ -11,7 +11,7 @@ import type {
   ActivitySpot, ActivityType, ActionId, NPCRole,
   ScheduleEntry, WaypointDef, UtilityWeights,
 } from '../types/NPCTypes'
-import { resolveText } from '../utils/LocaleManager'
+import { resolveText, getLocale } from '../utils/LocaleManager'
 
 // ─── 定数 ────────────────────────────────────────────────────────────────────
 
@@ -107,8 +107,16 @@ function selectAction(inst: NPCInstance, activeSchedule: ScheduleEntry | null): 
 }
 
 function resolveSpeechLines(inst: NPCInstance, activity: ActivityType | undefined): string[] | undefined {
-  if (!activity) return inst.def.speechLines
-  return inst.def.activitySpeeches?.[activity] ?? inst.def.speechLines
+  const lang = getLocale()
+  const i18nEntry = lang !== 'ja' ? inst.def.i18n?.[lang] : undefined
+  if (activity) {
+    const localized = i18nEntry?.activitySpeeches?.[activity]
+      ?? i18nEntry?.speechLines
+      ?? inst.def.activitySpeeches?.[activity]
+      ?? inst.def.speechLines
+    return localized
+  }
+  return i18nEntry?.speechLines ?? inst.def.speechLines
 }
 
 function estimateTravelMs(fromX: number, fromY: number, toTileX: number, toTileY: number, speed: number): number {
@@ -167,6 +175,7 @@ export type NPCManagerHandle = {
   update: (delta: number, playerX: number, playerY: number) => void
   tryInteract: (player: Phaser.Types.Physics.Arcade.SpriteWithDynamicBody, maxDistance?: number) => boolean
   setupCollisions: (player: Phaser.Types.Physics.Arcade.SpriteWithDynamicBody) => Phaser.Physics.Arcade.Collider[]
+  getGameObjects: () => Phaser.GameObjects.GameObject[]
   destroy: () => void
 }
 
@@ -488,11 +497,20 @@ export function createNPCManager(scene: Phaser.Scene, ui: DialogUI): NPCManagerH
     return instances.map(inst => scene.physics.add.collider(player, inst.sprite))
   }
 
+  function getGameObjects(): Phaser.GameObjects.GameObject[] {
+    const objects: Phaser.GameObjects.GameObject[] = []
+    instances.forEach(inst => {
+      objects.push(inst.sprite)
+      objects.push(inst.speech.getContainer())
+    })
+    return objects
+  }
+
   function destroy(): void {
     unsubWorld()
     unsubClock()
     destroyAll()
   }
 
-  return { loadFromSpawns, loadActivitySpots, update, tryInteract, setupCollisions, destroy }
+  return { loadFromSpawns, loadActivitySpots, update, tryInteract, setupCollisions, getGameObjects, destroy }
 }

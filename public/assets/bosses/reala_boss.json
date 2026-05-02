@@ -65,7 +65,18 @@
         "ultimate": "boss_belladonna_ultimate"
       },
       "speech": {
-        "text": "コウモリ達！　干乾びさせておやり！"
+        "text": "コウモリ達！　干乾びさせておやり！",
+        "i18n": {
+          "en": {
+            "text": "My bats! Drain them dry!"
+          },
+          "zh": {
+            "text": "蝙蝠们！把他们吸干！"
+          },
+          "es": {
+            "text": "¡Mis murciélagos! ¡Drenadles hasta el hueso!"
+          }
+        }
       }
     },
     {
@@ -87,7 +98,18 @@
         "fire": "charm"
       },
       "speech": {
-        "text": "私に酔いなさい！"
+        "text": "私に酔いなさい！",
+        "i18n": {
+          "en": {
+            "text": "Intoxicate yourself in me!"
+          },
+          "zh": {
+            "text": "为我而沉醉吧！"
+          },
+          "es": {
+            "text": "¡Embriágate en mí!"
+          }
+        }
       }
     },
     {
@@ -108,7 +130,18 @@
         "teleport": "boss_belladonna_teleport"
       },
       "speech": {
-        "text": "ふふ、仲良くしましょうよ！"
+        "text": "ふふ、仲良くしましょうよ！",
+        "i18n": {
+          "en": {
+            "text": "Hehe, let's be mine~!"
+          },
+          "zh": {
+            "text": "呵呵，我们好好相处吧！"
+          },
+          "es": {
+            "text": "Jeje, ¡llevémonos bien~!"
+          }
+        }
       }
     }
   ],
@@ -116,7 +149,27 @@
     "intro": "あんたの血も美味しそうだね。",
     "phase2": "痛た・・・、もう許さないからね・・・。　",
     "lowHp": "あんたもボウヤも、吸い尽くしてやるから・・・！！",
-    "defeat": "きゃあぁぁ！！"
+    "defeat": "きゃあぁぁ！！",
+    "i18n": {
+      "en": {
+        "intro": "Your blood looks delicious too.",
+        "phase2": "Ouch... I won't forgive you for this...",
+        "lowHp": "I'll drain you and that brat dry...!!",
+        "defeat": "Kyaaah!!"
+      },
+      "zh": {
+        "intro": "你的血看起来也很美味呢。",
+        "phase2": "好痛・・・、我不会放过你的・・・。",
+        "lowHp": "你和那小鬼，我要把你们都吸干・・・！！",
+        "defeat": "啊啊啊！！"
+      },
+      "es": {
+        "intro": "Tu sangre también parece deliciosa.",
+        "phase2": "Ay... No te lo voy a perdonar...",
+        "lowHp": "¡A ti y a ese mocoso os voy a dejar secos...!!",
+        "defeat": "¡¡Kyaaah!!"
+      }
+    }
   },
   "se": {
     "damage": "boss_belladonna_damage",

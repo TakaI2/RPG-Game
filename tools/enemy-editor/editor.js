@@ -27,6 +27,41 @@ let currentAnimType = 'idle'
 let animInterval = null
 let animFrame = 0
 let spriteImage = null
+let currentLang = 'ja'
+
+const LANGS = [
+  { code: 'ja', label: 'JA 日本語' },
+  { code: 'en', label: 'EN English' },
+  { code: 'zh', label: 'ZH 中文' },
+  { code: 'es', label: 'ES Español' },
+]
+
+/** -------------------------------------------------- *
+ *  i18n Helpers
+ * -------------------------------------------------- */
+function renderLangTabs() {
+  const container = document.getElementById('langTabs')
+  if (!container) return
+  container.innerHTML = ''
+  LANGS.forEach(({ code, label }) => {
+    const btn = document.createElement('button')
+    btn.textContent = label
+    const active = code === currentLang
+    btn.style.cssText = `font-size:0.78rem;padding:5px 12px;border-radius:4px;cursor:pointer;border:1px solid ${active ? '#89b4fa' : '#45475a'};background:${active ? '#89b4fa22' : '#1e1e2e'};color:${active ? '#89b4fa' : '#6c7086'};`
+    btn.addEventListener('click', () => switchLang(code))
+    container.appendChild(btn)
+  })
+}
+
+function switchLang(lang) {
+  collectCurrentDef()
+  currentLang = lang
+  renderLangTabs()
+  if (selectedId) {
+    const def = defs.find(d => d.id === selectedId)
+    if (def) renderDialogStates(def)
+  }
+}
 
 /** -------------------------------------------------- *
  *  Init
@@ -35,6 +70,7 @@ window.addEventListener('DOMContentLoaded', async () => {
   await loadFromGame()
   renderCharList()
   bindEvents()
+  renderLangTabs()
 })
 
 async function loadFromGame() {
@@ -213,6 +249,7 @@ function showEditor(def) {
   document.getElementById('statAttackSound').value = def.attackSound || ''
 
   renderDialogStates(def)
+  renderLangTabs()
   loadSprite(def.spriteKey)
 
   // enemyType切替でダイアログ再描画
@@ -269,17 +306,31 @@ function collectCurrentDefDry() {
 }
 
 function collectDialogs() {
-  const result = {}
+  const idx = defs.findIndex(d => d.id === selectedId)
+  const result = idx >= 0 ? JSON.parse(JSON.stringify(defs[idx].dialogs || {})) : {}
+
   document.querySelectorAll('.dialog-state-item').forEach(item => {
     const state = item.dataset.state
     const intervalInput = item.querySelector('.interval-input')
     const lineInputs = item.querySelectorAll('.line-input')
     const lines = Array.from(lineInputs).map(inp => inp.value.trim()).filter(l => l.length > 0)
-    if (lines.length === 0) return
-    const entry = { lines }
-    const intervalMs = parseInt(intervalInput.value)
-    if (!isNaN(intervalMs) && intervalMs > 0) entry.intervalMs = intervalMs
-    result[state] = entry
+    const intervalMs = parseInt(intervalInput?.value)
+
+    if (currentLang === 'ja') {
+      if (!result[state]) result[state] = {}
+      result[state].lines = lines
+      if (!isNaN(intervalMs) && intervalMs > 0) result[state].intervalMs = intervalMs
+      else delete result[state].intervalMs
+    } else {
+      if (!result[state]) result[state] = { lines: [] }
+      if (!result[state].i18n) result[state].i18n = {}
+      if (lines.length > 0) {
+        result[state].i18n[currentLang] = { lines }
+      } else {
+        delete result[state].i18n[currentLang]
+        if (Object.keys(result[state].i18n).length === 0) delete result[state].i18n
+      }
+    }
   })
   return result
 }
@@ -306,6 +357,10 @@ function renderDialogStates(def) {
 
   states.forEach(state => {
     const entry = dialogs[state] || { lines: [] }
+    const displayLines = currentLang === 'ja'
+      ? (entry.lines || [])
+      : (entry.i18n?.[currentLang]?.lines || [])
+
     const item = document.createElement('div')
     item.className = 'dialog-state-item'
     item.dataset.state = state
@@ -331,6 +386,7 @@ function renderDialogStates(def) {
     intervalInput.className = 'interval-input'
     intervalInput.placeholder = '省略=変化時1回'
     intervalInput.min = '0'
+    intervalInput.disabled = currentLang !== 'ja'
     if (entry.intervalMs) intervalInput.value = entry.intervalMs
     intervalWrap.appendChild(intervalInput)
 
@@ -367,7 +423,7 @@ function renderDialogStates(def) {
     addLineBtn.addEventListener('click', () => addLine())
     linesDiv.appendChild(addLineBtn)
 
-    ;(entry.lines || []).forEach(line => addLine(line))
+    displayLines.forEach(line => addLine(line))
 
     item.appendChild(linesDiv)
     container.appendChild(item)

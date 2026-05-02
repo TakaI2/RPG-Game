@@ -32,6 +32,8 @@ export class EnemySpeech {
     this.container.setVisible(false)
   }
 
+  getContainer(): Phaser.GameObjects.Container { return this.container }
+
   startLoop(owner: Phaser.GameObjects.Sprite, lines: string[], displayMs: number, intervalMs: number, startIndex = 0): void {
     this.stopLoop()
     this.loopLines = lines

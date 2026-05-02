@@ -31,6 +31,8 @@ export class BossSpeechBubble {
     this.container.setVisible(false)
   }
 
+  getContainer(): Phaser.GameObjects.Container { return this.container }
+
   /**
    * セリフ表示
    * @param boss ボススプライト

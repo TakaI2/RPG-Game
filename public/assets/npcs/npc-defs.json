@@ -15,7 +15,21 @@
         "name": "ベルナデット",
         "text": "この先には魔物がいるから気をつけて！"
       }
-    ]
+    ],
+    "i18n": {
+      "en": {
+        "speechLines": ["Hello!", "Take care now."],
+        "dialogLines": [{"name": "Bernadette", "text": "There are monsters ahead. Be careful!"}]
+      },
+      "zh": {
+        "speechLines": ["你好！", "多加小心。"],
+        "dialogLines": [{"name": "贝尔纳黛特", "text": "前方有魔物，请小心！"}]
+      },
+      "es": {
+        "speechLines": ["¡Hola!", "Ten cuidado."],
+        "dialogLines": [{"name": "Bernadette", "text": "¡Hay monstruos más adelante, ten cuidado!"}]
+      }
+    }
   },
   {
     "id": "npc_1775354231905",
@@ -45,7 +59,36 @@
         "name": "ベルナデット",
         "text": "呪いをかけたのはあのリアラってやつかしら？"
       }
-    ]
+    ],
+    "i18n": {
+      "en": {
+        "speechLines": ["Ugh... melting... my body...", "Hot... my body is burning..."],
+        "dialogLines": [
+          {"name": "Bernadette", "text": "Crucified and swarmed by them... covered in kiss marks."},
+          {"name": "Bernadette", "text": "A succubus's idea of 'play'... repulsive."},
+          {"name": "Bernadette", "text": "Fluids dripping like a broken faucet... must be a powerful fascination curse."},
+          {"name": "Bernadette", "text": "Was it that Reala who placed this curse?"}
+        ]
+      },
+      "zh": {
+        "speechLines": ["呜呜呜・・・、融化了・・・身体・・・", "好热・・・、身体好热・・・"],
+        "dialogLines": [
+          {"name": "贝尔纳黛特", "text": "被钉在那里，然后被一群人袭击了吗。满身吻痕。"},
+          {"name": "贝尔纳黛特", "text": "萨库巴斯特有的「游戏」呢・・・。恶心。"},
+          {"name": "贝尔纳黛特", "text": "像坏掉的水龙头一样体液直流・・・、被施了强烈的魅惑诅咒吗。"},
+          {"name": "贝尔纳黛特", "text": "施下诅咒的是那个叫莉亚拉的家伙吗？"}
+        ]
+      },
+      "es": {
+        "speechLines": ["Uugh... me derrito... mi cuerpo...", "Calor... mi cuerpo arde..."],
+        "dialogLines": [
+          {"name": "Bernadette", "text": "Crucificado y atacado en masa... cubierto de marcas de besos."},
+          {"name": "Bernadette", "text": "El 'juego' típico de una súcubo... repugnante."},
+          {"name": "Bernadette", "text": "Los fluidos goteando como un grifo roto... debe ser una maldición de fascinación muy poderosa."},
+          {"name": "Bernadette", "text": "¿Fue esa Reala quien puso esta maldición?"}
+        ]
+      }
+    }
   },
   {
     "id": "npc_1775505028741",
@@ -118,7 +161,30 @@
         "text": "体液が垂れ流し。干乾びるのも時間の問題ね。"
       }
     ],
-    "frameRate": 4
+    "frameRate": 4,
+    "i18n": {
+      "en": {
+        "speechLines": ["Ah... aah...", "Drain me... more... more..."],
+        "dialogLines": [
+          {"name": "Bernadette", "text": "Ah, attacked by a succubus... completely broken..."},
+          {"name": "Bernadette", "text": "Fluids draining out. It's only a matter of time before they wither away."}
+        ]
+      },
+      "zh": {
+        "speechLines": ["啊・・・、啊・・・", "吸・・・、再多・・・、再多・・・"],
+        "dialogLines": [
+          {"name": "贝尔纳黛特", "text": "啊～啊，被萨库巴斯袭击了啊，完全崩溃了・・・。"},
+          {"name": "贝尔纳黛特", "text": "体液不停流出。枯竭只是时间问题了。"}
+        ]
+      },
+      "es": {
+        "speechLines": ["Ah... aah...", "Drena más... más... más..."],
+        "dialogLines": [
+          {"name": "Bernadette", "text": "Ah, atacado por una súcubo... completamente destrozado..."},
+          {"name": "Bernadette", "text": "Los fluidos se agotan. Es solo cuestión de tiempo antes de que se marchite."}
+        ]
+      }
+    }
   },
   {
     "id": "npc_1775560019184",
@@ -156,7 +222,33 @@
         "text": "地獄の快楽を味わわされて、もう言葉も発せなくなったわね。"
       }
     ],
-    "frameRate": 3
+    "frameRate": 3,
+    "i18n": {
+      "en": {
+        "speechLines": ["Ah... aah...", "Iaah... ahah..."],
+        "dialogLines": [
+          {"name": "Bernadette", "text": "The body has withered, and it's beginning to rot and dissolve."},
+          {"name": "Bernadette", "text": "Reala... Wrapped in that cloak, drained of life through every pore."},
+          {"name": "Bernadette", "text": "Subjected to hellish ecstasy... now unable to speak a single word."}
+        ]
+      },
+      "zh": {
+        "speechLines": ["啊・・・、啊啊・・・", "啊啊・・・、啊哈・・・"],
+        "dialogLines": [
+          {"name": "贝尔纳黛特", "text": "身体不仅干枯，还开始腐烂融化了。"},
+          {"name": "贝尔纳黛特", "text": "莉亚拉啊・・・。被那件斗篷裹住，从全身每个毛孔都被吸取了生命力呢。"},
+          {"name": "贝尔纳黛特", "text": "被迫品尝了地狱的快感，现在已经说不出话来了呢。"}
+        ]
+      },
+      "es": {
+        "speechLines": ["Ah... aah...", "Iaah... ahah..."],
+        "dialogLines": [
+          {"name": "Bernadette", "text": "El cuerpo se ha marchitado y ha comenzado a pudrirse y disolverse."},
+          {"name": "Bernadette", "text": "Reala... Envuelta en ese manto, drenando la vida a través de cada poro."},
+          {"name": "Bernadette", "text": "Sometida a un éxtasis infernal... ahora incapaz de pronunciar una sola palabra."}
+        ]
+      }
+    }
   },
   {
     "id": "npc_1776100002000",
@@ -179,7 +271,30 @@
         "text": "干乾びて死ぬまで垂れ流しでしょうね。"
       }
     ],
-    "frameRate": 5
+    "frameRate": 5,
+    "i18n": {
+      "en": {
+        "speechLines": ["Come back... please come back...", "Why... don't leave me..."],
+        "dialogLines": [
+          {"name": "Bernadette", "text": "Kiss marks all over the body... Fatal wounds."},
+          {"name": "Bernadette", "text": "Will keep draining until they wither and die."}
+        ]
+      },
+      "zh": {
+        "speechLines": ["来・・・、回来・・・", "为什么・・・、不要走・・・"],
+        "dialogLines": [
+          {"name": "贝尔纳黛特", "text": "浑身上下全是吻痕・・・。致命伤啊。"},
+          {"name": "贝尔纳黛特", "text": "就这样枯竭而死吧。"}
+        ]
+      },
+      "es": {
+        "speechLines": ["Ven... por favor vuelve...", "Por qué... no te vayas..."],
+        "dialogLines": [
+          {"name": "Bernadette", "text": "Marcas de besos por todo el cuerpo... Heridas fatales."},
+          {"name": "Bernadette", "text": "Seguirá drenando hasta marchitarse y morir."}
+        ]
+      }
+    }
   },
   {
     "id": "npc_1776100003000",
@@ -198,7 +313,27 @@
         "text": "夢見てるみたいな顔してる。　二度と醒めることはないでしょうね・・・。"
       }
     ],
-    "frameRate": 2
+    "frameRate": 2,
+    "i18n": {
+      "en": {
+        "speechLines": ["Hff... hah...", "It feels... so good... aah..."],
+        "dialogLines": [
+          {"name": "Bernadette", "text": "That expression looks like they're dreaming... They'll never wake from it again."}
+        ]
+      },
+      "zh": {
+        "speechLines": ["呼・・・、哈・・・", "好舒服・・・啊・・・"],
+        "dialogLines": [
+          {"name": "贝尔纳黛特", "text": "像是在做梦一样的表情。　再也不会醒来了吧・・・。"}
+        ]
+      },
+      "es": {
+        "speechLines": ["Hff... hah...", "Qué bien sienta... aah..."],
+        "dialogLines": [
+          {"name": "Bernadette", "text": "Esa expresión parece la de alguien soñando... Nunca despertará de ello."}
+        ]
+      }
+    }
   },
   {
     "id": "npc_1776100004000",
@@ -225,7 +360,33 @@
         "text": "何匹ものサキュバスに同時に犯されたでしょうね。"
       }
     ],
-    "frameRate": 6
+    "frameRate": 6,
+    "i18n": {
+      "en": {
+        "speechLines": ["Ugh... aah...!", "More... more... drain me..."],
+        "dialogLines": [
+          {"name": "Bernadette", "text": "Well-built. A soldier, perhaps...?"},
+          {"name": "Bernadette", "text": "How pitiful... A young, fit man is nothing less than a feast to those creatures."},
+          {"name": "Bernadette", "text": "Likely violated by multiple succubi at once."}
+        ]
+      },
+      "zh": {
+        "speechLines": ["啊・・・啊啊・・・！", "再多・・・、再多・・・吸・・・。"],
+        "dialogLines": [
+          {"name": "贝尔纳黛特", "text": "身材健壮啊。是士兵吗・・・？"},
+          {"name": "贝尔纳黛特", "text": "真可怜・・・。　年轻强壮的男性对她们来说简直是美味佳肴呢。"},
+          {"name": "贝尔纳黛特", "text": "应该是被好几只萨库巴斯同时侵犯了吧。"}
+        ]
+      },
+      "es": {
+        "speechLines": ["Ugh... aah...!", "Más... más... drena más..."],
+        "dialogLines": [
+          {"name": "Bernadette", "text": "Bien formado. ¿Un soldado, quizás...?"},
+          {"name": "Bernadette", "text": "Qué lástima... Un hombre joven y entrenado es un festín para esas criaturas."},
+          {"name": "Bernadette", "text": "Probablemente violado por múltiples súcubos al mismo tiempo."}
+        ]
+      }
+    }
   },
   {
     "id": "npc_1776100005000",
@@ -252,7 +413,33 @@
         "text": "吸血鬼に比べたら、サキュバスもまだ可愛いもんだわ。"
       }
     ],
-    "frameRate": 3
+    "frameRate": 3,
+    "i18n": {
+      "en": {
+        "speechLines": ["Augh... aah...", "Lady Reala... aah..."],
+        "dialogLines": [
+          {"name": "Bernadette", "text": "Ugh... like a tattered rag."},
+          {"name": "Bernadette", "text": "Not just kiss marks but bite marks too. Did Reala herself do this?"},
+          {"name": "Bernadette", "text": "Compared to a vampire, even a succubus is almost... innocent."}
+        ]
+      },
+      "zh": {
+        "speechLines": ["啊呜・・・、啊啊・・・", "莉亚拉大人・・・、啊・・・"],
+        "dialogLines": [
+          {"name": "贝尔纳黛特", "text": "哇・・・、简直像破布一样。"},
+          {"name": "贝尔纳黛特", "text": "不只是吻痕，还有咬痕。是被那个莉亚拉搞的吗。"},
+          {"name": "贝尔纳黛特", "text": "比起吸血鬼，萨库巴斯还算是温柔的了。"}
+        ]
+      },
+      "es": {
+        "speechLines": ["Augh... aah...", "Lady Reala... aah..."],
+        "dialogLines": [
+          {"name": "Bernadette", "text": "Ugh... como un trapo deshecho."},
+          {"name": "Bernadette", "text": "No solo marcas de besos sino también de mordiscos. ¿Fue la propia Reala quien hizo esto?"},
+          {"name": "Bernadette", "text": "Comparado con un vampiro, hasta una súcubo parece... casi inocente."}
+        ]
+      }
+    }
   },
   {
     "id": "npc_1776100006000",
@@ -275,7 +462,30 @@
         "text": "残念だけど、息子の方ももう無事ではないでしょうね・・・。"
       }
     ],
-    "frameRate": 2
+    "frameRate": 2,
+    "i18n": {
+      "en": {
+        "speechLines": ["Uugh... uugh...", "Save me... at least my son..."],
+        "dialogLines": [
+          {"name": "Bernadette", "text": "They can no longer tell anyone apart... yet they worry about their family to the very end."},
+          {"name": "Bernadette", "text": "Sadly, the son is likely no longer safe either..."}
+        ]
+      },
+      "zh": {
+        "speechLines": ["呜・・・呜・・・", "救我・・・至少救救我儿子・・・・・・"],
+        "dialogLines": [
+          {"name": "贝尔纳黛特", "text": "已经分不清他人了吧・・・。　却到最后仍在担忧家人。"},
+          {"name": "贝尔纳黛特", "text": "遗憾的是，儿子那边恐怕也已经不平安了吧・・・。"}
+        ]
+      },
+      "es": {
+        "speechLines": ["Uugh... uugh...", "Sálvame... al menos a mi hijo..."],
+        "dialogLines": [
+          {"name": "Bernadette", "text": "Ya no pueden distinguir a nadie... y sin embargo se preocupan por su familia hasta el final."},
+          {"name": "Bernadette", "text": "Lamentablemente, el hijo probablemente tampoco está a salvo..."}
+        ]
+      }
+    }
   },
   {
     "id": "npc_1776100007000",
@@ -298,7 +508,30 @@
         "text": "わざわざ、この子を襲わせたな・・・、悪趣味な・・・。"
       }
     ],
-    "frameRate": 4
+    "frameRate": 4,
+    "i18n": {
+      "en": {
+        "speechLines": ["Aah... sis...", "Sis... more..."],
+        "dialogLines": [
+          {"name": "Bernadette", "text": "...Repulsive. Someone close to them, or a family member, was turned into a succubus."},
+          {"name": "Bernadette", "text": "They deliberately sent her to attack this child... how depraved."}
+        ]
+      },
+      "zh": {
+        "speechLines": ["啊啊・・・、姐姐・・・", "姐姐・・・、再多・・・"],
+        "dialogLines": [
+          {"name": "贝尔纳黛特", "text": "・・・恐怖。　亲人或亲近的人被变成了萨库巴斯啊。"},
+          {"name": "贝尔纳黛特", "text": "特意让她去袭击这个孩子啊・・・，真是品味低劣・・・。"}
+        ]
+      },
+      "es": {
+        "speechLines": ["Aah... hermana...", "Hermana... más..."],
+        "dialogLines": [
+          {"name": "Bernadette", "text": "...Repugnante. Alguien cercano a ellos, o un familiar, fue convertido en súcubo."},
+          {"name": "Bernadette", "text": "Deliberadamente la enviaron a atacar a este niño... qué depravado."}
+        ]
+      }
+    }
   },
   {
     "id": "npc_1776100008000",
@@ -325,7 +558,33 @@
         "text": "地獄の快楽に侵されながらじわじわ死に近づくしかない・・・。"
       }
     ],
-    "frameRate": 5
+    "frameRate": 5,
+    "i18n": {
+      "en": {
+        "speechLines": ["Ugh, I'm melting... melting...!!", "Wait... help me..."],
+        "dialogLines": [
+          {"name": "Bernadette", "text": "Left half-consumed..."},
+          {"name": "Bernadette", "text": "Having a succubus's venom injected only partway is... wretched."},
+          {"name": "Bernadette", "text": "Nothing left to do but slowly approach death while consumed by hellish pleasure."}
+        ]
+      },
+      "zh": {
+        "speechLines": ["啊，融化・・・融化・・・！！", "等等・・・、救救我・・・・・・"],
+        "dialogLines": [
+          {"name": "贝尔纳黛特", "text": "吃到一半就被扔下了吗・・・。"},
+          {"name": "贝尔纳黛特", "text": "被半途注入萨库巴斯的魔毒真是悲惨啊。"},
+          {"name": "贝尔纳黛特", "text": "只能在被地狱快感侵蚀的同时慢慢走向死亡・・・。"}
+        ]
+      },
+      "es": {
+        "speechLines": ["Ugh, me derrito... me derrito...!!", "Espera... ayúdame..."],
+        "dialogLines": [
+          {"name": "Bernadette", "text": "Dejado a medias..."},
+          {"name": "Bernadette", "text": "Que el veneno de una súcubo sea inyectado solo a medias es... miserable."},
+          {"name": "Bernadette", "text": "No queda más que acercarse lentamente a la muerte mientras se es consumido por el placer infernal."}
+        ]
+      }
+    }
   },
   {
     "id": "npc_1776100009000",
@@ -352,7 +611,33 @@
         "text": "それに噛み痕も・・・。　リアラが襲った犠牲者はかなりいたぶられてるわね。"
       }
     ],
-    "frameRate": 3
+    "frameRate": 3,
+    "i18n": {
+      "en": {
+        "speechLines": ["God... please...", "But... I love her... I can't help it..."],
+        "dialogLines": [
+          {"name": "Bernadette", "text": "A clergyman... Dealt with harshly."},
+          {"name": "Bernadette", "text": "Driving them mad with pleasure, mocking as they abandon their faith. A nauseating game."},
+          {"name": "Bernadette", "text": "And bite marks too... Reala's victims have been thoroughly tormented."}
+        ]
+      },
+      "zh": {
+        "speechLines": ["神啊・・・", "但是・・・我喜欢那个孩子・・・"],
+        "dialogLines": [
+          {"name": "贝尔纳黛特", "text": "是圣职者吗・・・。　被狠狠地对待了啊。"},
+          {"name": "贝尔纳黛特", "text": "用快感让他发狂，嘲笑他抛弃信仰的样子。　真是令人作呕的游戏。"},
+          {"name": "贝尔纳黛特", "text": "而且还有咬痕・・・。　莉亚拉袭击的犠牲者都被折磨得相当厉害呢。"}
+        ]
+      },
+      "es": {
+        "speechLines": ["Dios mío...", "Pero... la amo... no puedo evitarlo..."],
+        "dialogLines": [
+          {"name": "Bernadette", "text": "Un clérigo... Tratado duramente."},
+          {"name": "Bernadette", "text": "Enloquecido de placer, burlándose mientras abandona su fe. Un juego nauseabundo."},
+          {"name": "Bernadette", "text": "Y marcas de mordiscos también... Las víctimas de Reala han sido minuciosamente atormentadas."}
+        ]
+      }
+    }
   },
   {
     "id": "npc_1776100010000",
@@ -379,7 +664,33 @@
         "text": "さっきみたサキュバスだ・・・。　惨めね。"
       }
     ],
-    "frameRate": 4
+    "frameRate": 4,
+    "i18n": {
+      "en": {
+        "speechLines": ["I have to... protect them...", "Mimi... my precious... little sister..."],
+        "dialogLines": [
+          {"name": "Bernadette", "text": "A locket clutched in their hand. A portrait of someone...?"},
+          {"name": "Bernadette", "text": "......"},
+          {"name": "Bernadette", "text": "That's the succubus from before... How wretched."}
+        ]
+      },
+      "zh": {
+        "speechLines": ["我必须・・・保护她们・・・", "咪咪・・・可爱、我的妹妹・・・"],
+        "dialogLines": [
+          {"name": "贝尔纳黛特", "text": "手里握着一个小挂坠。是谁的画像吗・・・？"},
+          {"name": "贝尔纳黛特", "text": "・・・・・・"},
+          {"name": "贝尔纳黛特", "text": "是刚才看到的那个萨库巴斯・・・。　真是可怜啊。"}
+        ]
+      },
+      "es": {
+        "speechLines": ["Tengo que... protegerlas...", "Mimi... mi querida... hermanita..."],
+        "dialogLines": [
+          {"name": "Bernadette", "text": "Un medallón apretado en su mano. ¿Un retrato de alguien...?"},
+          {"name": "Bernadette", "text": "......"},
+          {"name": "Bernadette", "text": "Es la súcubo de antes... Qué miserable."}
+        ]
+      }
+    }
   },
   {
     "id": "village_guard_garn",
@@ -410,6 +721,32 @@
         "…zz…"
       ]
     },
+    "i18n": {
+      "en": {
+        "speechLines": ["Stay back.", "All clear."],
+        "dialogLines": [{"name": "Garn", "text": "I guard the north gate. Keep a close eye on anyone passing through."}],
+        "activitySpeeches": {
+          "watch": ["Guarding the north gate is my duty.", "No suspicious characters getting through."],
+          "sleep": ["...zz..."]
+        }
+      },
+      "zh": {
+        "speechLines": ["不准通过。", "一切正常。"],
+        "dialogLines": [{"name": "加恩", "text": "北门由我把守。过往行人须多加注意。"}],
+        "activitySpeeches": {
+          "watch": ["守卫北门是我的职责。", "可疑之人一律不通过。"],
+          "sleep": ["……zz……"]
+        }
+      },
+      "es": {
+        "speechLines": ["Alto ahí.", "Sin novedad."],
+        "dialogLines": [{"name": "Garn", "text": "Yo guardo la puerta norte. Hay que vigilar bien a quienes pasan."}],
+        "activitySpeeches": {
+          "watch": ["Guardar la puerta norte es mi deber.", "Ningún sospechoso pasará por aquí."],
+          "sleep": ["...zz..."]
+        }
+      }
+    },
     "schedule": [
       {
         "id": "guard_north_day",
@@ -417,29 +754,9 @@
         "timeStart": 7,
         "timeEnd": 20,
         "waypoints": [
-          {
-            "x": 19,
-            "y": 1,
-            "spotId": "guard-north",
-            "waitMs": 30000,
-            "activity": "watch",
-            "speechLines": [
-              "北門を守るのが俺の仕事だ。"
-            ]
-          },
-          {
-            "x": 19,
-            "y": 10,
-            "waitMs": 5000,
-            "activity": "walk"
-          },
-          {
-            "x": 19,
-            "y": 1,
-            "spotId": "guard-north",
-            "waitMs": 20000,
-            "activity": "watch"
-          }
+          {"x": 19, "y": 1, "spotId": "guard-north", "waitMs": 30000, "activity": "watch"},
+          {"x": 19, "y": 10, "waitMs": 5000, "activity": "walk"},
+          {"x": 19, "y": 1, "spotId": "guard-north", "waitMs": 20000, "activity": "watch"}
         ]
       },
       {
@@ -448,16 +765,7 @@
         "timeStart": 20,
         "timeEnd": 7,
         "waypoints": [
-          {
-            "x": 29,
-            "y": 27,
-            "spotId": "inn-sleep1",
-            "waitMs": 60000,
-            "activity": "sleep",
-            "speechLines": [
-              "…zz…"
-            ]
-          }
+          {"x": 29, "y": 27, "spotId": "inn-sleep1", "waitMs": 60000, "activity": "sleep"}
         ]
       }
     ]
@@ -471,25 +779,38 @@
     "role": "guard",
     "homeX": 19,
     "homeY": 36,
-    "speechLines": [
-      "南門は任せろ。",
-      "何か用か？"
-    ],
+    "speechLines": ["南門は任せろ。", "何か用か？"],
     "speechIntervalMs": 7000,
-    "dialogLines": [
-      {
-        "name": "マルタ",
-        "text": "南の見張りは俺だ。余計なことはするな。"
-      }
-    ],
+    "dialogLines": [{"name": "マルタ", "text": "南の見張りは俺だ。余計なことはするな。"}],
     "activitySpeeches": {
-      "watch": [
-        "南門を守るのが俺の役目だ。",
-        "何事もなければそれでいい。"
-      ],
-      "sleep": [
-        "…むにゃ…"
-      ]
+      "watch": ["南門を守るのが俺の役目だ。", "何事もなければそれでいい。"],
+      "sleep": ["…むにゃ…"]
+    },
+    "i18n": {
+      "en": {
+        "speechLines": ["Leave the south gate to me.", "What do you want?"],
+        "dialogLines": [{"name": "Marta", "text": "I'm the one watching the south. Don't do anything unnecessary."}],
+        "activitySpeeches": {
+          "watch": ["Guarding the south gate is my duty.", "As long as nothing happens, all is well."],
+          "sleep": ["...mumble..."]
+        }
+      },
+      "zh": {
+        "speechLines": ["南门交给我。", "有什么事？"],
+        "dialogLines": [{"name": "玛尔塔", "text": "南边的守望是我的职责。别多管闲事。"}],
+        "activitySpeeches": {
+          "watch": ["守卫南门是我的职责。", "没有什么事就好。"],
+          "sleep": ["……呢喃……"]
+        }
+      },
+      "es": {
+        "speechLines": ["La puerta sur es mi responsabilidad.", "¿Qué quieres?"],
+        "dialogLines": [{"name": "Marta", "text": "Yo vigilo el sur. No hagas nada innecesario."}],
+        "activitySpeeches": {
+          "watch": ["Guardar la puerta sur es mi deber.", "Mientras no pase nada, todo está bien."],
+          "sleep": ["...murmullos..."]
+        }
+      }
     },
     "schedule": [
       {
@@ -498,26 +819,9 @@
         "timeStart": 9,
         "timeEnd": 21,
         "waypoints": [
-          {
-            "x": 19,
-            "y": 38,
-            "spotId": "guard-south",
-            "waitMs": 25000,
-            "activity": "watch"
-          },
-          {
-            "x": 19,
-            "y": 28,
-            "waitMs": 5000,
-            "activity": "walk"
-          },
-          {
-            "x": 19,
-            "y": 38,
-            "spotId": "guard-south",
-            "waitMs": 20000,
-            "activity": "watch"
-          }
+          {"x": 19, "y": 38, "spotId": "guard-south", "waitMs": 25000, "activity": "watch"},
+          {"x": 19, "y": 28, "waitMs": 5000, "activity": "walk"},
+          {"x": 19, "y": 38, "spotId": "guard-south", "waitMs": 20000, "activity": "watch"}
         ]
       },
       {
@@ -526,13 +830,7 @@
         "timeStart": 21,
         "timeEnd": 9,
         "waypoints": [
-          {
-            "x": 29,
-            "y": 29,
-            "spotId": "inn-sleep2",
-            "waitMs": 60000,
-            "activity": "sleep"
-          }
+          {"x": 29, "y": 29, "spotId": "inn-sleep2", "waitMs": 60000, "activity": "sleep"}
         ]
       }
     ]
@@ -546,32 +844,46 @@
     "role": "villager",
     "homeX": 5,
     "homeY": 5,
-    "speechLines": [
-      "今日もいい天気ね。",
-      "お買い物してきたわ。"
-    ],
+    "speechLines": ["今日もいい天気ね。", "お買い物してきたわ。"],
     "speechIntervalMs": 6000,
-    "dialogLines": [
-      {
-        "name": "エレン",
-        "text": "民家Aに住んでいるの。バルトとは幼なじみよ。"
-      }
-    ],
+    "dialogLines": [{"name": "エレン", "text": "民家Aに住んでいるの。バルトとは幼なじみよ。"}],
     "activitySpeeches": {
-      "sleep": [
-        "…すやすや…"
-      ],
-      "eat": [
-        "今日のスープ、うまくできたわ。",
-        "いただきます♪"
-      ],
-      "chat": [
-        "今日の広場はにぎやかね。",
-        "クラウスさん、いつも元気ね。"
-      ],
-      "work": [
-        "畑の水やり、終わったかしら。"
-      ]
+      "sleep": ["…すやすや…"],
+      "eat": ["今日のスープ、うまくできたわ。", "いただきます♪"],
+      "chat": ["今日の広場はにぎやかね。", "クラウスさん、いつも元気ね。"],
+      "work": ["畑の水やり、終わったかしら。"]
+    },
+    "i18n": {
+      "en": {
+        "speechLines": ["What lovely weather today.", "Just got back from shopping."],
+        "dialogLines": [{"name": "Ellen", "text": "I live in House A. Bart and I have been friends since we were children."}],
+        "activitySpeeches": {
+          "sleep": ["...zzz..."],
+          "eat": ["Today's soup turned out great.", "Time to eat♪"],
+          "chat": ["The square is lively today.", "Claus is always so energetic."],
+          "work": ["I wonder if I've finished watering the fields."]
+        }
+      },
+      "zh": {
+        "speechLines": ["今天天气真好。", "刚买完东西回来。"],
+        "dialogLines": [{"name": "艾伦", "text": "我住在A号民居。巴特和我从小就是朋友。"}],
+        "activitySpeeches": {
+          "sleep": ["……呼呼……"],
+          "eat": ["今天的汤做得很好。", "开动了♪"],
+          "chat": ["今天的广场好热闹呀。", "克劳斯先生总是精力充沛呢。"],
+          "work": ["菜园浇水浇完了吗？"]
+        }
+      },
+      "es": {
+        "speechLines": ["Qué buen tiempo hace hoy.", "Acabo de volver de las compras."],
+        "dialogLines": [{"name": "Ellen", "text": "Vivo en la Casa A. Bart y yo somos amigos de la infancia."}],
+        "activitySpeeches": {
+          "sleep": ["...zzz..."],
+          "eat": ["La sopa de hoy me salió muy bien.", "¡A comer♪"],
+          "chat": ["La plaza está muy animada hoy.", "Claus siempre está tan lleno de energía."],
+          "work": ["Me pregunto si ya terminé de regar los campos."]
+        }
+      }
     },
     "schedule": [
       {
@@ -579,15 +891,7 @@
         "trigger": "time",
         "timeStart": 22,
         "timeEnd": 7,
-        "waypoints": [
-          {
-            "x": 3,
-            "y": 4,
-            "spotId": "spotA-sleep1",
-            "waitMs": 60000,
-            "activity": "sleep"
-          }
-        ]
+        "waypoints": [{"x": 3, "y": 4, "spotId": "spotA-sleep1", "waitMs": 60000, "activity": "sleep"}]
       },
       {
         "id": "ellen_morning",
@@ -595,25 +899,9 @@
         "timeStart": 7,
         "timeEnd": 13,
         "waypoints": [
-          {
-            "x": 6,
-            "y": 7,
-            "spotId": "spotA-eat1",
-            "waitMs": 10000,
-            "activity": "eat"
-          },
-          {
-            "x": 10,
-            "y": 8,
-            "waitMs": 5000,
-            "activity": "work"
-          },
-          {
-            "x": 14,
-            "y": 15,
-            "waitMs": 5000,
-            "activity": "walk"
-          }
+          {"x": 6, "y": 7, "spotId": "spotA-eat1", "waitMs": 10000, "activity": "eat"},
+          {"x": 10, "y": 8, "waitMs": 5000, "activity": "work"},
+          {"x": 14, "y": 15, "waitMs": 5000, "activity": "walk"}
         ]
       },
       {
@@ -622,26 +910,9 @@
         "timeStart": 13,
         "timeEnd": 22,
         "waypoints": [
-          {
-            "x": 21,
-            "y": 21,
-            "spotId": "plaza-chat",
-            "waitMs": 20000,
-            "activity": "chat"
-          },
-          {
-            "x": 5,
-            "y": 5,
-            "waitMs": 5000,
-            "activity": "walk"
-          },
-          {
-            "x": 6,
-            "y": 7,
-            "spotId": "spotA-eat1",
-            "waitMs": 8000,
-            "activity": "eat"
-          }
+          {"x": 21, "y": 21, "spotId": "plaza-chat", "waitMs": 20000, "activity": "chat"},
+          {"x": 5, "y": 5, "waitMs": 5000, "activity": "walk"},
+          {"x": 6, "y": 7, "spotId": "spotA-eat1", "waitMs": 8000, "activity": "eat"}
         ]
       }
     ]
@@ -655,29 +926,42 @@
     "role": "villager",
     "homeX": 32,
     "homeY": 5,
-    "speechLines": [
-      "やあ。",
-      "今日も仕事仕事だ。"
-    ],
+    "speechLines": ["やあ。", "今日も仕事仕事だ。"],
     "speechIntervalMs": 7000,
-    "dialogLines": [
-      {
-        "name": "バルト",
-        "text": "民家Bに住んでる。農作業が俺の仕事だ。"
-      }
-    ],
+    "dialogLines": [{"name": "バルト", "text": "民家Bに住んでる。農作業が俺の仕事だ。"}],
     "activitySpeeches": {
-      "sleep": [
-        "…ぐぅ…"
-      ],
-      "eat": [
-        "腹減った。",
-        "うまい！"
-      ],
-      "work": [
-        "畑仕事は休まれん。",
-        "もうひとふんばりだ。"
-      ]
+      "sleep": ["…ぐぅ…"],
+      "eat": ["腹減った。", "うまい！"],
+      "work": ["畑仕事は休まれん。", "もうひとふんばりだ。"]
+    },
+    "i18n": {
+      "en": {
+        "speechLines": ["Hey.", "Work, work, work, every day."],
+        "dialogLines": [{"name": "Bart", "text": "I live in House B. Farming is my livelihood."}],
+        "activitySpeeches": {
+          "sleep": ["...snore..."],
+          "eat": ["Starving.", "Delicious!"],
+          "work": ["No rest when it comes to farmwork.", "Just one more push."]
+        }
+      },
+      "zh": {
+        "speechLines": ["嘿。", "今天又要干活了。"],
+        "dialogLines": [{"name": "巴特", "text": "我住在B号民居。务农是我的工作。"}],
+        "activitySpeeches": {
+          "sleep": ["……呼噜……"],
+          "eat": ["饿了。", "好吃！"],
+          "work": ["种地可不能停。", "再加把劲。"]
+        }
+      },
+      "es": {
+        "speechLines": ["Hola.", "Hoy también toca trabajar."],
+        "dialogLines": [{"name": "Bart", "text": "Vivo en la Casa B. La agricultura es mi trabajo."}],
+        "activitySpeeches": {
+          "sleep": ["...ronquidos..."],
+          "eat": ["Tengo mucha hambre.", "¡Delicioso!"],
+          "work": ["No hay descanso en el trabajo del campo.", "Solo un esfuerzo más."]
+        }
+      }
     },
     "schedule": [
       {
@@ -685,15 +969,7 @@
         "trigger": "time",
         "timeStart": 20,
         "timeEnd": 6,
-        "waypoints": [
-          {
-            "x": 29,
-            "y": 4,
-            "spotId": "spotB-sleep1",
-            "waitMs": 60000,
-            "activity": "sleep"
-          }
-        ]
+        "waypoints": [{"x": 29, "y": 4, "spotId": "spotB-sleep1", "waitMs": 60000, "activity": "sleep"}]
       },
       {
         "id": "bart_morning",
@@ -701,25 +977,9 @@
         "timeStart": 6,
         "timeEnd": 12,
         "waypoints": [
-          {
-            "x": 32,
-            "y": 7,
-            "spotId": "spotB-eat1",
-            "waitMs": 8000,
-            "activity": "eat"
-          },
-          {
-            "x": 35,
-            "y": 12,
-            "waitMs": 15000,
-            "activity": "work"
-          },
-          {
-            "x": 26,
-            "y": 15,
-            "waitMs": 10000,
-            "activity": "work"
-          }
+          {"x": 32, "y": 7, "spotId": "spotB-eat1", "waitMs": 8000, "activity": "eat"},
+          {"x": 35, "y": 12, "waitMs": 15000, "activity": "work"},
+          {"x": 26, "y": 15, "waitMs": 10000, "activity": "work"}
         ]
       },
       {
@@ -728,25 +988,9 @@
         "timeStart": 12,
         "timeEnd": 20,
         "waypoints": [
-          {
-            "x": 32,
-            "y": 7,
-            "spotId": "spotB-eat1",
-            "waitMs": 8000,
-            "activity": "eat"
-          },
-          {
-            "x": 28,
-            "y": 20,
-            "waitMs": 12000,
-            "activity": "work"
-          },
-          {
-            "x": 32,
-            "y": 5,
-            "waitMs": 5000,
-            "activity": "rest"
-          }
+          {"x": 32, "y": 7, "spotId": "spotB-eat1", "waitMs": 8000, "activity": "eat"},
+          {"x": 28, "y": 20, "waitMs": 12000, "activity": "work"},
+          {"x": 32, "y": 5, "waitMs": 5000, "activity": "rest"}
         ]
       }
     ]
@@ -760,32 +1004,46 @@
     "role": "elder",
     "homeX": 5,
     "homeY": 30,
-    "speechLines": [
-      "儂はもう年じゃ…。",
-      "この村も変わったのう。"
-    ],
+    "speechLines": ["儂はもう年じゃ…。", "この村も変わったのう。"],
     "speechIntervalMs": 10000,
-    "dialogLines": [
-      {
-        "name": "アーノ",
-        "text": "わしはこの村で生まれ、この村で老いた。長老として村の安寧を祈るだけじゃ。"
-      }
-    ],
+    "dialogLines": [{"name": "アーノ", "text": "わしはこの村で生まれ、この村で老いた。長老として村の安寧を祈るだけじゃ。"}],
     "activitySpeeches": {
-      "sleep": [
-        "…むにゃ…老いると夢もうるさくてな…"
-      ],
-      "eat": [
-        "最近は食欲もなくなってきた。",
-        "ゆっくり食べんとな。"
-      ],
-      "rest": [
-        "日向ぼっこが一番の薬じゃ。"
-      ],
-      "chat": [
-        "村のことが心配じゃ。",
-        "若い衆に話しかけても聞いてくれんのう。"
-      ]
+      "sleep": ["…むにゃ…老いると夢もうるさくてな…"],
+      "eat": ["最近は食欲もなくなってきた。", "ゆっくり食べんとな。"],
+      "rest": ["日向ぼっこが一番の薬じゃ。"],
+      "chat": ["村のことが心配じゃ。", "若い衆に話しかけても聞いてくれんのう。"]
+    },
+    "i18n": {
+      "en": {
+        "speechLines": ["I'm getting too old for this…", "This village has changed so much."],
+        "dialogLines": [{"name": "Arno", "text": "I was born in this village and have grown old here. As the elder, all I can do is pray for its peace."}],
+        "activitySpeeches": {
+          "sleep": ["...mumble...when you're old, even dreams are noisy..."],
+          "eat": ["I've been losing my appetite lately.", "I must eat slowly."],
+          "rest": ["Basking in the sun is the best medicine."],
+          "chat": ["I worry about the village.", "Even when I talk to the young ones, they don't listen."]
+        }
+      },
+      "zh": {
+        "speechLines": ["老夫已经老了……", "这个村子也变了许多啊。"],
+        "dialogLines": [{"name": "阿尔诺", "text": "我生于这个村子，也在这里老去。身为长老，我只能祈祷村子平安。"}],
+        "activitySpeeches": {
+          "sleep": ["……呢喃……老了连做梦都吵……"],
+          "eat": ["最近胃口越来越差了。", "得慢慢吃才行。"],
+          "rest": ["晒晒太阳是最好的良药啊。"],
+          "chat": ["真担心村子的事啊。", "跟年轻人说话也不听的呀。"]
+        }
+      },
+      "es": {
+        "speechLines": ["Ya soy demasiado viejo para esto…", "Este pueblo ha cambiado mucho."],
+        "dialogLines": [{"name": "Arno", "text": "Nací en este pueblo y aquí he envejecido. Como anciano, solo puedo rezar por su bienestar."}],
+        "activitySpeeches": {
+          "sleep": ["...murmullos...cuando uno es viejo, incluso los sueños son ruidosos..."],
+          "eat": ["Últimamente he perdido el apetito.", "Debo comer despacio."],
+          "rest": ["Tomar el sol es la mejor medicina."],
+          "chat": ["Me preocupa el pueblo.", "Aunque le hable a los jóvenes, no me escuchan."]
+        }
+      }
     },
     "schedule": [
       {
@@ -793,15 +1051,7 @@
         "trigger": "time",
         "timeStart": 21,
         "timeEnd": 9,
-        "waypoints": [
-          {
-            "x": 3,
-            "y": 27,
-            "spotId": "spotC-sleep1",
-            "waitMs": 60000,
-            "activity": "sleep"
-          }
-        ]
+        "waypoints": [{"x": 3, "y": 27, "spotId": "spotC-sleep1", "waitMs": 60000, "activity": "sleep"}]
       },
       {
         "id": "arno_day",
@@ -809,33 +1059,10 @@
         "timeStart": 9,
         "timeEnd": 21,
         "waypoints": [
-          {
-            "x": 6,
-            "y": 33,
-            "spotId": "spotC-eat1",
-            "waitMs": 10000,
-            "activity": "eat"
-          },
-          {
-            "x": 19,
-            "y": 19,
-            "spotId": "plaza-watch",
-            "waitMs": 30000,
-            "activity": "rest"
-          },
-          {
-            "x": 21,
-            "y": 21,
-            "spotId": "plaza-chat",
-            "waitMs": 20000,
-            "activity": "chat"
-          },
-          {
-            "x": 5,
-            "y": 30,
-            "waitMs": 5000,
-            "activity": "walk"
-          }
+          {"x": 6, "y": 33, "spotId": "spotC-eat1", "waitMs": 10000, "activity": "eat"},
+          {"x": 19, "y": 19, "spotId": "plaza-watch", "waitMs": 30000, "activity": "rest"},
+          {"x": 21, "y": 21, "spotId": "plaza-chat", "waitMs": 20000, "activity": "chat"},
+          {"x": 5, "y": 30, "waitMs": 5000, "activity": "walk"}
         ]
       }
     ]
@@ -849,29 +1076,42 @@
     "role": "innkeeper",
     "homeX": 32,
     "homeY": 30,
-    "speechLines": [
-      "いらっしゃい！",
-      "一泊いかが？"
-    ],
+    "speechLines": ["いらっしゃい！", "一泊いかが？"],
     "speechIntervalMs": 5000,
-    "dialogLines": [
-      {
-        "name": "リース",
-        "text": "ここが村唯一の宿屋よ。疲れた旅人はゆっくり休んでいって。"
-      }
-    ],
+    "dialogLines": [{"name": "リース", "text": "ここが村唯一の宿屋よ。疲れた旅人はゆっくり休んでいって。"}],
     "activitySpeeches": {
-      "sleep": [
-        "…zzz…明日も頑張らないと…"
-      ],
-      "work": [
-        "いらっしゃいませ！",
-        "ごゆっくりどうぞ。",
-        "今日のスペシャルは魚のシチューよ。"
-      ],
-      "eat": [
-        "仕事前に腹ごしらえ。"
-      ]
+      "sleep": ["…zzz…明日も頑張らないと…"],
+      "work": ["いらっしゃいませ！", "ごゆっくりどうぞ。", "今日のスペシャルは魚のシチューよ。"],
+      "eat": ["仕事前に腹ごしらえ。"]
+    },
+    "i18n": {
+      "en": {
+        "speechLines": ["Welcome!", "How about a room for the night?"],
+        "dialogLines": [{"name": "Lise", "text": "This is the only inn in the village. Weary travelers are welcome to rest here."}],
+        "activitySpeeches": {
+          "sleep": ["...zzz...gotta work hard again tomorrow..."],
+          "work": ["Welcome!", "Please take your time.", "Today's special is fish stew."],
+          "eat": ["Getting a bite to eat before work."]
+        }
+      },
+      "zh": {
+        "speechLines": ["欢迎光临！", "要住一晚吗？"],
+        "dialogLines": [{"name": "莉丝", "text": "这里是村里唯一的旅店。疲惫的旅人请好好休息吧。"}],
+        "activitySpeeches": {
+          "sleep": ["……zzz……明天也要加油……"],
+          "work": ["欢迎光临！", "请慢用。", "今天的特别菜是鱼汤哦。"],
+          "eat": ["工作前先填饱肚子。"]
+        }
+      },
+      "es": {
+        "speechLines": ["¡Bienvenido!", "¿Le apetece pasar la noche aquí?"],
+        "dialogLines": [{"name": "Lise", "text": "Esta es la única posada del pueblo. Los viajeros cansados son bienvenidos a descansar aquí."}],
+        "activitySpeeches": {
+          "sleep": ["...zzz...mañana también tengo que esforzarme..."],
+          "work": ["¡Bienvenido!", "Tómese su tiempo.", "El especial de hoy es el estofado de pescado."],
+          "eat": ["Comiendo algo antes del trabajo."]
+        }
+      }
     },
     "schedule": [
       {
@@ -879,15 +1119,7 @@
         "trigger": "time",
         "timeStart": 23,
         "timeEnd": 6,
-        "waypoints": [
-          {
-            "x": 29,
-            "y": 29,
-            "spotId": "inn-sleep2",
-            "waitMs": 60000,
-            "activity": "sleep"
-          }
-        ]
+        "waypoints": [{"x": 29, "y": 29, "spotId": "inn-sleep2", "waitMs": 60000, "activity": "sleep"}]
       },
       {
         "id": "lise_day",
@@ -895,24 +1127,8 @@
         "timeStart": 6,
         "timeEnd": 23,
         "waypoints": [
-          {
-            "x": 31,
-            "y": 33,
-            "spotId": "inn-eat1",
-            "waitMs": 8000,
-            "activity": "eat"
-          },
-          {
-            "x": 31,
-            "y": 33,
-            "spotId": "inn-eat1",
-            "waitMs": 60000,
-            "activity": "work",
-            "speechLines": [
-              "いらっしゃいませ！",
-              "ごゆっくりどうぞ。"
-            ]
-          }
+          {"x": 31, "y": 33, "spotId": "inn-eat1", "waitMs": 8000, "activity": "eat"},
+          {"x": 31, "y": 33, "spotId": "inn-eat1", "waitMs": 60000, "activity": "work"}
         ]
       }
     ]
@@ -926,30 +1142,46 @@
     "role": "villager",
     "homeX": 6,
     "homeY": 4,
-    "speechLines": [
-      "おはよう！",
-      "いい日ね。"
-    ],
+    "speechLines": ["おはよう！", "いい日ね。"],
     "speechIntervalMs": 5500,
-    "dialogLines": [
-      {
-        "name": "ゾフィ",
-        "text": "エレンと同じ家に住んでるの。仲良くしてね。"
-      }
-    ],
+    "dialogLines": [{"name": "ゾフィ", "text": "エレンと同じ家に住んでるの。仲良くしてね。"}],
     "activitySpeeches": {
-      "sleep": [
-        "…すー…"
-      ],
-      "eat": [
-        "ごはんだ♪"
-      ],
-      "work": [
-        "今日もせっせと働くわよ！"
-      ],
-      "chat": [
-        "ねえ聞いて、昨日のこと！"
-      ]
+      "sleep": ["…すー…"],
+      "eat": ["ごはんだ♪"],
+      "work": ["今日もせっせと働くわよ！"],
+      "chat": ["ねえ聞いて、昨日のこと！"]
+    },
+    "i18n": {
+      "en": {
+        "speechLines": ["Good morning!", "What a lovely day."],
+        "dialogLines": [{"name": "Sofi", "text": "I live in the same house as Ellen. Let's get along, okay?"}],
+        "activitySpeeches": {
+          "sleep": ["...zzz..."],
+          "eat": ["Food time♪"],
+          "work": ["Hard at work again today!"],
+          "chat": ["Oh, listen, about yesterday!"]
+        }
+      },
+      "zh": {
+        "speechLines": ["早上好！", "今天真是好天气。"],
+        "dialogLines": [{"name": "佐菲", "text": "我和艾伦住在同一栋房子里。请多关照哦。"}],
+        "activitySpeeches": {
+          "sleep": ["……呼呼……"],
+          "eat": ["开饭了♪"],
+          "work": ["今天也要认真干活哦！"],
+          "chat": ["喂，听我说，关于昨天的事！"]
+        }
+      },
+      "es": {
+        "speechLines": ["¡Buenos días!", "Qué día tan bonito."],
+        "dialogLines": [{"name": "Sofi", "text": "Vivo en la misma casa que Ellen. Espero que nos llevemos bien."}],
+        "activitySpeeches": {
+          "sleep": ["...zzz..."],
+          "eat": ["¡Hora de comer♪"],
+          "work": ["¡A trabajar duro hoy también!"],
+          "chat": ["Oye, escucha, ¡sobre lo de ayer!"]
+        }
+      }
     },
     "schedule": [
       {
@@ -957,15 +1189,7 @@
         "trigger": "time",
         "timeStart": 22,
         "timeEnd": 7,
-        "waypoints": [
-          {
-            "x": 3,
-            "y": 4,
-            "spotId": "spotA-sleep1",
-            "waitMs": 60000,
-            "activity": "sleep"
-          }
-        ]
+        "waypoints": [{"x": 3, "y": 4, "spotId": "spotA-sleep1", "waitMs": 60000, "activity": "sleep"}]
       },
       {
         "id": "sofi_day",
@@ -973,46 +1197,12 @@
         "timeStart": 7,
         "timeEnd": 22,
         "waypoints": [
-          {
-            "x": 6,
-            "y": 7,
-            "spotId": "spotA-eat1",
-            "waitMs": 8000,
-            "activity": "eat"
-          },
-          {
-            "x": 12,
-            "y": 10,
-            "waitMs": 10000,
-            "activity": "work"
-          },
-          {
-            "x": 19,
-            "y": 19,
-            "spotId": "plaza-watch",
-            "waitMs": 5000,
-            "activity": "walk"
-          },
-          {
-            "x": 21,
-            "y": 21,
-            "spotId": "plaza-chat",
-            "waitMs": 15000,
-            "activity": "chat"
-          },
-          {
-            "x": 6,
-            "y": 7,
-            "spotId": "spotA-eat1",
-            "waitMs": 8000,
-            "activity": "eat"
-          },
-          {
-            "x": 5,
-            "y": 5,
-            "waitMs": 10000,
-            "activity": "rest"
-          }
+          {"x": 6, "y": 7, "spotId": "spotA-eat1", "waitMs": 8000, "activity": "eat"},
+          {"x": 12, "y": 10, "waitMs": 10000, "activity": "work"},
+          {"x": 19, "y": 19, "spotId": "plaza-watch", "waitMs": 5000, "activity": "walk"},
+          {"x": 21, "y": 21, "spotId": "plaza-chat", "waitMs": 15000, "activity": "chat"},
+          {"x": 6, "y": 7, "spotId": "spotA-eat1", "waitMs": 8000, "activity": "eat"},
+          {"x": 5, "y": 5, "waitMs": 10000, "activity": "rest"}
         ]
       }
     ]
@@ -1026,29 +1216,42 @@
     "role": "merchant",
     "homeX": 20,
     "homeY": 20,
-    "speechLines": [
-      "さあ買った買った！",
-      "何が要る？"
-    ],
+    "speechLines": ["さあ買った買った！", "何が要る？"],
     "speechIntervalMs": 4000,
-    "dialogLines": [
-      {
-        "name": "クラウス",
-        "text": "旅する行商人さ。この村の広場で商売してるよ。"
-      }
-    ],
+    "dialogLines": [{"name": "クラウス", "text": "旅する行商人さ。この村の広場で商売してるよ。"}],
     "activitySpeeches": {
-      "work": [
-        "さあ買った買った！",
-        "新鮮な品揃えだよ！",
-        "お得な商品はいかが？"
-      ],
-      "eat": [
-        "商売の合間に一息。"
-      ],
-      "sleep": [
-        "今日の稼ぎは…zz…"
-      ]
+      "work": ["さあ買った買った！", "新鮮な品揃えだよ！", "お得な商品はいかが？"],
+      "eat": ["商売の合間に一息。"],
+      "sleep": ["今日の稼ぎは…zz…"]
+    },
+    "i18n": {
+      "en": {
+        "speechLines": ["Come and buy, come and buy!", "What do you need?"],
+        "dialogLines": [{"name": "Claus", "text": "I'm a traveling merchant. I set up shop right here in the village square."}],
+        "activitySpeeches": {
+          "work": ["Come and buy, come and buy!", "Fresh goods for sale!", "How about a bargain?"],
+          "eat": ["Taking a breather between business."],
+          "sleep": ["Today's earnings...zz..."]
+        }
+      },
+      "zh": {
+        "speechLines": ["快来买啊，快来买！", "你需要什么？"],
+        "dialogLines": [{"name": "克劳斯", "text": "我是个走南闯北的行商。就在这个村子的广场上做买卖。"}],
+        "activitySpeeches": {
+          "work": ["快来买啊，快来买！", "新鲜货品大甩卖！", "来看看有没有划算的商品？"],
+          "eat": ["生意百忙中喘口气。"],
+          "sleep": ["今天的收入……zz……"]
+        }
+      },
+      "es": {
+        "speechLines": ["¡Vengan a comprar, vengan a comprar!", "¿Qué necesitas?"],
+        "dialogLines": [{"name": "Claus", "text": "Soy un comerciante ambulante. Hago negocios aquí mismo, en la plaza del pueblo."}],
+        "activitySpeeches": {
+          "work": ["¡Vengan a comprar, vengan a comprar!", "¡Mercancía fresca a la venta!", "¿Qué le parece una buena oferta?"],
+          "eat": ["Tomando un descanso entre negocios."],
+          "sleep": ["Las ganancias de hoy...zz..."]
+        }
+      }
     },
     "schedule": [
       {
@@ -1056,15 +1259,7 @@
         "trigger": "time",
         "timeStart": 20,
         "timeEnd": 8,
-        "waypoints": [
-          {
-            "x": 29,
-            "y": 27,
-            "spotId": "inn-sleep1",
-            "waitMs": 60000,
-            "activity": "sleep"
-          }
-        ]
+        "waypoints": [{"x": 29, "y": 27, "spotId": "inn-sleep1", "waitMs": 60000, "activity": "sleep"}]
       },
       {
         "id": "claus_day",
@@ -1072,24 +1267,8 @@
         "timeStart": 8,
         "timeEnd": 20,
         "waypoints": [
-          {
-            "x": 31,
-            "y": 33,
-            "spotId": "inn-eat1",
-            "waitMs": 6000,
-            "activity": "eat"
-          },
-          {
-            "x": 19,
-            "y": 19,
-            "spotId": "plaza-watch",
-            "waitMs": 60000,
-            "activity": "work",
-            "speechLines": [
-              "さあ買った買った！",
-              "いい品揃えだよ！"
-            ]
-          }
+          {"x": 31, "y": 33, "spotId": "inn-eat1", "waitMs": 6000, "activity": "eat"},
+          {"x": 19, "y": 19, "spotId": "plaza-watch", "waitMs": 60000, "activity": "work"}
         ]
       }
     ]
@@ -1103,31 +1282,46 @@
     "role": "villager",
     "homeX": 31,
     "homeY": 4,
-    "speechLines": [
-      "こんにちは！",
-      "バルトのお嫁さんよ。"
-    ],
+    "speechLines": ["こんにちは！", "バルトのお嫁さんよ。"],
     "speechIntervalMs": 5000,
-    "dialogLines": [
-      {
-        "name": "ハナ",
-        "text": "バルトの妻のハナです。村のみなさんのために料理を作るのが大好きなの。"
-      }
-    ],
+    "dialogLines": [{"name": "ハナ", "text": "バルトの妻のハナです。村のみなさんのために料理を作るのが大好きなの。"}],
     "activitySpeeches": {
-      "sleep": [
-        "…すやすや…"
-      ],
-      "eat": [
-        "今日も美味しくできたわ！"
-      ],
-      "work": [
-        "料理は愛情よ！",
-        "パンが焼けたわ♪"
-      ],
-      "chat": [
-        "最近どう？元気してる？"
-      ]
+      "sleep": ["…すやすや…"],
+      "eat": ["今日も美味しくできたわ！"],
+      "work": ["料理は愛情よ！", "パンが焼けたわ♪"],
+      "chat": ["最近どう？元気してる？"]
+    },
+    "i18n": {
+      "en": {
+        "speechLines": ["Hello!", "I'm Bart's wife, you know."],
+        "dialogLines": [{"name": "Hana", "text": "I'm Hana, Bart's wife. I love cooking for everyone in the village."}],
+        "activitySpeeches": {
+          "sleep": ["...zzz..."],
+          "eat": ["Today's turned out delicious again!"],
+          "work": ["Cooking is love!", "The bread is baked♪"],
+          "chat": ["How are things lately? Are you doing well?"]
+        }
+      },
+      "zh": {
+        "speechLines": ["你好！", "我是巴特的妻子哦。"],
+        "dialogLines": [{"name": "哈娜", "text": "我是巴特的妻子哈娜。我最喜欢为村里的大家做饭了。"}],
+        "activitySpeeches": {
+          "sleep": ["……呼呼……"],
+          "eat": ["今天也做得很好吃呢！"],
+          "work": ["料理里有爱！", "面包烤好了♪"],
+          "chat": ["最近怎么样？身体好吗？"]
+        }
+      },
+      "es": {
+        "speechLines": ["¡Hola!", "Soy la esposa de Bart."],
+        "dialogLines": [{"name": "Hana", "text": "Soy Hana, la esposa de Bart. Me encanta cocinar para todos en el pueblo."}],
+        "activitySpeeches": {
+          "sleep": ["...zzz..."],
+          "eat": ["¡Hoy también me salió delicioso!"],
+          "work": ["¡Cocinar con amor!", "¡El pan está listo♪"],
+          "chat": ["¿Qué tal últimamente? ¿Estás bien?"]
+        }
+      }
     },
     "schedule": [
       {
@@ -1135,15 +1329,7 @@
         "trigger": "time",
         "timeStart": 21,
         "timeEnd": 6,
-        "waypoints": [
-          {
-            "x": 29,
-            "y": 4,
-            "spotId": "spotB-sleep1",
-            "waitMs": 60000,
-            "activity": "sleep"
-          }
-        ]
+        "waypoints": [{"x": 29, "y": 4, "spotId": "spotB-sleep1", "waitMs": 60000, "activity": "sleep"}]
       },
       {
         "id": "hana_morning",
@@ -1151,29 +1337,9 @@
         "timeStart": 6,
         "timeEnd": 13,
         "waypoints": [
-          {
-            "x": 32,
-            "y": 7,
-            "spotId": "spotB-eat1",
-            "waitMs": 6000,
-            "activity": "eat"
-          },
-          {
-            "x": 32,
-            "y": 7,
-            "spotId": "spotB-eat1",
-            "waitMs": 15000,
-            "activity": "work",
-            "speechLines": [
-              "パンが焼けたわ♪"
-            ]
-          },
-          {
-            "x": 24,
-            "y": 12,
-            "waitMs": 8000,
-            "activity": "work"
-          }
+          {"x": 32, "y": 7, "spotId": "spotB-eat1", "waitMs": 6000, "activity": "eat"},
+          {"x": 32, "y": 7, "spotId": "spotB-eat1", "waitMs": 15000, "activity": "work"},
+          {"x": 24, "y": 12, "waitMs": 8000, "activity": "work"}
         ]
       },
       {
@@ -1182,26 +1348,9 @@
         "timeStart": 13,
         "timeEnd": 21,
         "waypoints": [
-          {
-            "x": 32,
-            "y": 7,
-            "spotId": "spotB-eat1",
-            "waitMs": 6000,
-            "activity": "eat"
-          },
-          {
-            "x": 21,
-            "y": 21,
-            "spotId": "plaza-chat",
-            "waitMs": 15000,
-            "activity": "chat"
-          },
-          {
-            "x": 31,
-            "y": 4,
-            "waitMs": 5000,
-            "activity": "rest"
-          }
+          {"x": 32, "y": 7, "spotId": "spotB-eat1", "waitMs": 6000, "activity": "eat"},
+          {"x": 21, "y": 21, "spotId": "plaza-chat", "waitMs": 15000, "activity": "chat"},
+          {"x": 31, "y": 4, "waitMs": 5000, "activity": "rest"}
         ]
       }
     ]
@@ -1215,25 +1364,38 @@
     "role": "guard",
     "homeX": 10,
     "homeY": 19,
-    "speechLines": [
-      "巡回中だ。",
-      "村は俺が守る。"
-    ],
+    "speechLines": ["巡回中だ。", "村は俺が守る。"],
     "speechIntervalMs": 8000,
-    "dialogLines": [
-      {
-        "name": "オットー",
-        "text": "村の西側を巡回している。変な奴を見たら報告してくれ。"
-      }
-    ],
+    "dialogLines": [{"name": "オットー", "text": "村の西側を巡回している。変な奴を見たら報告してくれ。"}],
     "activitySpeeches": {
-      "watch": [
-        "西側に異常なし。",
-        "油断は禁物だ。"
-      ],
-      "sleep": [
-        "…起きてる…zzz…"
-      ]
+      "watch": ["西側に異常なし。", "油断は禁物だ。"],
+      "sleep": ["…起きてる…zzz…"]
+    },
+    "i18n": {
+      "en": {
+        "speechLines": ["On patrol.", "I'll protect this village."],
+        "dialogLines": [{"name": "Otto", "text": "I patrol the west side of the village. Report any suspicious characters you see."}],
+        "activitySpeeches": {
+          "watch": ["No anomalies on the west side.", "Can't afford to let our guard down."],
+          "sleep": ["...I'm awake...zzz..."]
+        }
+      },
+      "zh": {
+        "speechLines": ["巡逻中。", "这个村子由我来守护。"],
+        "dialogLines": [{"name": "奥托", "text": "我负责巡逻村子西侧。见到可疑人物请向我报告。"}],
+        "activitySpeeches": {
+          "watch": ["西侧无异常。", "不能大意。"],
+          "sleep": ["……醒着呢……zzz……"]
+        }
+      },
+      "es": {
+        "speechLines": ["Estoy de patrulla.", "Yo protegeré este pueblo."],
+        "dialogLines": [{"name": "Otto", "text": "Patrulla el lado oeste del pueblo. Infórmame si ves a alguien sospechoso."}],
+        "activitySpeeches": {
+          "watch": ["Sin anomalías en el lado oeste.", "No se puede bajar la guardia."],
+          "sleep": ["...estoy despierto...zzz..."]
+        }
+      }
     },
     "schedule": [
       {
@@ -1242,43 +1404,12 @@
         "timeStart": 6,
         "timeEnd": 20,
         "waypoints": [
-          {
-            "x": 1,
-            "y": 10,
-            "waitMs": 8000,
-            "activity": "watch"
-          },
-          {
-            "x": 1,
-            "y": 19,
-            "waitMs": 8000,
-            "activity": "watch"
-          },
-          {
-            "x": 1,
-            "y": 30,
-            "waitMs": 8000,
-            "activity": "watch"
-          },
-          {
-            "x": 10,
-            "y": 19,
-            "waitMs": 5000,
-            "activity": "walk"
-          },
-          {
-            "x": 19,
-            "y": 19,
-            "spotId": "plaza-watch",
-            "waitMs": 6000,
-            "activity": "watch"
-          },
-          {
-            "x": 10,
-            "y": 10,
-            "waitMs": 5000,
-            "activity": "walk"
-          }
+          {"x": 1, "y": 10, "waitMs": 8000, "activity": "watch"},
+          {"x": 1, "y": 19, "waitMs": 8000, "activity": "watch"},
+          {"x": 1, "y": 30, "waitMs": 8000, "activity": "watch"},
+          {"x": 10, "y": 19, "waitMs": 5000, "activity": "walk"},
+          {"x": 19, "y": 19, "spotId": "plaza-watch", "waitMs": 6000, "activity": "watch"},
+          {"x": 10, "y": 10, "waitMs": 5000, "activity": "walk"}
         ]
       },
       {
@@ -1286,15 +1417,7 @@
         "trigger": "time",
         "timeStart": 20,
         "timeEnd": 6,
-        "waypoints": [
-          {
-            "x": 3,
-            "y": 27,
-            "spotId": "spotC-sleep1",
-            "waitMs": 60000,
-            "activity": "sleep"
-          }
-        ]
+        "waypoints": [{"x": 3, "y": 27, "spotId": "spotC-sleep1", "waitMs": 60000, "activity": "sleep"}]
       }
     ]
   }

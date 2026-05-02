@@ -56,6 +56,8 @@ export class BossHpUI {
     this.container.setVisible(false)
   }
 
+  getContainer(): Phaser.GameObjects.Container { return this.container }
+
   /**
    * HP更新
    * @param currentHp 現在のHP

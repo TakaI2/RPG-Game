@@ -16,6 +16,10 @@ import { createEnemyAnimations } from './AnimationManager'
 import { GAME_W, GAME_H } from '../config'
 import { resolveText } from '../utils/LocaleManager'
 
+interface SceneWithUiCamera extends Phaser.Scene {
+  addWorldObject?: (go: Phaser.GameObjects.GameObject) => void
+}
+
 /**
  * ボス設定をロード
  */
@@ -290,6 +294,7 @@ function executeRadialAttack(
         proj.setBlendMode(Phaser.BlendModes.ADD)
         proj.setScale(0.8)
         scene.time.delayedCall(proj.life, () => { if (proj.active) proj.destroy() })
+        ;(scene as SceneWithUiCamera).addWorldObject?.(proj)
       }
     }
 

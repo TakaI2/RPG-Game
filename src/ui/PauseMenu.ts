@@ -19,7 +19,7 @@ export class PauseMenu {
     // コンテナを作成（最初は非表示）
     this.container = this.scene.add.container(0, 0);
     this.container.setDepth(10000); // タッチUIより前面に表示
-    // scrollFactorは使用せず、show()時にカメラ位置に合わせて配置
+    this.container.setScrollFactor(0);
     this.container.setVisible(false);
 
     // 半透明黒のオーバーレイ（全画面）
@@ -95,12 +95,6 @@ export class PauseMenu {
     if (this.isVisible) return;
 
     this.isVisible = true;
-
-    // カメラの位置を取得して、containerをカメラ位置に配置
-    const camera = this.scene.cameras.main;
-    this.container.setPosition(camera.scrollX, camera.scrollY);
-    console.log('[PauseMenu] Camera position:', camera.scrollX, camera.scrollY);
-
     this.container.setVisible(true);
 
     // ゲームの物理演算を一時停止
@@ -120,6 +114,8 @@ export class PauseMenu {
 
     console.log('[PauseMenu] Game resumed');
   }
+
+  getContainer(): Phaser.GameObjects.Container { return this.container }
 
   isShowing(): boolean {
     return this.isVisible;

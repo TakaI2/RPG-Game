@@ -65,7 +65,7 @@ export interface NPCDef {
   speechLines?: string[]
   speechIntervalMs?: number
   dialogLines?: DialogLine[]
-  i18n?: Record<string, { speechLines?: string[]; dialogLines?: DialogLine[] }>
+  i18n?: Record<string, { speechLines?: string[]; dialogLines?: DialogLine[]; activitySpeeches?: Partial<Record<ActivityType, string[]>> }>
   role?: NPCRole
   homeX?: number
   homeY?: number

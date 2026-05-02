@@ -32,141 +32,192 @@
     },
     {
       "op": "say",
-      "lines": [
-        "はぁ・・・、はぁっ！！　\\nだれか・・・、だれか・・・！！"
-      ],
-      "name": "ルーネ"
+      "lines": ["はぁ・・・、はぁっ！！　\nだれか・・・、だれか・・・！！"],
+      "name": "ルーネ",
+      "i18n": {
+        "en": { "lines": ["Hah... haah!!\nSomebody... somebody...!!"], "name": "Rune" },
+        "zh": { "lines": ["哈……哈！！\n有人吗……有人吗……！！"], "name": "卢尼" },
+        "es": { "lines": ["¡Ah... haah!!\n¡¡Alguien... alguien...!!"], "name": "Rune" }
+      }
     },
     {
       "op": "say",
-      "lines": [
-        "（みんな・・・、みんなおかしくなっちゃった！！　早く近くの町にも知らせないと・・・！！）"
-      ],
-      "name": "ルーネ"
+      "lines": ["（みんな・・・、みんなおかしくなっちゃった！！　早く近くの町にも知らせないと・・・！！）"],
+      "name": "ルーネ",
+      "i18n": {
+        "en": { "lines": ["(Everyone... everyone has gone mad!! I have to warn the nearby town quickly...!!)"], "name": "Rune" },
+        "zh": { "lines": ["（大家……大家都变得奇怪了！！得赶快通知附近的镇子……！！）"], "name": "卢尼" },
+        "es": { "lines": ["(¡¡Todos... todos se han vuelto locos!! Debo avisar al pueblo cercano rápido...!!)"], "name": "Rune" }
+      }
     },
     {
       "op": "say",
-      "lines": [
-        "どうしてこんなことに・・・！　このままじゃ他の町も・・・！！"
-      ],
-      "name": "ルーネ"
+      "lines": ["どうしてこんなことに・・・！　このままじゃ他の町も・・・！！"],
+      "name": "ルーネ",
+      "i18n": {
+        "en": { "lines": ["Why has it come to this...! At this rate, the other towns will be...!!"], "name": "Rune" },
+        "zh": { "lines": ["怎么会变成这样……！如果这样下去，其他镇子也……！！"], "name": "卢尼" },
+        "es": { "lines": ["¿Por qué ha llegado a esto...! ¡¡Si sigue así, los otros pueblos también...!!"], "name": "Rune" }
+      }
     },
     {
       "op": "say",
-      "lines": [
-        "ふふふ・・・♥　どこへ逃げるつもり？　ボウヤ。"
-      ],
-      "name": "？？？"
+      "lines": ["ふふふ・・・♥　どこへ逃げるつもり？　ボウヤ。"],
+      "name": "？？？",
+      "i18n": {
+        "en": { "lines": ["Fufu...♥ Where do you think you're running to? Little boy."], "name": "???" },
+        "zh": { "lines": ["呵呵呵……♥ 你打算逃到哪里去？小鬼头。"], "name": "？？？" },
+        "es": { "lines": ["Jaja...♥ ¿A dónde crees que vas? Niñito."], "name": "???" }
+      }
     },
     {
       "op": "say",
-      "lines": [
-        "み～つけた♥"
-      ],
+      "lines": ["み～つけた♥"],
       "name": "リアラ",
       "portrait": "reala2.png",
       "portraitX": 994,
       "portraitY": 1117,
-      "portraitScale": 1.15
+      "portraitScale": 1.15,
+      "i18n": {
+        "en": { "lines": ["Found you~♥"], "name": "Reala" },
+        "zh": { "lines": ["找到你啦~♥"], "name": "丽阿拉" },
+        "es": { "lines": ["¡Te encontré~♥"], "name": "Reala" }
+      }
     },
     {
       "op": "say",
-      "lines": [
-        "ひぃぃ！！"
-      ],
-      "name": "ルーネ"
+      "lines": ["ひぃぃ！！"],
+      "name": "ルーネ",
+      "i18n": {
+        "en": { "lines": ["Eeeek!!"], "name": "Rune" },
+        "zh": { "lines": ["啊啊啊！！"], "name": "卢尼" },
+        "es": { "lines": ["¡¡Aaah!!"], "name": "Rune" }
+      }
     },
     {
       "op": "say",
-      "lines": [
-        "村にいる男達は、もうみんな襲って絞り尽くしちゃったのよ♥　\\nそろそろデザートが欲しいところだったのに、逃げたらダメじゃない。"
-      ],
-      "name": "リアラ"
+      "lines": ["村にいる男達は、もうみんな襲って絞り尽くしちゃったのよ♥　\nそろそろデザートが欲しいところだったのに、逃げたらダメじゃない。"],
+      "name": "リアラ",
+      "i18n": {
+        "en": { "lines": ["I've already attacked and drained all the men in the village♥\nI was just craving dessert, you can't go running off like that."], "name": "Reala" },
+        "zh": { "lines": ["村子里的男人们，我已经把他们全都袭击榨干了♥\n正好想要些甜点，你怎么能逃走呢。"], "name": "丽阿拉" },
+        "es": { "lines": ["Ya ataqué y drené a todos los hombres del pueblo♥\nJusto quería un postre, no puedes salir corriendo así."], "name": "Reala" }
+      }
     },
     {
       "op": "say",
-      "lines": [
-        "君みたいに、若くて美味しそうなボウヤを味わわずに帰れないわ。"
-      ],
+      "lines": ["君みたいに、若くて美味しそうなボウヤを味わわずに帰れないわ。"],
       "name": "リアラ",
       "portrait": "reala2_2.png",
       "portraitX": 1014,
       "portraitY": 1320,
-      "portraitScale": 1.4
+      "portraitScale": 1.4,
+      "i18n": {
+        "en": { "lines": ["I can't leave without savoring a young and delicious-looking boy like you."], "name": "Reala" },
+        "zh": { "lines": ["像你这样年轻又美味的小鬼头，我可不能不品尝就回去。"], "name": "丽阿拉" },
+        "es": { "lines": ["No puedo irme sin saborear a un chico joven y apetitoso como tú."], "name": "Reala" }
+      }
     },
     {
       "op": "say",
-      "lines": [
-        "た・・・たすけて・・・。"
-      ],
-      "name": "ルーネ"
+      "lines": ["た・・・たすけて・・・。"],
+      "name": "ルーネ",
+      "i18n": {
+        "en": { "lines": ["H... help me..."], "name": "Rune" },
+        "zh": { "lines": ["救……救命……"], "name": "卢尼" },
+        "es": { "lines": ["A... ayúdame..."], "name": "Rune" }
+      }
     },
     {
       "op": "say",
-      "lines": [
-        "他の町に知らせようとしてたんでしょ～？　私達のことを伝えて逃がそうと思ってたのね？"
-      ],
-      "name": "リアラ"
+      "lines": ["他の町に知らせようとしてたんでしょ～？　私達のことを伝えて逃がそうと思ってたのね？"],
+      "name": "リアラ",
+      "i18n": {
+        "en": { "lines": ["You were trying to warn the other town, weren't you~? You were going to tell them about us so they could escape, right?"], "name": "Reala" },
+        "zh": { "lines": ["你是想通知其他镇子吧～？想告诉他们关于我们的事让他们逃走吧？"], "name": "丽阿拉" },
+        "es": { "lines": ["Intentabas avisar al otro pueblo, ¿verdad~? Ibas a contarles sobre nosotras para que escaparan, ¿no?"], "name": "Reala" }
+      }
     },
     {
       "op": "say",
-      "lines": [
-        "・・・・・・！！"
-      ],
-      "name": "ルーネ"
+      "lines": ["・・・・・・！！"],
+      "name": "ルーネ",
+      "i18n": {
+        "en": { "lines": ["......!!"], "name": "Rune" },
+        "zh": { "lines": ["……！！"], "name": "卢尼" },
+        "es": { "lines": ["......!!"], "name": "Rune" }
+      }
     },
     {
       "op": "say",
-      "lines": [
-        "悪い子ね♥　だめよ～そんなことしたら。\\n君の村のあと順番に襲うつもりなのに♥"
-      ],
+      "lines": ["悪い子ね♥　だめよ～そんなことしたら。\n君の村のあと順番に襲うつもりなのに♥"],
       "portrait": "reala2.png",
       "portraitX": 1016,
       "portraitY": 1384,
       "portraitScale": 1.45,
-      "name": "リアラ"
+      "name": "リアラ",
+      "i18n": {
+        "en": { "lines": ["Naughty boy♥ You can't do that~.\nI plan to attack the towns one by one after your village♥"], "name": "Reala" },
+        "zh": { "lines": ["真是坏孩子♥ 不行哦～不能那样做。\n我打算在你的村子之后按顺序袭击各个镇子♥"], "name": "丽阿拉" },
+        "es": { "lines": ["Eres muy travieso♥ No puedes hacer eso~.\nPienso atacar los pueblos en orden después del tuyo♥"], "name": "Reala" }
+      }
     },
     {
       "op": "say",
-      "lines": [
-        "そんなことするなら、お・し・お・き、必要かな～♥"
-      ],
-      "name": "リアラ"
+      "lines": ["そんなことするなら、お・し・お・き、必要かな～♥"],
+      "name": "リアラ",
+      "i18n": {
+        "en": { "lines": ["If you do that, I'll have to pu~ni~sh you~♥"], "name": "Reala" },
+        "zh": { "lines": ["如果你那么做的话，就需要惩、罚、一、下呢～♥"], "name": "丽阿拉" },
+        "es": { "lines": ["Si haces eso, tendré que cas-ti-gar-te~♥"], "name": "Reala" }
+      }
     },
     {
       "op": "say",
-      "lines": [
-        "や・・・やだ・・・、おねがい・・・助けて・・・。"
-      ],
-      "name": "ルーネ"
+      "lines": ["や・・・やだ・・・、おねがい・・・助けて・・・。"],
+      "name": "ルーネ",
+      "i18n": {
+        "en": { "lines": ["N... no... please... help me..."], "name": "Rune" },
+        "zh": { "lines": ["不……不要……求求你……救救我……"], "name": "卢尼" },
+        "es": { "lines": ["N... no... por favor... ayúdame..."], "name": "Rune" }
+      }
     },
     {
       "op": "say",
-      "lines": [
-        "お～っと、早速獲物発見した？"
-      ],
+      "lines": ["お～っと、早速獲物発見した？"],
       "name": "???",
       "portrait": "hunter.png",
       "portraitScale": 0.65,
       "portraitX": 978,
-      "portraitY": 595
+      "portraitY": 595,
+      "i18n": {
+        "en": { "lines": ["Oh~? Found prey already?"], "name": "???" },
+        "zh": { "lines": ["哦～？已经发现猎物了？"], "name": "？？？" },
+        "es": { "lines": ["¡Oh~? ¿Ya encontraste una presa?"], "name": "???" }
+      }
     },
     {
       "op": "say",
-      "lines": [
-        "さっそく焼き払っちゃっていい感じかな？"
-      ],
-      "name": "???"
+      "lines": ["さっそく焼き払っちゃっていい感じかな？"],
+      "name": "???",
+      "i18n": {
+        "en": { "lines": ["Shall I just go ahead and burn it down?"], "name": "???" },
+        "zh": { "lines": ["感觉可以直接烧掉了吧？"], "name": "？？？" },
+        "es": { "lines": ["¿Será que puedo quemarlo todo ya?"], "name": "???" }
+      }
     },
     {
       "op": "portrait.hide"
     },
     {
       "op": "say",
-      "lines": [
-        "っ！！！　なに？！"
-      ],
-      "name": "リアラ"
+      "lines": ["っ！！！　なに？！"],
+      "name": "リアラ",
+      "i18n": {
+        "en": { "lines": ["...!!! What?!"], "name": "Reala" },
+        "zh": { "lines": ["……！！！什么？！"], "name": "丽阿拉" },
+        "es": { "lines": ["¡...!!! ¿Qué?!"], "name": "Reala" }
+      }
     },
     {
       "op": "bg",
@@ -179,57 +230,75 @@
     },
     {
       "op": "say",
-      "lines": [
-        "きゃあぁ！！"
-      ],
-      "name": "リアラ"
+      "lines": ["きゃあぁ！！"],
+      "name": "リアラ",
+      "i18n": {
+        "en": { "lines": ["Kyaah!!"], "name": "Reala" },
+        "zh": { "lines": ["啊啊！！"], "name": "丽阿拉" },
+        "es": { "lines": ["¡¡Aah!!"], "name": "Reala" }
+      }
     },
     {
       "op": "say",
-      "lines": [
-        "どうも～！！　安らかに眠れない貴女の為に、迅速に安らぎをお届けしま～す！"
-      ],
+      "lines": ["どうも～！！　安らかに眠れない貴女の為に、迅速に安らぎをお届けしま～す！"],
       "name": "???",
       "portrait": "hunter_l.png",
       "portraitScale": 0.5,
       "portraitX": 952,
-      "portraitY": 896
+      "portraitY": 896,
+      "i18n": {
+        "en": { "lines": ["Helloooo!! For you who can't rest in peace, I'll swiftly deliver some peace~!"], "name": "???" },
+        "zh": { "lines": ["你好～！！为了不能安眠的你，我来迅速送上安息～！"], "name": "？？？" },
+        "es": { "lines": ["¡¡Holaaa!! Para ti que no puedes descansar en paz, ¡te traeré paz rápidamente~!"], "name": "???" }
+      }
     },
     {
       "op": "say",
-      "lines": [
-        "・・・！！　ヴァンパイアハンター？！"
-      ],
-      "name": "リアラ"
+      "lines": ["・・・！！　ヴァンパイアハンター？！"],
+      "name": "リアラ",
+      "i18n": {
+        "en": { "lines": ["...!! A vampire hunter?!"], "name": "Reala" },
+        "zh": { "lines": ["……！！猎魔人？！"], "name": "丽阿拉" },
+        "es": { "lines": ["¡¡...!! ¿¡Una cazadora de vampiros!?"], "name": "Reala" }
+      }
     },
     {
       "op": "say",
-      "lines": [
-        "そんな・・・、ハンターがこんな近くにいて私が気付かないわけが・・・。"
-      ],
-      "name": "リアラ"
+      "lines": ["そんな・・・、ハンターがこんな近くにいて私が気付かないわけが・・・。"],
+      "name": "リアラ",
+      "i18n": {
+        "en": { "lines": ["Impossible... there's no way I wouldn't have sensed a hunter this close..."], "name": "Reala" },
+        "zh": { "lines": ["这怎么可能……猎人在这么近的地方我竟然没有察觉……"], "name": "丽阿拉" },
+        "es": { "lines": ["Imposible... no hay forma de que no me hubiera dado cuenta de que había una cazadora tan cerca..."], "name": "Reala" }
+      }
     },
     {
       "op": "say",
-      "lines": [
-        "っ！！　あなた、そのマントは・・・！！　\\nだから気配が感じ取れなかったのか・・・。"
-      ],
+      "lines": ["っ！！　あなた、そのマントは・・・！！　\nだから気配が感じ取れなかったのか・・・。"],
       "name": "リアラ",
       "portrait": "reala2_3.png",
       "portraitX": 970,
       "portraitY": 1105,
-      "portraitScale": 1.2
+      "portraitScale": 1.2,
+      "i18n": {
+        "en": { "lines": ["...!! That cloak of yours...!!\nSo that's why I couldn't sense your presence..."], "name": "Reala" },
+        "zh": { "lines": ["……！！你那件斗篷……！！\n所以我感觉不到你的气息……"], "name": "丽阿拉" },
+        "es": { "lines": ["¡¡...!! Esa capa tuya...!!\nEntonces por eso no podía sentir tu presencia..."], "name": "Reala" }
+      }
     },
     {
       "op": "say",
-      "lines": [
-        "ちょっと～、初対面でバラさないでもらえませんかね？"
-      ],
+      "lines": ["ちょっと～、初対面でバラさないでもらえませんかね？"],
       "name": "???",
       "portrait": "hunter.png",
       "portraitScale": 0.6,
       "portraitX": 980,
-      "portraitY": 1120
+      "portraitY": 1120,
+      "i18n": {
+        "en": { "lines": ["Hey~, could you not give away my secrets on our first meeting?"], "name": "???" },
+        "zh": { "lines": ["喂～，第一次见面就把我的秘密说出来好吗？"], "name": "？？？" },
+        "es": { "lines": ["Oye~, ¿podrías no revelar mis secretos en nuestro primer encuentro?"], "name": "???" }
+      }
     },
     {
       "op": "bg",
@@ -242,163 +311,217 @@
     },
     {
       "op": "say",
-      "lines": [
-        "気鋭のハンター、ベルナデットちゃんの強さと美しさは企業秘密なんですから。"
-      ],
-      "name": "???"
+      "lines": ["気鋭のハンター、ベルナデットちゃんの強さと美しさは企業秘密なんですから。"],
+      "name": "???",
+      "i18n": {
+        "en": { "lines": ["The strength and beauty of the up-and-coming hunter, little Bernadette, are trade secrets."], "name": "???" },
+        "zh": { "lines": ["锐气十足的猎人，小贝尔纳黛特的强大与美丽可是商业机密。"], "name": "？？？" },
+        "es": { "lines": ["La fuerza y belleza de la prometedora cazadora Bernadette son secretos comerciales."], "name": "???" }
+      }
     },
     {
       "op": "say",
-      "lines": [
-        "私の同胞を殺して奪ったのね・・・！！　"
-      ],
-      "name": "リアラ"
+      "lines": ["私の同胞を殺して奪ったのね・・・！！　"],
+      "name": "リアラ",
+      "i18n": {
+        "en": { "lines": ["You killed my kin and stole it...!!"], "name": "Reala" },
+        "zh": { "lines": ["你杀了我的同胞然后夺走的吧……！！"], "name": "丽阿拉" },
+        "es": { "lines": ["¡¡Mataste a mi hermana y te lo llevaste...!!"], "name": "Reala" }
+      }
     },
     {
       "op": "say",
-      "lines": [
-        "おかげさまで、気に入っているの。　魔物たちには同類だと思ってもらえるし、上等なのは着心地も良いからね。"
-      ],
+      "lines": ["おかげさまで、気に入っているの。　魔物たちには同類だと思ってもらえるし、上等なのは着心地も良いからね。"],
       "name": "ベルナデット",
       "portrait": "hunter.png",
       "portraitScale": 0.45,
       "portraitX": 959,
-      "portraitY": 638
+      "portraitY": 638,
+      "i18n": {
+        "en": { "lines": ["Thanks to that, I quite like it. The monsters think I'm one of them, and quality goods are comfortable to wear."], "name": "Bernadette" },
+        "zh": { "lines": ["托您的福，我很喜欢它。魔物们以为我是同类，而且好东西穿起来也很舒服。"], "name": "贝尔纳黛特" },
+        "es": { "lines": ["Gracias a eso, me encanta. Los monstruos me toman por una de ellos, y las cosas de calidad son cómodas de llevar."], "name": "Bernadette" }
+      }
     },
     {
       "op": "say",
-      "lines": [
-        "持主も可愛らしい吸血鬼だったわよ。　焼いたらよく燃えるのもよかったし。"
-      ],
-      "name": "ベルナデット"
+      "lines": ["持主も可愛らしい吸血鬼だったわよ。　焼いたらよく燃えるのもよかったし。"],
+      "name": "ベルナデット",
+      "i18n": {
+        "en": { "lines": ["The previous owner was a cute little vampire. She burned quite well when I torched her, which was a plus."], "name": "Bernadette" },
+        "zh": { "lines": ["之前的主人也是个可爱的吸血鬼。烧起来很旺也挺好的。"], "name": "贝尔纳黛特" },
+        "es": { "lines": ["La dueña anterior era una vampirita adorable. Y ardió bastante bien cuando la quemé, fue un punto a favor."], "name": "Bernadette" }
+      }
     },
     {
       "op": "say",
-      "lines": [
-        "貴女のも上等そうね、大きいしツルツルしてて気持ちよさそう♥  \\nぜひ私に譲ってくれないかしら？"
-      ],
+      "lines": ["貴女のも上等そうね、大きいしツルツルしてて気持ちよさそう♥  \nぜひ私に譲ってくれないかしら？"],
       "name": "ベルナデット",
       "portrait": "hunter_l.png",
       "portraitScale": 0.75,
       "portraitX": 967,
-      "portraitY": 1414
+      "portraitY": 1414,
+      "i18n": {
+        "en": { "lines": ["Yours looks fine quality too — it's big and smooth, seems very comfortable♥\nWon't you give it to me?"], "name": "Bernadette" },
+        "zh": { "lines": ["你的看起来也很高档，又大又光滑感觉很舒服♥\n能让给我吗？"], "name": "贝尔纳黛特" },
+        "es": { "lines": ["El tuyo también parece de buena calidad — es grande y suave, debe ser muy cómodo♥\n¿No querrías dármelo?"], "name": "Bernadette" }
+      }
     },
     {
       "op": "say",
-      "lines": [
-        "ついでに貴女の写真もいい？　可愛い吸血娘のマントは商品価値があって好事家に高く売れるの。"
-      ],
-      "name": "ベルナデット"
+      "lines": ["ついでに貴女の写真もいい？　可愛い吸血娘のマントは商品価値があって好事家に高く売れるの。"],
+      "name": "ベルナデット",
+      "i18n": {
+        "en": { "lines": ["Mind if I take a photo of you too? A cloak from a cute vampire girl has collector value and sells for a high price."], "name": "Bernadette" },
+        "zh": { "lines": ["顺便给你拍张照片可以吗？可爱吸血娘的斗篷很有商品价值，能卖给爱好者个好价钱。"], "name": "贝尔纳黛特" },
+        "es": { "lines": ["¿Te importa si te tomo una foto también? La capa de una linda vampiresa tiene valor para coleccionistas y se vende cara."], "name": "Bernadette" }
+      }
     },
     {
       "op": "say",
-      "lines": [
-        "冗談じゃない！　お姉様から貰った大事なマントをなんで貴女なんかに！"
-      ],
+      "lines": ["冗談じゃない！　お姉様から貰った大事なマントをなんで貴女なんかに！"],
       "name": "リアラ",
       "portrait": "reala2_3.png",
       "portraitX": 1000,
       "portraitY": 1030,
-      "portraitScale": 1.1
+      "portraitScale": 1.1,
+      "i18n": {
+        "en": { "lines": ["No way! Why would I give my precious cloak — a gift from Onee-sama — to someone like you!"], "name": "Reala" },
+        "zh": { "lines": ["开什么玩笑！这是从大姐姐那里得到的重要斗篷，怎么能给你！"], "name": "丽阿拉" },
+        "es": { "lines": ["¡¡Ni hablar!! ¡¿Por qué le daría mi preciosa capa —un regalo de Onee-sama— a alguien como tú?!"], "name": "Reala" }
+      }
     },
     {
       "op": "say",
-      "lines": [
-        "そんなに触れたいというなら、私の獲物になりなさいよ。\\n それなら喜んで極上の気持ちよさで包んであげるわよ？"
-      ],
+      "lines": ["そんなに触れたいというなら、私の獲物になりなさいよ。\n それなら喜んで極上の気持ちよさで包んであげるわよ？"],
       "name": "リアラ",
       "portrait": "reala2_2.png",
       "portraitX": 1000,
       "portraitY": 1030,
-      "portraitScale": 1.1
+      "portraitScale": 1.1,
+      "i18n": {
+        "en": { "lines": ["If you want to touch it that badly, then become my prey.\nIf you do, I'll gladly wrap you in the finest pleasure."], "name": "Reala" },
+        "zh": { "lines": ["如果你那么想触摸，就成为我的猎物吧。\n那样的话，我会欣然用极致的快感将你包裹的。"], "name": "丽阿拉" },
+        "es": { "lines": ["Si tanto quieres tocarlo, vuélvete mi presa.\nSi lo haces, con gusto te envolveré en el más exquisito placer."], "name": "Reala" }
+      }
     },
     {
       "op": "say",
-      "lines": [
-        "ボウヤもね！　私が可愛がってあげようと思ったのに。　嫌だと言うならその女と仲良く襲われちゃいなさい！"
-      ],
-      "name": "リアラ"
+      "lines": ["ボウヤもね！　私が可愛がってあげようと思ったのに。　嫌だと言うならその女と仲良く襲われちゃいなさい！"],
+      "name": "リアラ",
+      "i18n": {
+        "en": { "lines": ["You too, little boy! I was going to pamper you. If you say no, then get attacked together with that woman!"], "name": "Reala" },
+        "zh": { "lines": ["还有你小鬼头！我本来想好好宠爱你的。如果你说不，就跟那个女人一起被袭击吧！"], "name": "丽阿拉" },
+        "es": { "lines": ["¡¡Y tú también, niñito!! Iba a mimarte. ¡Si dices que no, que te ataquen junto con esa mujer!"], "name": "Reala" }
+      }
     },
     {
       "op": "say",
-      "lines": [
-        "村で楽しいパーティをやってるから来るがいいわ！ \\nみんなで歓迎してあげる！"
-      ],
-      "name": "リアラ"
+      "lines": ["村で楽しいパーティをやってるから来るがいいわ！ \nみんなで歓迎してあげる！"],
+      "name": "リアラ",
+      "i18n": {
+        "en": { "lines": ["We're having a fun party in the village, so do come!\nEveryone will welcome you!"], "name": "Reala" },
+        "zh": { "lines": ["村子里正在举行有趣的派对，来吧！\n大家都会欢迎你的！"], "name": "丽阿拉" },
+        "es": { "lines": ["¡Estamos de fiesta en el pueblo, venid!\n¡Todo el mundo os dará la bienvenida!"], "name": "Reala" }
+      }
     },
     {
       "op": "say",
-      "lines": [
-        "ふふふ・・・♥　楽しみにしているわよ。"
-      ],
+      "lines": ["ふふふ・・・♥　楽しみにしているわよ。"],
       "name": "リアラ",
       "portrait": "bat_change.png",
       "portraitScale": 0.65,
       "portraitX": 961,
-      "portraitY": 483
+      "portraitY": 483,
+      "i18n": {
+        "en": { "lines": ["Fufu...♥ I'll be looking forward to it."], "name": "Reala" },
+        "zh": { "lines": ["呵呵呵……♥ 我期待着呢。"], "name": "丽阿拉" },
+        "es": { "lines": ["Jaja...♥ Lo estaré esperando."], "name": "Reala" }
+      }
     },
     {
       "op": "portrait.hide"
     },
     {
       "op": "say",
-      "lines": [
-        "あ、待ちなさいよ！　もう、逃げ足が速い。"
-      ],
+      "lines": ["あ、待ちなさいよ！　もう、逃げ足が速い。"],
       "name": "ベルナデット",
       "portrait": "hunter_a.png",
       "portraitScale": 0.6,
       "portraitX": 980,
-      "portraitY": 1200
+      "portraitY": 1200,
+      "i18n": {
+        "en": { "lines": ["Oh, wait! Geez, she runs so fast."], "name": "Bernadette" },
+        "zh": { "lines": ["啊，等一下！哎，跑得真快。"], "name": "贝尔纳黛特" },
+        "es": { "lines": ["¡Eh, espera! Vaya, qué rápido corre."], "name": "Bernadette" }
+      }
     },
     {
       "op": "say",
-      "lines": [
-        "あ・・・、あの・・・。助けてくれてありがとうございます。"
-      ],
-      "name": "ルーネ"
+      "lines": ["あ・・・、あの・・・。助けてくれてありがとうございます。"],
+      "name": "ルーネ",
+      "i18n": {
+        "en": { "lines": ["Um... th-thank you for saving me."], "name": "Rune" },
+        "zh": { "lines": ["那个……谢谢您救了我。"], "name": "卢尼" },
+        "es": { "lines": ["Eh... g-gracias por salvarme."], "name": "Rune" }
+      }
     },
     {
       "op": "say",
-      "lines": [
-        "あ～、君、もしかしてこの先の村の住人？　私そこに向かってたんだけど。　この先で合ってる？"
-      ],
+      "lines": ["あ～、君、もしかしてこの先の村の住人？　私そこに向かってたんだけど。　この先で合ってる？"],
       "name": "ベルナデット",
       "portrait": "hunter.png",
       "portraitScale": 0.6,
       "portraitX": 980,
-      "portraitY": 1200
+      "portraitY": 1200,
+      "i18n": {
+        "en": { "lines": ["Oh~, are you maybe a resident of the village ahead? I was heading there. Is this the right way?"], "name": "Bernadette" },
+        "zh": { "lines": ["哦～，你是前面那个村子的居民吗？我正要去那里。是往前走对吗？"], "name": "贝尔纳黛特" },
+        "es": { "lines": ["Oh~, ¿eres quizás un residente del pueblo de ahí adelante? Yo me dirigía allí. ¿Es por este camino?"], "name": "Bernadette" }
+      }
     },
     {
       "op": "say",
-      "lines": [
-        "え、はい・・・そうですけど。"
-      ],
-      "name": "ルーネ"
+      "lines": ["え、はい・・・そうですけど。"],
+      "name": "ルーネ",
+      "i18n": {
+        "en": { "lines": ["Eh, yes... that's right."], "name": "Rune" },
+        "zh": { "lines": ["啊，是的……没错。"], "name": "卢尼" },
+        "es": { "lines": ["Eh, sí... así es."], "name": "Rune" }
+      }
     },
     {
       "op": "say",
-      "lines": [
-        "おっけー！　ちょっとアイツ狩ってくるから！　待っててちょうだいね！"
-      ],
-      "name": "ベルナデット"
+      "lines": ["おっけー！　ちょっとアイツ狩ってくるから！　待っててちょうだいね！"],
+      "name": "ベルナデット",
+      "i18n": {
+        "en": { "lines": ["Okay! I'm just going to hunt that one down! Wait for me!"], "name": "Bernadette" },
+        "zh": { "lines": ["好的！我去把那家伙猎了！等我一下哦！"], "name": "贝尔纳黛特" },
+        "es": { "lines": ["¡Okey! ¡Voy a cazar a esa! ¡Espérame!"], "name": "Bernadette" }
+      }
     },
     {
       "op": "say",
-      "lines": [
-        "このベルナデットが来たからにはもう安心！　魔物なんて一匹残らず駆逐しちゃうからね！"
-      ],
-      "name": "ベルナデット"
+      "lines": ["このベルナデットが来たからにはもう安心！　魔物なんて一匹残らず駆逐しちゃうからね！"],
+      "name": "ベルナデット",
+      "i18n": {
+        "en": { "lines": ["Now that Bernadette is here, you're safe! I'll exterminate every last monster!"], "name": "Bernadette" },
+        "zh": { "lines": ["贝尔纳黛特来了就放心吧！我会把魔物一只不剩地消灭掉的！"], "name": "贝尔纳黛特" },
+        "es": { "lines": ["¡Con Bernadette aquí ya estás a salvo! ¡Exterminaré hasta el último monstruo!"], "name": "Bernadette" }
+      }
     },
     {
       "op": "portrait.hide"
     },
     {
       "op": "say",
-      "lines": [
-        "あ・・・、待って！　置いていかないでください！"
-      ],
-      "name": "ルーネ"
+      "lines": ["あ・・・、待って！　置いていかないでください！"],
+      "name": "ルーネ",
+      "i18n": {
+        "en": { "lines": ["Ah... wait! Please don't leave me behind!"], "name": "Rune" },
+        "zh": { "lines": ["啊……等等！请不要抛下我！"], "name": "卢尼" },
+        "es": { "lines": ["Ah... ¡espera! ¡Por favor no me dejes atrás!"], "name": "Rune" }
+      }
     },
     {
       "op": "end",
