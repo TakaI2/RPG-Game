@@ -2,9 +2,9 @@ import Phaser from 'phaser'
 import { GAME_W, GAME_H } from '../config'
 import type { GameFlowConfig, StoryThenConfig } from '../types/GameFlowTypes'
 
-/** OGGのURLにM4Aフォールバックを追加（iOS Safari対応） */
+/** M4AをOGGより優先して返す（iOS SafariはOGG非対応のため） */
 function audioUrls(url: string): string[] {
-  return url.endsWith('.ogg') ? [url, url.replace(/\.ogg$/, '.m4a')] : [url]
+  return url.endsWith('.ogg') ? [url.replace(/\.ogg$/, '.m4a'), url] : [url]
 }
 
 type StoryOp = { op: string; [key: string]: unknown }

@@ -5,9 +5,9 @@ import type { TileDef } from '../types/tileset'
 import type { BossConfig } from '../types/BossTypes'
 import type { NPCDef } from '../types/NPCTypes'
 
-/** OGGのURLにM4Aフォールバックを追加（iOS Safari対応） */
+/** M4AをOGGより優先して返す（iOS SafariはOGG非対応のため） */
 function audioUrls(url: string): string[] {
-  return url.endsWith('.ogg') ? [url, url.replace(/\.ogg$/, '.m4a')] : [url]
+  return url.endsWith('.ogg') ? [url.replace(/\.ogg$/, '.m4a'), url] : [url]
 }
 
 /**

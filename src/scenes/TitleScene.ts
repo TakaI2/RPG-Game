@@ -32,6 +32,7 @@ export default class TitleScene extends Phaser.Scene {
 
     this.createPlayButton()
     this.createConfigButton()
+    this.createAudioDebugPanel()
 
     console.log('[TitleScene] create() completed')
   }
@@ -75,6 +76,43 @@ export default class TitleScene extends Phaser.Scene {
 
   // -------------------------------------------------------
   // 音量設定モーダル
+  // -------------------------------------------------------
+  // 音声診断パネル（iOS デバッグ用）
+  // -------------------------------------------------------
+
+  private createAudioDebugPanel(): void {
+    const style = { fontSize: '22px', fontFamily: 'monospace', color: '#ffffff', backgroundColor: '#000000cc' }
+    const lines: Phaser.GameObjects.Text[] = []
+    const addLine = (text: string, color = '#ffffff') => {
+      const t = this.add.text(8, 8 + lines.length * 28, text, { ...style, color }).setDepth(9999)
+      lines.push(t)
+      return t
+    }
+
+    const mode = 'context' in this.sound ? 'WebAudio' : 'HTML5'
+    addLine(`AudioMode: ${mode}`)
+
+    const cacheKeys = ['redmoon', 'spiral', 'se_player_attack', 'se_player_hit']
+    cacheKeys.forEach(k => {
+      const found = this.cache.audio.exists(k)
+      addLine(`cache[${k}]: ${found ? 'OK' : 'NG'}`, found ? '#88ff88' : '#ff4444')
+    })
+
+    // サーバから m4a ファイルが取得できるか HEAD リクエストで確認
+    const testUrl = 'assets/story/bgm/redmoon.m4a'
+    const fetchLine = addLine(`fetch ${testUrl}: ...`, '#aaaaaa')
+    fetch(testUrl, { method: 'HEAD' })
+      .then(r => {
+        const ct = r.headers.get('content-type') ?? '(no content-type)'
+        fetchLine.setText(`fetch m4a: ${r.status} ${ct}`)
+        fetchLine.setColor(r.ok ? '#88ff88' : '#ff4444')
+      })
+      .catch((e: Error) => {
+        fetchLine.setText(`fetch m4a: ERROR ${e.message}`)
+        fetchLine.setColor('#ff4444')
+      })
+  }
+
   // -------------------------------------------------------
 
   private openVolumeModal(): void {
