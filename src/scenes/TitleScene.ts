@@ -51,12 +51,11 @@ export default class TitleScene extends Phaser.Scene {
     this.playButton.on('pointerup',   () => {
       this.playButton.setScale(2.2)
 
-      // iOS: ユーザーのジェスチャー内でキャッシュ済み音声を0音量で再生する。
+      // iOS: ユーザーのジェスチャー内で実際に音を鳴らしてオーディオをアンロックする。
       // iOSは「一度でもユーザー操作中に audio.play() が呼ばれたページ」では
       // 以降のプログラム的な再生をすべて許可するため、これで BGM/SE が鳴るようになる。
-      const cachedKeys = this.cache.audio.getKeys()
-      if (cachedKeys.length > 0) {
-        this.sound.play(cachedKeys[0], { volume: 0 })
+      if (this.cache.audio.exists('se_charm')) {
+        this.sound.play('se_charm')
       }
 
       // ChapterLoadingScene で第一章アセットをプリロードしてから MainScene へ
