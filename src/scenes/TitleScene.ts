@@ -50,6 +50,15 @@ export default class TitleScene extends Phaser.Scene {
     this.playButton.on('pointerdown', () => { this.playButton.setScale(1.9) })
     this.playButton.on('pointerup',   () => {
       this.playButton.setScale(2.2)
+
+      // iOS: ユーザーのジェスチャー内でキャッシュ済み音声を0音量で再生する。
+      // iOSは「一度でもユーザー操作中に audio.play() が呼ばれたページ」では
+      // 以降のプログラム的な再生をすべて許可するため、これで BGM/SE が鳴るようになる。
+      const cachedKeys = this.cache.audio.getKeys()
+      if (cachedKeys.length > 0) {
+        this.sound.play(cachedKeys[0], { volume: 0 })
+      }
+
       // ChapterLoadingScene で第一章アセットをプリロードしてから MainScene へ
       const config = this.cache.json.get('gameflow')
       const firstChapterId = config?.chapters?.[0]?.id ?? 'chapter1'
