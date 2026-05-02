@@ -49,15 +49,32 @@ export default class TitleScene extends Phaser.Scene {
     this.playButton.on('pointerdown', () => { this.playButton.setScale(1.9) })
     this.playButton.on('pointerup',   () => {
       this.playButton.setScale(2.2)
-      // iOS: ユーザー操作の中で AudioContext を resume（suspended のまま音が鳴らない問題の対策）
-      if ('context' in this.sound) {
-        const ctx = (this.sound as Phaser.Sound.WebAudioSoundManager).context
-        if (ctx && ctx.state === 'suspended') ctx.resume().catch(() => {})
-      }
-      // ChapterLoadingScene で第一章アセットをプリロードしてから MainScene へ
       const config = this.cache.json.get('gameflow')
       const firstChapterId = config?.chapters?.[0]?.id ?? 'chapter1'
-      this.scene.start('ChapterLoadingScene', { chapterId: firstChapterId })
+      const startScene = () => { this.scene.start('ChapterLoadingScene', { chapterId: firstChapterId }) }
+
+      // iOS: AudioContext を resume してサイレントバッファを再生してから遷移する
+      // resume() を await せずに scene.start() すると iOS がコンテキストを再サスペンドする
+      if ('context' in this.sound) {
+        const ctx = (this.sound as Phaser.Sound.WebAudioSoundManager).context
+        if (ctx) {
+          let transitioned = false
+          const doTransition = () => { if (!transitioned) { transitioned = true; startScene() } }
+          ctx.resume().then(() => {
+            try {
+              const buf = ctx.createBuffer(1, 1, ctx.sampleRate)
+              const src = ctx.createBufferSource()
+              src.buffer = buf
+              src.connect(ctx.destination)
+              src.start(0)
+            } catch (_) { /* ignore */ }
+            doTransition()
+          }).catch(doTransition)
+          this.time.delayedCall(2000, doTransition)
+          return
+        }
+      }
+      startScene()
     })
   }
 

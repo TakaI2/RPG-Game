@@ -60,18 +60,25 @@ if ('ontouchstart' in window || navigator.maxTouchPoints > 0) {
   document.addEventListener('touchstart', tryLockLandscape, { once: true, passive: true })
 }
 
-// iOS向け: 初回タッチで AudioContext を resume するフォールバック
-// Phaser の自動アンロックが効かない場合の保険
+// iOS向け: タッチのたびに AudioContext を resume するフォールバック
+// { once: true } だと初回タッチでゲームが未準備の場合に解除されてしまうため常時登録する
 const unlockAudioContext = () => {
   const sm = game.sound
-  if ('context' in sm) {
-    const ctx = (sm as Phaser.Sound.WebAudioSoundManager).context
-    if (ctx && ctx.state === 'suspended') {
-      ctx.resume().catch(() => {})
-    }
-  }
+  if (!('context' in sm)) return
+  const ctx = (sm as Phaser.Sound.WebAudioSoundManager).context
+  if (!ctx || ctx.state !== 'suspended') return
+  ctx.resume().then(() => {
+    // サイレントバッファを再生して AudioContext をアクティブに保つ（iOS対策）
+    try {
+      const buf = ctx.createBuffer(1, 1, ctx.sampleRate)
+      const src = ctx.createBufferSource()
+      src.buffer = buf
+      src.connect(ctx.destination)
+      src.start(0)
+    } catch (_) { /* ignore */ }
+  }).catch(() => {})
 }
-document.addEventListener('touchstart', unlockAudioContext, { once: true, passive: true })
-document.addEventListener('touchend',   unlockAudioContext, { once: true, passive: true })
+document.addEventListener('touchstart', unlockAudioContext, { passive: true })
+document.addEventListener('touchend',   unlockAudioContext, { passive: true })
 
 export default game
