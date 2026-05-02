@@ -51,12 +51,16 @@ export default class TitleScene extends Phaser.Scene {
     this.playButton.on('pointerup',   () => {
       this.playButton.setScale(2.2)
 
-      // iOS: ユーザーのジェスチャー内で実際に音を鳴らしてオーディオをアンロックする。
-      // iOSは「一度でもユーザー操作中に audio.play() が呼ばれたページ」では
-      // 以降のプログラム的な再生をすべて許可するため、これで BGM/SE が鳴るようになる。
-      if (this.cache.audio.exists('se_charm')) {
-        this.sound.play('se_charm')
-      }
+      // iOS: Phaser の sound.play() はロック状態を介するため鳴らないことがある。
+      // ネイティブ Audio API を直接使い、ユーザージェスチャー内で再生することで
+      // ページ全体のオーディオをアンロックする（iOS仕様: 一度でも鳴らせば以降は自由）。
+      const iosUnlock = new Audio('assets/sounds/se/charm.m4a')
+      iosUnlock.volume = 1.0
+      iosUnlock.play().then(() => {
+        console.log('[TitleScene] iOS audio unlock: charm played OK')
+      }).catch((e: Error) => {
+        console.warn('[TitleScene] iOS audio unlock failed:', e.message)
+      })
 
       // ChapterLoadingScene で第一章アセットをプリロードしてから MainScene へ
       const config = this.cache.json.get('gameflow')
@@ -100,25 +104,30 @@ export default class TitleScene extends Phaser.Scene {
     const mode = 'context' in this.sound ? 'WebAudio' : 'HTML5'
     addLine(`AudioMode: ${mode}`)
 
-    const cacheKeys = ['redmoon', 'spiral', 'se_player_attack', 'se_player_hit']
+    const cacheKeys = ['redmoon', 'spiral', 'se_player_attack', 'se_player_hit', 'se_charm']
     cacheKeys.forEach(k => {
       const found = this.cache.audio.exists(k)
       addLine(`cache[${k}]: ${found ? 'OK' : 'NG'}`, found ? '#88ff88' : '#ff4444')
     })
 
-    // サーバから m4a ファイルが取得できるか HEAD リクエストで確認
-    const testUrl = 'assets/story/bgm/redmoon.m4a'
-    const fetchLine = addLine(`fetch ${testUrl}: ...`, '#aaaaaa')
-    fetch(testUrl, { method: 'HEAD' })
-      .then(r => {
-        const ct = r.headers.get('content-type') ?? '(no content-type)'
-        fetchLine.setText(`fetch m4a: ${r.status} ${ct}`)
-        fetchLine.setColor(r.ok ? '#88ff88' : '#ff4444')
-      })
-      .catch((e: Error) => {
-        fetchLine.setText(`fetch m4a: ERROR ${e.message}`)
-        fetchLine.setColor('#ff4444')
-      })
+    // サーバから各 m4a ファイルが取得できるか確認
+    const fetchTargets = [
+      'assets/story/bgm/redmoon.m4a',
+      'assets/sounds/se/charm.m4a',
+    ]
+    fetchTargets.forEach(url => {
+      const line = addLine(`HEAD ${url.split('/').pop()}: ...`, '#aaaaaa')
+      fetch(url, { method: 'HEAD' })
+        .then(r => {
+          const ct = r.headers.get('content-type') ?? '?'
+          line.setText(`HEAD ${url.split('/').pop()}: ${r.status} ${ct}`)
+          line.setColor(r.ok ? '#88ff88' : '#ff4444')
+        })
+        .catch((e: Error) => {
+          line.setText(`HEAD ${url.split('/').pop()}: ERR ${e.message}`)
+          line.setColor('#ff4444')
+        })
+    })
   }
 
   // -------------------------------------------------------
