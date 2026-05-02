@@ -50,38 +50,22 @@ export default class TitleScene extends Phaser.Scene {
     this.playButton.on('pointerdown', () => { this.playButton.setScale(1.9) })
     this.playButton.on('pointerup',   () => {
       this.playButton.setScale(2.2)
-      this.playButton.disableInteractive()
 
+      // ① ネイティブ Audio で charm を再生（iOSユーザーアクティベーション取得 + 効果音）
+      //    HTML5 Audio の一時許可はすぐ切れるため、これだけでは BGM は解決しない
+      new Audio('assets/sounds/se/charm.m4a').play().catch(() => {})
+
+      // ② Web Audio API コンテキストを resume（一度解除すれば以降ずっと持続する）
+      //    BGM/SE はすべて Phaser の Web Audio 経由で鳴るためこちらが本命
+      if ('context' in this.sound) {
+        const ctx = (this.sound as Phaser.Sound.WebAudioSoundManager).context
+        ctx?.resume().catch(() => {})
+      }
+
+      // ChapterLoadingScene で第一章アセットをプリロードしてから MainScene へ
       const config = this.cache.json.get('gameflow')
       const firstChapterId = config?.chapters?.[0]?.id ?? 'chapter1'
-      const startScene = () => this.scene.start('ChapterLoadingScene', { chapterId: firstChapterId })
-
-      // 画面上に結果を表示（iPhoneでコンソールが見えないため）
-      const resultText = this.add.text(960, 650, '...', {
-        fontSize: '28px', fontFamily: 'monospace', color: '#ffffff',
-        backgroundColor: '#000000cc', align: 'center', padding: { x: 12, y: 6 }
-      }).setOrigin(0.5).setDepth(9999)
-
-      // キャッシュから HTMLAudioElement を直接取得して readyState を確認
-      const cachedEl = this.cache.audio.get('se_charm') as HTMLAudioElement | null
-      const rs = cachedEl ? cachedEl.readyState : -1
-      resultText.setText(`se_charm readyState=${rs}\ntrying play()...`)
-
-      // ネイティブ Audio で直接再生を試みる
-      const audio = new Audio('assets/sounds/se/charm.m4a')
-      audio.volume = 1.0
-      audio.play()
-        .then(() => {
-          resultText.setText('charm play(): OK!').setColor('#88ff88')
-          this.time.delayedCall(800, startScene)
-        })
-        .catch((e: Error) => {
-          // エラー名が原因を示す：
-          //   NotAllowedError  → ユーザージェスチャーとして認識されていない
-          //   NotSupportedError → フォーマット非対応
-          resultText.setText(`charm play(): FAIL\n${e.name}\n${e.message.substring(0, 60)}`).setColor('#ff4444')
-          this.time.delayedCall(3000, startScene)
-        })
+      this.scene.start('ChapterLoadingScene', { chapterId: firstChapterId })
     })
   }
 
@@ -117,10 +101,11 @@ export default class TitleScene extends Phaser.Scene {
       return t
     }
 
-    const mode = 'context' in this.sound ? 'WebAudio' : 'HTML5'
-    addLine(`AudioMode: ${mode}`)
+    const isWebAudio = 'context' in this.sound
+    const ctxState = isWebAudio ? (this.sound as Phaser.Sound.WebAudioSoundManager).context?.state ?? 'none' : '-'
+    addLine(`AudioMode: ${isWebAudio ? 'WebAudio' : 'HTML5'} ctx=${ctxState}`)
 
-    const cacheKeys = ['redmoon', 'spiral', 'se_player_attack', 'se_player_hit', 'se_charm']
+    const cacheKeys = ['redmoon', 'spiral', 'bgm1.ogg', 'se_player_attack', 'se_player_hit', 'se_charm']
     cacheKeys.forEach(k => {
       const found = this.cache.audio.exists(k)
       addLine(`cache[${k}]: ${found ? 'OK' : 'NG'}`, found ? '#88ff88' : '#ff4444')

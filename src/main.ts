@@ -23,9 +23,6 @@ const game = new Phaser.Game({
   physics: { default: 'arcade', arcade: { debug: false, gravity: { x: 0, y: 0 } } },
   scale: { mode: Phaser.Scale.FIT, autoCenter: Phaser.Scale.CENTER_BOTH },
   loader: { imageLoadType: 'HTMLImageElement' },
-  // iOS Safari では Web Audio API の AudioContext が suspend されたまま音が鳴らない問題がある。
-  // 参照実装（Tyrano製ゲーム）が HTML5 Audio で問題なく動いているため HTML5 Audio に切り替える。
-  audio: { disableWebAudio: true },
   scene: [LoadingScene, TitleScene, MainScene, StoryScene, ChapterLoadingScene]
 })
 
