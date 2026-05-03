@@ -6,6 +6,7 @@ import MainScene from './scenes/MainScene'
 import StoryScene from './scenes/StoryScene'
 import ChapterLoadingScene from './scenes/ChapterLoadingScene'
 import { logger } from './utils/Logger'
+import { startKeepAlive } from './utils/AudioKeepAlive'
 
 // コンソールログの自動記録を開始
 logger.startCapture()
@@ -68,14 +69,9 @@ const unlockAudioContext = () => {
   const ctx = (sm as Phaser.Sound.WebAudioSoundManager).context
   if (!ctx || ctx.state !== 'suspended') return
   ctx.resume().then(() => {
-    // サイレントバッファを再生して AudioContext をアクティブに保つ（iOS対策）
-    try {
-      const buf = ctx.createBuffer(1, 1, ctx.sampleRate)
-      const src = ctx.createBufferSource()
-      src.buffer = buf
-      src.connect(ctx.destination)
-      src.start(0)
-    } catch (_) { /* ignore */ }
+    // ループする無音バッファでAudioContextをアクティブに保つ
+    // iOS Safariは再生がないと自動的にcontextを再suspendするため、ループ再生が必要
+    startKeepAlive(ctx)
   }).catch(() => {})
 }
 document.addEventListener('touchstart', unlockAudioContext, { passive: true })

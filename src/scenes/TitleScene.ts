@@ -1,12 +1,14 @@
 import Phaser from 'phaser'
 import { loadSoundConfig, saveSoundConfig } from '../utils/SoundConfig'
 import { SUPPORTED_LOCALES, getLocale, setLocale } from '../utils/LocaleManager'
+import { startKeepAlive } from '../utils/AudioKeepAlive'
 
 export default class TitleScene extends Phaser.Scene {
   private background!: Phaser.GameObjects.Image
   private playButton!: Phaser.GameObjects.Image
   private configButton!: Phaser.GameObjects.Image
   private modalContainer: Phaser.GameObjects.Container | null = null
+  private charmAudio: HTMLAudioElement | null = null
 
   constructor() {
     super({ key: 'TitleScene' })
@@ -30,9 +32,12 @@ export default class TitleScene extends Phaser.Scene {
     this.background.setDisplaySize(1920, 1080)
     this.background.setDepth(0)
 
+    // charm を事前フェッチ（ボタン押下時に即再生するため）
+    this.charmAudio = new Audio('assets/sounds/se/charm.m4a')
+    this.charmAudio.load()
+
     this.createPlayButton()
     this.createConfigButton()
-    this.createAudioDebugPanel()
 
     console.log('[TitleScene] create() completed')
   }
@@ -51,15 +56,21 @@ export default class TitleScene extends Phaser.Scene {
     this.playButton.on('pointerup',   () => {
       this.playButton.setScale(2.2)
 
-      // ① ネイティブ Audio で charm を再生（iOSユーザーアクティベーション取得 + 効果音）
-      //    HTML5 Audio の一時許可はすぐ切れるため、これだけでは BGM は解決しない
-      new Audio('assets/sounds/se/charm.m4a').play().catch(() => {})
+      // ① 事前ロード済み charm を即再生（iOS ユーザーアクティベーション取得 + 効果音）
+      if (this.charmAudio) {
+        this.charmAudio.currentTime = 0
+        this.charmAudio.play().catch(() => {})
+      }
 
-      // ② Web Audio API コンテキストを resume（一度解除すれば以降ずっと持続する）
-      //    BGM/SE はすべて Phaser の Web Audio 経由で鳴るためこちらが本命
+      // ② Web Audio API コンテキストを resume し、ループ無音バッファで active に保つ
+      //    iOS は再生が途切れると context を自動 suspend するためループが必須
       if ('context' in this.sound) {
         const ctx = (this.sound as Phaser.Sound.WebAudioSoundManager).context
-        ctx?.resume().catch(() => {})
+        if (ctx) {
+          ctx.resume().then(() => {
+            startKeepAlive(ctx)
+          }).catch(() => {})
+        }
       }
 
       // ChapterLoadingScene で第一章アセットをプリロードしてから MainScene へ
@@ -85,53 +96,6 @@ export default class TitleScene extends Phaser.Scene {
       this.openVolumeModal()
     })
   }
-
-  // -------------------------------------------------------
-  // 音量設定モーダル
-  // -------------------------------------------------------
-  // 音声診断パネル（iOS デバッグ用）
-  // -------------------------------------------------------
-
-  private createAudioDebugPanel(): void {
-    const style = { fontSize: '22px', fontFamily: 'monospace', color: '#ffffff', backgroundColor: '#000000cc' }
-    const lines: Phaser.GameObjects.Text[] = []
-    const addLine = (text: string, color = '#ffffff') => {
-      const t = this.add.text(8, 8 + lines.length * 28, text, { ...style, color }).setDepth(9999)
-      lines.push(t)
-      return t
-    }
-
-    const isWebAudio = 'context' in this.sound
-    const ctxState = isWebAudio ? (this.sound as Phaser.Sound.WebAudioSoundManager).context?.state ?? 'none' : '-'
-    addLine(`AudioMode: ${isWebAudio ? 'WebAudio' : 'HTML5'} ctx=${ctxState}`)
-
-    const cacheKeys = ['redmoon', 'spiral', 'bgm1.ogg', 'se_player_attack', 'se_player_hit', 'se_charm']
-    cacheKeys.forEach(k => {
-      const found = this.cache.audio.exists(k)
-      addLine(`cache[${k}]: ${found ? 'OK' : 'NG'}`, found ? '#88ff88' : '#ff4444')
-    })
-
-    // サーバから各 m4a ファイルが取得できるか確認
-    const fetchTargets = [
-      'assets/story/bgm/redmoon.m4a',
-      'assets/sounds/se/charm.m4a',
-    ]
-    fetchTargets.forEach(url => {
-      const line = addLine(`HEAD ${url.split('/').pop()}: ...`, '#aaaaaa')
-      fetch(url, { method: 'HEAD' })
-        .then(r => {
-          const ct = r.headers.get('content-type') ?? '?'
-          line.setText(`HEAD ${url.split('/').pop()}: ${r.status} ${ct}`)
-          line.setColor(r.ok ? '#88ff88' : '#ff4444')
-        })
-        .catch((e: Error) => {
-          line.setText(`HEAD ${url.split('/').pop()}: ERR ${e.message}`)
-          line.setColor('#ff4444')
-        })
-    })
-  }
-
-  // -------------------------------------------------------
 
   private openVolumeModal(): void {
     if (this.modalContainer) return
