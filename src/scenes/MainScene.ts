@@ -1691,6 +1691,23 @@ export default class MainScene extends Phaser.Scene {
       this.colliders.push(col)
     })
 
+    // 火炎放射 → 敵対NPCへのオーバーラップ（手配度上昇）
+    this.npcManager.getHostileSprites().forEach(sprite => {
+      const col = this.physics.add.overlap(this.firePool, sprite, (_fb, _sp) => {
+        const fb = _fb as FireBall
+        if (!fb.active) return
+        this.firePool.killAndHide(fb)
+        if (fb.body) (fb.body as Phaser.Physics.Arcade.Body).setEnable(false)
+        if (sprite.getData('npcHitCool')) return
+        sprite.setData('npcHitCool', true)
+        this.time.delayedCall(250, () => sprite.setData('npcHitCool', false))
+        sprite.setTint(0xff4444)
+        this.time.delayedCall(150, () => sprite.clearTint())
+        addWanted(20)
+      })
+      this.colliders.push(col)
+    })
+
     // NPCスプライト・吹き出しをUIカメラから除外
     this.npcManager.getGameObjects().forEach(go => this.addWorldObject(go))
 
