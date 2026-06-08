@@ -20,8 +20,8 @@
         "then": {
           "action": "goto_map",
           "mapId": "village_l",
-          "x": 40,
-          "y": 78
+          "x": 10,
+          "y": 10
         }
       },
       "stories": [
@@ -81,6 +81,11 @@
           "targetMap": "lifemap1",
           "targetX": 5,
           "targetY": 5
+        },
+        {
+          "targetMap": "first_map",
+          "targetX": 40,
+          "targetY": 76
         }
       ]
     },
@@ -89,6 +94,19 @@
       "onEnter": null,
       "onPlayerDefeat": null,
       "eventTriggers": []
+    },
+    "first_map": {
+      "bgm": "redmoon",
+      "onEnter": null,
+      "onPlayerDefeat": null,
+      "eventTriggers": [],
+      "portals": [
+        {
+          "targetMap": "village_l",
+          "targetX": 10,
+          "targetY": 30
+        }
+      ]
     }
   },
   "_editorPositions": {
@@ -102,7 +120,7 @@
     },
     "map_boss_map1": {
       "x": 380.4099377431048,
-      "y": 445.25052662399224
+      "y": 452.45047779586724
     },
     "map_village_l": {
       "x": 377.5463498144521,
@@ -117,11 +135,11 @@
       "y": 22.88036908536869
     },
     "story_opening": {
-      "x": 381.8086072380515,
+      "x": 378.208631652114,
       "y": 19.647454333046603
     },
     "story_boss_story": {
-      "x": 779.2448579903911,
+      "x": 772.0449678536723,
       "y": 439.5509255680651
     },
     "story_badend": {
@@ -139,6 +157,10 @@
     "story_badend_vil": {
       "x": 779.5867310028879,
       "y": 191.7475582268971
+    },
+    "map_first_map": {
+      "x": 1064.7999877929688,
+      "y": -53.799949645996094
     }
   }
 }

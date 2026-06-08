@@ -71,7 +71,7 @@ export default class MainScene extends Phaser.Scene {
   private isRightMouseHeld: boolean = false
   private projectiles!: Phaser.Physics.Arcade.Group
   private hpText!: Phaser.GameObjects.Text
-  private wantedContainer?: Phaser.GameObjects.Container
+  private wantedObjects: Phaser.GameObjects.Text[] = []
   private isGameOver: boolean = false
   private gameOverText?: Phaser.GameObjects.Text
   private isGameCleared: boolean = false
@@ -331,6 +331,7 @@ export default class MainScene extends Phaser.Scene {
       this.hpText,
       this.cutinSystem.getContainer(),
       this.pauseMenu!.getContainer(),
+      ...this.wantedObjects,
     ]
     if (this.virtualJoystick) {
       uiObjects.push(this.virtualJoystick.getContainer())
@@ -381,52 +382,40 @@ export default class MainScene extends Phaser.Scene {
 
   private createWantedHUD() {
     const STAR_COUNT = 5
-    const THRESHOLD = 30   // WantedSystem のデフォルト閾値
+    const THRESHOLD = 30
     const starSize = 28
     const gap = 6
     const totalW = STAR_COUNT * (starSize + gap) - gap
     const startX = GAME_W / 2 - totalW / 2
-    const y = 28
+    const y = 24
 
-    const container = this.add.container(0, 0).setDepth(10001).setScrollFactor(0)
-
-    // 背景ラベル
-    const label = this.add.text(startX - 4, y - 2, '手配度', {
-      fontSize: '18px', fontFamily: 'monospace', color: '#ffcccc',
+    const label = this.add.text(startX - 8, y, '手配', {
+      fontSize: '20px', fontFamily: 'monospace', color: '#ffcccc',
       stroke: '#000000', strokeThickness: 4,
-    }).setScrollFactor(0).setOrigin(1, 0)
-    container.add(label)
+    }).setScrollFactor(0).setOrigin(1, 0).setDepth(10001).setVisible(false)
 
-    // 星アイコン × 5
     const stars: Phaser.GameObjects.Text[] = []
     for (let i = 0; i < STAR_COUNT; i++) {
       const star = this.add.text(startX + i * (starSize + gap), y, '★', {
         fontSize: `${starSize}px`, fontFamily: 'monospace', color: '#333333',
         stroke: '#000000', strokeThickness: 3,
-      }).setScrollFactor(0).setOrigin(0, 0)
-      container.add(star)
+      }).setScrollFactor(0).setOrigin(0, 0).setDepth(10001).setVisible(false)
       stars.push(star)
     }
 
+    this.wantedObjects = [label, ...stars]
+
     const updateStars = (level: number) => {
+      const visible = level > 0
       const filledCount = Math.ceil((level / 100) * STAR_COUNT)
       const hostile = level >= THRESHOLD
+      label.setVisible(visible)
       stars.forEach((s, i) => {
-        if (i < filledCount) {
-          s.setColor(hostile ? '#ff2222' : '#ffaa00')
-        } else {
-          s.setColor('#333333')
-        }
+        s.setVisible(visible)
+        s.setColor(i < filledCount ? (hostile ? '#ff2222' : '#ffaa00') : '#333333')
       })
-      // 手配度 0 なら非表示
-      container.setVisible(level > 0)
     }
 
-    updateStars(0)
-    container.setVisible(false)
-    this.wantedContainer = container
-
-    // 変化通知で更新
     onWantedChange(updateStars)
     updateStars(getWantedLevel())
   }
@@ -1685,11 +1674,22 @@ export default class MainScene extends Phaser.Scene {
     const npcColliders = this.npcManager.setupCollisions(this.player)
     this.colliders.push(...npcColliders)
 
-    // プレイヤー攻撃 → 手配度上昇（敵対可能NPCへのhitbox接触）
-    const npcHitColliders = this.npcManager.setupHitboxOverlap(this.hitbox, (_npcId) => {
-      addWanted(35)
+    // プレイヤー攻撃ヒットボックス → 敵対NPCへのオーバーラップ（手配度上昇）
+    this.npcManager.getHostileSprites().forEach(sprite => {
+      const col = this.physics.add.overlap(
+        this.hitbox as unknown as Phaser.Types.Physics.Arcade.SpriteWithDynamicBody,
+        sprite,
+        () => {
+          if (sprite.getData('npcHitCool')) return
+          sprite.setData('npcHitCool', true)
+          this.time.delayedCall(400, () => sprite.setData('npcHitCool', false))
+          sprite.setTint(0xff4444)
+          this.time.delayedCall(150, () => sprite.clearTint())
+          addWanted(35)
+        }
+      )
+      this.colliders.push(col)
     })
-    this.colliders.push(...npcHitColliders)
 
     // NPCスプライト・吹き出しをUIカメラから除外
     this.npcManager.getGameObjects().forEach(go => this.addWorldObject(go))

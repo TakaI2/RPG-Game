@@ -6853,6 +6853,11 @@
       "y": 52,
       "spriteKey": "vector",
       "rotation": 270
+    },
+    {
+      "x": 78,
+      "y": 40,
+      "spriteKey": "door"
     }
   ],
   "activitySpots": []
