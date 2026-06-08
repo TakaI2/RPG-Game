@@ -247,6 +247,7 @@ export type NPCManagerHandle = {
   tryInteract: (player: Phaser.Types.Physics.Arcade.SpriteWithDynamicBody, maxDistance?: number) => boolean
   setupCollisions: (player: Phaser.Types.Physics.Arcade.SpriteWithDynamicBody) => Phaser.Physics.Arcade.Collider[]
   getHostileSprites: () => Phaser.Physics.Arcade.Sprite[]
+  killNpc: (sprite: Phaser.Physics.Arcade.Sprite) => void
   getGameObjects: () => Phaser.GameObjects.GameObject[]
   destroy: () => void
 }
@@ -386,6 +387,8 @@ export function createNPCManager(scene: Phaser.Scene, ui: DialogUI): NPCManagerH
         hostile: false,
         attackTimer: 0,
       }
+      // HP をスプライトデータに格納（MainScene からも参照可能）
+      sprite.setData('npcHp', def.hp ?? (def.canBeHostile ? 50 : -1))
       instances.push(inst)
     })
   }
@@ -696,6 +699,15 @@ export function createNPCManager(scene: Phaser.Scene, ui: DialogUI): NPCManagerH
       .map(inst => inst.sprite)
   }
 
+  function killNpc(sprite: Phaser.Physics.Arcade.Sprite): void {
+    const idx = instances.findIndex(inst => inst.sprite === sprite)
+    if (idx < 0) return
+    const inst = instances[idx]
+    inst.speech.destroy()
+    inst.sprite.destroy()
+    instances.splice(idx, 1)
+  }
+
   function getGameObjects(): Phaser.GameObjects.GameObject[] {
     const objects: Phaser.GameObjects.GameObject[] = []
     instances.forEach(inst => {
@@ -711,5 +723,5 @@ export function createNPCManager(scene: Phaser.Scene, ui: DialogUI): NPCManagerH
     destroyAll()
   }
 
-  return { loadFromSpawns, loadActivitySpots, loadWallGrid, update, tryInteract, setupCollisions, getHostileSprites, getGameObjects, destroy }
+  return { loadFromSpawns, loadActivitySpots, loadWallGrid, update, tryInteract, setupCollisions, getHostileSprites, killNpc, getGameObjects, destroy }
 }

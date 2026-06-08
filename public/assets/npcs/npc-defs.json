@@ -2830,7 +2830,8 @@
           }
         ]
       }
-    ]
+    ],
+    "hp": 40
   },
   {
     "id": "castle_succubus_liena",
@@ -2889,7 +2890,8 @@
           }
         ]
       }
-    ]
+    ],
+    "hp": 40
   },
   {
     "id": "castle_succubus_mira",
@@ -2953,7 +2955,8 @@
           }
         ]
       }
-    ]
+    ],
+    "hp": 40
   },
   {
     "id": "castle_succubus_sera",
@@ -3008,7 +3011,8 @@
           }
         ]
       }
-    ]
+    ],
+    "hp": 40
   },
   {
     "id": "castle_succubus_nina",
@@ -3066,7 +3070,8 @@
           }
         ]
       }
-    ]
+    ],
+    "hp": 40
   },
   {
     "id": "castle_succubus_faye",
@@ -3127,7 +3132,8 @@
           }
         ]
       }
-    ]
+    ],
+    "hp": 40
   },
   {
     "id": "castle_victim_a",

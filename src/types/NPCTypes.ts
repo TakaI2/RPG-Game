@@ -75,6 +75,7 @@ export interface NPCDef {
   directionAnims?: boolean  // true = 1024×256（16列×4行）形式の4方向アニメ
   // 敵対モード（手配度システム連携）
   canBeHostile?: boolean    // true = 手配度が閾値を超えたら敵対行動に移行
+  hp?: number               // 最大HP（デフォルト: 50）
   detectionRange?: number   // プレイヤー検知距離px（デフォルト: 200）
   attackRange?: number      // 近接攻撃距離px（デフォルト: 60）
   attackDamage?: number     // 1撃のダメージ（デフォルト: 15）

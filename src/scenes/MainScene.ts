@@ -1415,6 +1415,23 @@ export default class MainScene extends Phaser.Scene {
   /**
    * 敵の死亡処理
    */
+  private damageNpc(sprite: Phaser.Physics.Arcade.Sprite, amount: number): void {
+    const hp = sprite.getData('npcHp') as number
+    if (hp < 0) return  // HP 管理なし（非戦闘NPC）
+    const newHp = hp - amount
+    sprite.setData('npcHp', newHp)
+    if (newHp <= 0) {
+      this.audioBus.playSe('se_enemy_hit', { volume: 0.6 })
+      // 死亡エフェクト（フェードアウト）
+      this.tweens.add({
+        targets: sprite,
+        alpha: 0,
+        duration: 400,
+        onComplete: () => this.npcManager.killNpc(sprite),
+      })
+    }
+  }
+
   private triggerEnemyDeath(en: Phaser.Types.Physics.Arcade.SpriteWithDynamicBody) {
     en.setData('dead', true)
     en.setData('dying', false)
@@ -1674,28 +1691,29 @@ export default class MainScene extends Phaser.Scene {
     const npcColliders = this.npcManager.setupCollisions(this.player)
     this.colliders.push(...npcColliders)
 
-    // プレイヤー攻撃ヒットボックス → 敵対NPCへのオーバーラップ（手配度上昇）
+    // プレイヤー攻撃ヒットボックス → 敵対NPCへのオーバーラップ（ダメージ + 手配度上昇）
     this.npcManager.getHostileSprites().forEach(sprite => {
       const col = this.physics.add.overlap(
         this.hitbox as unknown as Phaser.Types.Physics.Arcade.SpriteWithDynamicBody,
         sprite,
         () => {
-          if (sprite.getData('npcHitCool')) return
+          if (sprite.getData('npcHitCool') || !sprite.active) return
           sprite.setData('npcHitCool', true)
           this.time.delayedCall(400, () => sprite.setData('npcHitCool', false))
           sprite.setTint(0xff4444)
           this.time.delayedCall(150, () => sprite.clearTint())
           addWanted(35)
+          this.damageNpc(sprite, 20)
         }
       )
       this.colliders.push(col)
     })
 
-    // 火炎放射 → 敵対NPCへのオーバーラップ（手配度上昇）
+    // 火炎放射 → 敵対NPCへのオーバーラップ（ダメージ + 手配度上昇）
     this.npcManager.getHostileSprites().forEach(sprite => {
-      const col = this.physics.add.overlap(this.firePool, sprite, (_fb, _sp) => {
+      const col = this.physics.add.overlap(this.firePool, sprite, (_fb) => {
         const fb = _fb as FireBall
-        if (!fb.active) return
+        if (!fb.active || !sprite.active) return
         this.firePool.killAndHide(fb)
         if (fb.body) (fb.body as Phaser.Physics.Arcade.Body).setEnable(false)
         if (sprite.getData('npcHitCool')) return
@@ -1704,6 +1722,7 @@ export default class MainScene extends Phaser.Scene {
         sprite.setTint(0xff4444)
         this.time.delayedCall(150, () => sprite.clearTint())
         addWanted(20)
+        this.damageNpc(sprite, 10)
       })
       this.colliders.push(col)
     })
