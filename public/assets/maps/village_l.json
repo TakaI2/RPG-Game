@@ -6847,6 +6847,12 @@
       "x": 65,
       "y": 1,
       "spriteKey": "vector"
+    },
+    {
+      "x": 2,
+      "y": 52,
+      "spriteKey": "vector",
+      "rotation": 270
     }
   ],
   "activitySpots": []

@@ -12,6 +12,7 @@ import type {
   ScheduleEntry, WaypointDef, UtilityWeights,
 } from '../types/NPCTypes'
 import { resolveText, getLocale } from '../utils/LocaleManager'
+import { createNPCDirectionalAnimations, getDirectionFromVelocity } from './AnimationManager'
 
 // ─── 定数 ────────────────────────────────────────────────────────────────────
 
@@ -36,14 +37,79 @@ interface NPCInstance {
   // patrol 用（既存）
   patrolStartX: number
   patrolDir: number
-  // 新規: AI 状態
+  // AI 状態
   currentAction: ActionId
   activeScheduleId: string | null
   waypointIndex: number
   waypointWaitTimer: number
   actionEvalTimer: number
   lastGameHour: number
-  currentPath: { x: number; y: number }[]  // Phase2 A* 用（常に空）
+  currentPath: { x: number; y: number }[]  // A* 経路（タイル座標）
+  facing: string                            // 'down' | 'up' | 'left' | 'right'
+}
+
+// ─── A* 経路探索 ─────────────────────────────────────────────────────────────
+
+interface AStarNode {
+  x: number; y: number
+  g: number; h: number; f: number
+  parent: AStarNode | null
+}
+
+function heuristic(ax: number, ay: number, bx: number, by: number): number {
+  return Math.abs(ax - bx) + Math.abs(ay - by)
+}
+
+function findPath(
+  wallGrid: boolean[][],
+  startTX: number, startTY: number,
+  goalTX: number,  goalTY: number,
+): { x: number; y: number }[] {
+  const rows = wallGrid.length
+  const cols = rows > 0 ? wallGrid[0].length : 0
+  if (rows === 0 || cols === 0) return []
+  const clamp = (v: number, max: number) => Math.max(0, Math.min(max - 1, v))
+  startTX = clamp(startTX, cols); startTY = clamp(startTY, rows)
+  goalTX  = clamp(goalTX,  cols); goalTY  = clamp(goalTY,  rows)
+  if (wallGrid[goalTY]?.[goalTX]) return []  // ゴールが壁
+
+  const open: AStarNode[] = []
+  const closed = new Set<string>()
+  const key = (x: number, y: number) => `${x},${y}`
+
+  const start: AStarNode = { x: startTX, y: startTY, g: 0, h: heuristic(startTX, startTY, goalTX, goalTY), f: 0, parent: null }
+  start.f = start.g + start.h
+  open.push(start)
+
+  const DIRS = [[0,-1],[0,1],[-1,0],[1,0]]
+  const MAX_ITER = 400
+
+  for (let iter = 0; iter < MAX_ITER && open.length > 0; iter++) {
+    open.sort((a, b) => a.f - b.f)
+    const cur = open.shift()!
+    if (cur.x === goalTX && cur.y === goalTY) {
+      const path: { x: number; y: number }[] = []
+      let n: AStarNode | null = cur
+      while (n) { path.unshift({ x: n.x, y: n.y }); n = n.parent }
+      return path.slice(1)  // スタート自身は除く
+    }
+    closed.add(key(cur.x, cur.y))
+    for (const [dx, dy] of DIRS) {
+      const nx = cur.x + dx; const ny = cur.y + dy
+      if (nx < 0 || ny < 0 || nx >= cols || ny >= rows) continue
+      if (wallGrid[ny]?.[nx]) continue
+      if (closed.has(key(nx, ny))) continue
+      const g = cur.g + 1
+      const existing = open.find(n => n.x === nx && n.y === ny)
+      if (!existing) {
+        const h = heuristic(nx, ny, goalTX, goalTY)
+        open.push({ x: nx, y: ny, g, h, f: g + h, parent: cur })
+      } else if (g < existing.g) {
+        existing.g = g; existing.f = g + existing.h; existing.parent = cur
+      }
+    }
+  }
+  return []  // 経路なし
 }
 
 // ─── ヘルパー ────────────────────────────────────────────────────────────────
@@ -172,6 +238,7 @@ function timeSkipSchedule(inst: NPCInstance, currentHour: number, clockSpeedMs: 
 export type NPCManagerHandle = {
   loadFromSpawns: (spawns: NPCSpawn[], defs: NPCDef[]) => void
   loadActivitySpots: (spots: ActivitySpot[]) => void
+  loadWallGrid: (grid: boolean[][]) => void
   update: (delta: number, playerX: number, playerY: number) => void
   tryInteract: (player: Phaser.Types.Physics.Arcade.SpriteWithDynamicBody, maxDistance?: number) => boolean
   setupCollisions: (player: Phaser.Types.Physics.Arcade.SpriteWithDynamicBody) => Phaser.Physics.Arcade.Collider[]
@@ -184,7 +251,8 @@ export type NPCManagerHandle = {
 export function createNPCManager(scene: Phaser.Scene, ui: DialogUI): NPCManagerHandle {
   const instances: NPCInstance[] = []
   let activitySpots: ActivitySpot[] = []
-  let _clockSpeedMs = 180000  // GameClock の realMsPerGameHour と同期（デフォルト）
+  let _clockSpeedMs = 180000
+  let _wallGrid: boolean[][] = []   // true = 壁（通行不可）
 
   // WorldState・GameClock の変化で全インスタンス即時再評価
   const unsubWorld = onWorldStateChange(() => {
@@ -230,6 +298,10 @@ export function createNPCManager(scene: Phaser.Scene, ui: DialogUI): NPCManagerH
     activitySpots = spots
   }
 
+  function loadWallGrid(grid: boolean[][]): void {
+    _wallGrid = grid
+  }
+
   function loadFromSpawns(spawns: NPCSpawn[], defs: NPCDef[]): void {
     destroyAll()
     const defMap = new Map(defs.map(d => [d.id, d]))
@@ -250,20 +322,31 @@ export function createNPCManager(scene: Phaser.Scene, ui: DialogUI): NPCManagerH
       sprite.setDepth(2)
       ;(sprite.body as Phaser.Physics.Arcade.Body).allowGravity = false
 
-      if (def.animated) {
+      if (def.directionAnims) {
+        // 4方向アニメ（1024×256形式）
+        const prefix = `npc_anim_${def.id}`
+        createNPCDirectionalAnimations(scene, prefix, def.spriteKey)
+        sprite.play(`${prefix}-idle-down`)
+      } else if (def.animated) {
+        // 旧来の単方向アニメ
         const animKey = `npc_anim_${def.id}`
         if (!scene.anims.exists(animKey)) {
-          scene.anims.create({
-            key: animKey,
-            frames: scene.anims.generateFrameNumbers(def.spriteKey, {
-              start: 0,
-              end: (def.frameCount ?? 4) - 1,
-            }),
-            frameRate: def.frameRate ?? 6,
-            repeat: -1,
-          })
+          const frames = scene.anims.generateFrameNumbers(def.spriteKey, {
+            start: 0,
+            end: (def.frameCount ?? 4) - 1,
+          }).filter(f => f !== undefined)
+          if (frames.length > 0) {
+            scene.anims.create({
+              key: animKey,
+              frames,
+              frameRate: def.frameRate ?? 6,
+              repeat: -1,
+            })
+          }
         }
-        sprite.play(animKey)
+        if (scene.anims.exists(animKey)) {
+          sprite.play(animKey)
+        }
       }
 
       const speech = new EnemySpeech(scene)
@@ -294,6 +377,7 @@ export function createNPCManager(scene: Phaser.Scene, ui: DialogUI): NPCManagerH
         actionEvalTimer: 0,
         lastGameHour: currentHour,
         currentPath: [],
+        facing: 'down',
       }
       instances.push(inst)
     })
@@ -364,8 +448,31 @@ export function createNPCManager(scene: Phaser.Scene, ui: DialogUI): NPCManagerH
         break
       case 'idle':
       default:
-        inst.sprite.setVelocity(0, 0)
+        applyMove(inst, 0, 0)
         break
+    }
+  }
+
+  // 速度をセットし、方向アニメを更新する共通ヘルパー
+  function applyMove(inst: NPCInstance, vx: number, vy: number): void {
+    inst.sprite.setVelocity(vx, vy)
+    if (!inst.def.directionAnims) {
+      inst.sprite.setFlipX(vx < 0)
+      return
+    }
+    const prefix = `npc_anim_${inst.def.id}`
+    const moving = Math.abs(vx) > 1 || Math.abs(vy) > 1
+    if (moving) {
+      const dir = getDirectionFromVelocity(vx, vy)
+      if (dir !== inst.facing || !inst.sprite.anims.currentAnim?.key.endsWith(`-walk-${dir}`)) {
+        inst.facing = dir
+        inst.sprite.play(`${prefix}-walk-${dir}`, true)
+      }
+    } else {
+      const idleKey = `${prefix}-idle-${inst.facing}`
+      if (inst.sprite.anims.currentAnim?.key !== idleKey) {
+        inst.sprite.play(idleKey, true)
+      }
     }
   }
 
@@ -373,51 +480,69 @@ export function createNPCManager(scene: Phaser.Scene, ui: DialogUI): NPCManagerH
     const dx = inst.sprite.x - playerX
     const dy = inst.sprite.y - playerY
     const len = Math.sqrt(dx * dx + dy * dy)
-    if (len < 1) { inst.sprite.setVelocity(0, 0); return }
+    if (len < 1) { applyMove(inst, 0, 0); return }
     const speed = (inst.def.patrolSpeed ?? 60) * 1.5
-    inst.sprite.setVelocity((dx / len) * speed, (dy / len) * speed)
-    inst.sprite.setFlipX(dx < 0)
+    applyMove(inst, (dx / len) * speed, (dy / len) * speed)
   }
 
-  function executeScheduleAction(inst: NPCInstance, delta: number, currentHour: number): void {
+  function executeScheduleAction(inst: NPCInstance, delta: number, _currentHour: number): void {
     const schedule = inst.def.schedule?.find(s => s.id === inst.activeScheduleId)
     if (!schedule || schedule.waypoints.length === 0) {
-      inst.sprite.setVelocity(0, 0)
+      applyMove(inst, 0, 0)
       return
     }
 
     const role = inst.def.role ?? 'villager'
     const wp = schedule.waypoints[inst.waypointIndex]
     const tilePos = getWaypointWorldPos(wp, role)
-    const targetX = tilePos.x * TILE + TILE / 2
-    const targetY = tilePos.y * TILE + TILE / 2
+    const targetTX = tilePos.x
+    const targetTY = tilePos.y
+    const targetX = targetTX * TILE + TILE / 2
+    const targetY = targetTY * TILE + TILE / 2
 
     const dx = targetX - inst.sprite.x
     const dy = targetY - inst.sprite.y
     const dist = Math.sqrt(dx * dx + dy * dy)
 
     if (dist > ARRIVE_THRESHOLD) {
-      // 目標へ移動
       const speed = inst.def.patrolSpeed ?? 60
-      inst.sprite.setVelocity((dx / dist) * speed, (dy / dist) * speed)
-      inst.sprite.setFlipX(dx < 0)
-    } else {
-      // 到達
-      inst.sprite.setVelocity(0, 0)
 
-      // 到着セリフ（一度だけ、waitTimerが初期値のとき）
+      // A* 経路がなければ計算
+      if (inst.currentPath.length === 0 && _wallGrid.length > 0) {
+        const startTX = Math.floor(inst.sprite.x / TILE)
+        const startTY = Math.floor(inst.sprite.y / TILE)
+        inst.currentPath = findPath(_wallGrid, startTX, startTY, targetTX, targetTY)
+      }
+
+      if (inst.currentPath.length > 0) {
+        // 次の経路ノードへ移動
+        const next = inst.currentPath[0]
+        const nx = next.x * TILE + TILE / 2
+        const ny = next.y * TILE + TILE / 2
+        const ndx = nx - inst.sprite.x
+        const ndy = ny - inst.sprite.y
+        const ndist = Math.sqrt(ndx * ndx + ndy * ndy)
+        if (ndist < ARRIVE_THRESHOLD) {
+          inst.currentPath.shift()  // ノード到達 → 次へ
+        } else {
+          applyMove(inst, (ndx / ndist) * speed, (ndy / ndist) * speed)
+        }
+      } else {
+        // グリッドなし or 経路なし → 直進フォールバック
+        applyMove(inst, (dx / dist) * speed, (dy / dist) * speed)
+      }
+    } else {
+      // ウェイポイント到達
+      inst.currentPath = []
+      applyMove(inst, 0, 0)
+
       if (inst.waypointWaitTimer === 0 && wp.speech) {
-        inst.speech.show(
-          inst.sprite as unknown as Phaser.GameObjects.Sprite,
-          wp.speech,
-          2000
-        )
+        inst.speech.show(inst.sprite as unknown as Phaser.GameObjects.Sprite, wp.speech, 2000)
       }
 
       const waitMs = wp.waitMs ?? 0
       if (waitMs > 0) {
         if (inst.waypointWaitTimer === 0) {
-          // 待機開始: 活動別セリフに切り替える
           inst.waypointWaitTimer = waitMs
           switchActivitySpeech(inst, wp)
         } else {
@@ -465,8 +590,7 @@ export function createNPCManager(scene: Phaser.Scene, ui: DialogUI): NPCManagerH
     if (dist >= rangePx) inst.patrolDir = -1
     else if (dist <= -rangePx) inst.patrolDir = 1
 
-    inst.sprite.setVelocityX(speed * inst.patrolDir)
-    inst.sprite.setFlipX(inst.patrolDir < 0)
+    applyMove(inst, speed * inst.patrolDir, 0)
   }
 
   // ─── 操作 ────────────────────────────────────────────────────────────────
@@ -512,5 +636,5 @@ export function createNPCManager(scene: Phaser.Scene, ui: DialogUI): NPCManagerH
     destroyAll()
   }
 
-  return { loadFromSpawns, loadActivitySpots, update, tryInteract, setupCollisions, getGameObjects, destroy }
+  return { loadFromSpawns, loadActivitySpots, loadWallGrid, update, tryInteract, setupCollisions, getGameObjects, destroy }
 }

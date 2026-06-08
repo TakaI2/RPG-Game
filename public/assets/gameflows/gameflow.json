@@ -76,8 +76,19 @@
           "targetMap": "boss_map1",
           "targetX": 40,
           "targetY": 80
+        },
+        {
+          "targetMap": "lifemap1",
+          "targetX": 5,
+          "targetY": 5
         }
       ]
+    },
+    "lifemap1": {
+      "bgm": "spiral",
+      "onEnter": null,
+      "onPlayerDefeat": null,
+      "eventTriggers": []
     }
   },
   "_editorPositions": {
@@ -90,12 +101,16 @@
       "y": 365.9915600907866
     },
     "map_boss_map1": {
-      "x": 378.7678568213153,
-      "y": 424.7242645361359
+      "x": 380.4099377431048,
+      "y": 445.25052662399224
     },
     "map_village_l": {
-      "x": 380.830574299403,
-      "y": 195.85539586562248
+      "x": 377.5463498144521,
+      "y": 203.244900956762
+    },
+    "map_lifemap1": {
+      "x": 780.617060252564,
+      "y": 55.924936682012486
     },
     "start": {
       "x": 12.437777168711364,

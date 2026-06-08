@@ -65,8 +65,18 @@ export default class LoadingScene extends Phaser.Scene {
       xhr.send()
       if (xhr.status === 200) {
         const npcDefs = JSON.parse(xhr.responseText) as NPCDef[]
+        const loadedKeys = new Set<string>()
         npcDefs.forEach(def => {
-          if (def.animated) {
+          if (loadedKeys.has(def.spriteKey) || this.textures.exists(def.spriteKey)) return
+          loadedKeys.add(def.spriteKey)
+          if (def.directionAnims) {
+            // 4方向アニメ: 1024×256 スプライトシート（キャラ画像フォルダから直接読まない場合もある）
+            if (!this.textures.exists(def.spriteKey)) {
+              this.load.spritesheet(def.spriteKey, `assets/images/npc/${def.spriteKey}.png`, {
+                frameWidth: 64, frameHeight: 64,
+              })
+            }
+          } else if (def.animated) {
             this.load.spritesheet(def.spriteKey, `assets/images/npc/${def.spriteKey}.png`, {
               frameWidth: 64,
               frameHeight: 64,

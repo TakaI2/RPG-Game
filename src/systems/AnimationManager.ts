@@ -152,6 +152,40 @@ export function createEnemyAnimations(scene: Phaser.Scene, animPrefix: string, t
 }
 
 /**
+ * NPCの4方向アニメーションを定義（idle + walk のみ）
+ * スプライトシート: 1024×256, 64×64フレーム, 16列×4行（敵と同じ形式）
+ * @param scene Phaser Scene
+ * @param animPrefix アニメーションキーのプレフィックス
+ * @param textureKey スプライトシートのテクスチャキー
+ */
+export function createNPCDirectionalAnimations(scene: Phaser.Scene, animPrefix: string, textureKey: string) {
+  const dirs: { name: string; row: number }[] = [
+    { name: 'up',    row: 0 },
+    { name: 'left',  row: 1 },
+    { name: 'down',  row: 2 },
+    { name: 'right', row: 3 },
+  ]
+  for (const { name, row } of dirs) {
+    if (!scene.anims.exists(`${animPrefix}-idle-${name}`)) {
+      scene.anims.create({
+        key: `${animPrefix}-idle-${name}`,
+        frames: getPlayerFrames(0, row).map(f => ({ key: textureKey, frame: f })),
+        frameRate: 5,
+        repeat: -1,
+      })
+    }
+    if (!scene.anims.exists(`${animPrefix}-walk-${name}`)) {
+      scene.anims.create({
+        key: `${animPrefix}-walk-${name}`,
+        frames: getPlayerFrames(4, row).map(f => ({ key: textureKey, frame: f })),
+        frameRate: 8,
+        repeat: -1,
+      })
+    }
+  }
+}
+
+/**
  * 速度ベクトルから方向を判定
  * @param vx X軸速度
  * @param vy Y軸速度

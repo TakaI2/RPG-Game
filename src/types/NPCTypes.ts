@@ -72,6 +72,7 @@ export interface NPCDef {
   schedule?: ScheduleEntry[]
   utilityWeights?: UtilityWeights
   activitySpeeches?: Partial<Record<ActivityType, string[]>>
+  directionAnims?: boolean  // true = 1024×256（16列×4行）形式の4方向アニメ
 }
 
 export interface NPCSpawn {

@@ -1603,6 +1603,12 @@ export default class MainScene extends Phaser.Scene {
     const npcSpawns = (mapData.npcSpawns as NPCSpawn[]) || []
     const typedMapData = mapData as unknown as MapData
     this.npcManager.loadActivitySpots(typedMapData.activitySpots ?? [])
+
+    // ウォールグリッドを生成してNPCManagerへ渡す（A*経路探索用）
+    const wallGrid: boolean[][] = (typedMapData.tiles ?? []).map(row =>
+      row.map(tileId => (tileDefMap.get(tileId)?.role === 'wall'))
+    )
+    this.npcManager.loadWallGrid(wallGrid)
     this.npcManager.loadFromSpawns(npcSpawns, npcDefs)
     const npcColliders = this.npcManager.setupCollisions(this.player)
     this.colliders.push(...npcColliders)
