@@ -185,6 +185,50 @@
             </div>
           </div>
 
+          <!-- 敵対設定 -->
+          <div class="section-card">
+            <div class="section-title">⚔️ 敵対設定（戦闘）</div>
+            <div class="section-body">
+              <div class="form-grid">
+                <div class="form-field" style="grid-column:1/-1">
+                  <label style="display:flex;align-items:center;gap:8px;cursor:pointer">
+                    <input type="checkbox" id="fieldCanBeHostile" onchange="onCanBeHostileChange()">
+                    <span>敵対モード有効 (canBeHostile)</span>
+                  </label>
+                </div>
+              </div>
+              <div id="hostileFields" style="display:none">
+                <div class="form-grid" style="margin-top:10px">
+                  <div class="form-field">
+                    <label>HP</label>
+                    <input type="number" id="fieldHp" min="1" max="9999" value="50"
+                      onchange="saveCurrentField('hp', parseInt(this.value))">
+                  </div>
+                  <div class="form-field">
+                    <label>検知範囲 px</label>
+                    <input type="number" id="fieldDetectionRange" min="0" max="2000" value="200"
+                      onchange="saveCurrentField('detectionRange', parseInt(this.value))">
+                  </div>
+                  <div class="form-field">
+                    <label>攻撃範囲 px</label>
+                    <input type="number" id="fieldAttackRange" min="0" max="500" value="60"
+                      onchange="saveCurrentField('attackRange', parseInt(this.value))">
+                  </div>
+                  <div class="form-field">
+                    <label>攻撃ダメージ</label>
+                    <input type="number" id="fieldAttackDamage" min="1" max="999" value="15"
+                      onchange="saveCurrentField('attackDamage', parseInt(this.value))">
+                  </div>
+                  <div class="form-field">
+                    <label>攻撃間隔 ms</label>
+                    <input type="number" id="fieldAttackCooldown" min="100" max="10000" step="100" value="1500"
+                      onchange="saveCurrentField('attackCooldown', parseInt(this.value))">
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
           <!-- 吹き出しセリフ -->
           <div class="section-card">
             <div class="section-title">吹き出しセリフ（自動ループ）</div>
@@ -287,7 +331,20 @@
     })
     document.getElementById('btnExport').addEventListener('click', exportJSON)
     document.getElementById('btnSaveToGame').addEventListener('click', () => {
-      saveToGame(NPC_DEFS_PATH, npcDefs)
+      // canBeHostile が falsy なら関連フィールドを削除してから保存
+      const cleaned = npcDefs.map(d => {
+        const c = { ...d }
+        if (!c.canBeHostile) {
+          delete c.canBeHostile
+          delete c.hp
+          delete c.detectionRange
+          delete c.attackRange
+          delete c.attackDamage
+          delete c.attackCooldown
+        }
+        return c
+      })
+      saveToGame(NPC_DEFS_PATH, cleaned)
     })
     document.getElementById('fieldSpriteKey').addEventListener('input', () => {
       saveCurrentField('spriteKey', document.getElementById('fieldSpriteKey').value)
@@ -415,12 +472,46 @@
     toggleAnimFields(def.animated)
     togglePatrolFields(def.movement === 'patrol')
     toggleScheduleSection(def.movement === 'scheduled')
+    // 敵対設定
+    const hostile = !!def.canBeHostile
+    document.getElementById('fieldCanBeHostile').checked = hostile
+    document.getElementById('hostileFields').style.display = hostile ? '' : 'none'
+    document.getElementById('fieldHp').value = def.hp ?? 50
+    document.getElementById('fieldDetectionRange').value = def.detectionRange ?? 200
+    document.getElementById('fieldAttackRange').value = def.attackRange ?? 60
+    document.getElementById('fieldAttackDamage').value = def.attackDamage ?? 15
+    document.getElementById('fieldAttackCooldown').value = def.attackCooldown ?? 1500
     const src = getCurrentLangData(def)
     renderSpeechLines(src.speechLines || [])
     renderDialogLines(src.dialogLines || [])
     renderActivitySpeeches(src.activitySpeeches || {})
     renderLangTabs()
     loadSpritePreview(def.spriteKey)
+  }
+
+  function onCanBeHostileChange() {
+    if (selectedIdx < 0) return
+    const val = document.getElementById('fieldCanBeHostile').checked
+    npcDefs[selectedIdx].canBeHostile = val || undefined
+    document.getElementById('hostileFields').style.display = val ? '' : 'none'
+    if (val) {
+      const def = npcDefs[selectedIdx]
+      if (!def.hp) def.hp = 50
+      if (!def.detectionRange) def.detectionRange = 200
+      if (!def.attackRange) def.attackRange = 60
+      if (!def.attackDamage) def.attackDamage = 15
+      if (!def.attackCooldown) def.attackCooldown = 1500
+      document.getElementById('fieldHp').value = def.hp
+      document.getElementById('fieldDetectionRange').value = def.detectionRange
+      document.getElementById('fieldAttackRange').value = def.attackRange
+      document.getElementById('fieldAttackDamage').value = def.attackDamage
+      document.getElementById('fieldAttackCooldown').value = def.attackCooldown
+    } else {
+      // 無効化時はフィールドを削除
+      const def = npcDefs[selectedIdx]
+      delete def.hp; delete def.detectionRange; delete def.attackRange
+      delete def.attackDamage; delete def.attackCooldown
+    }
   }
 
   function toggleAnimFields(animated) {
