@@ -13,6 +13,7 @@ import type {
 } from '../types/NPCTypes'
 import { resolveText, getLocale } from '../utils/LocaleManager'
 import { createNPCDirectionalAnimations, getDirectionFromVelocity } from './AnimationManager'
+import { isHostile, updateWanted } from './WantedSystem'
 
 // ─── 定数 ────────────────────────────────────────────────────────────────────
 
@@ -46,6 +47,9 @@ interface NPCInstance {
   lastGameHour: number
   currentPath: { x: number; y: number }[]  // A* 経路（タイル座標）
   facing: string                            // 'down' | 'up' | 'left' | 'right'
+  // 敵対モード
+  hostile: boolean
+  attackTimer: number                       // 攻撃クールダウン残りms
 }
 
 // ─── A* 経路探索 ─────────────────────────────────────────────────────────────
@@ -378,6 +382,8 @@ export function createNPCManager(scene: Phaser.Scene, ui: DialogUI): NPCManagerH
         lastGameHour: currentHour,
         currentPath: [],
         facing: 'down',
+        hostile: false,
+        attackTimer: 0,
       }
       instances.push(inst)
     })
@@ -389,6 +395,9 @@ export function createNPCManager(scene: Phaser.Scene, ui: DialogUI): NPCManagerH
     const cam = scene.cameras.main
     const currentHour = getGameClock().hour
 
+    // プレイヤーがいずれかの敵対NPC検知圏内にいるか（WantedSystem減衰判定用）
+    let playerDetected = false
+
     instances.forEach(inst => {
       if (!inst.sprite.active) return
 
@@ -396,7 +405,6 @@ export function createNPCManager(scene: Phaser.Scene, ui: DialogUI): NPCManagerH
       const culled = isCulled(inst.sprite, cam)
       if (culled) {
         inst.sprite.setVelocity(0, 0)
-        // lastGameHour を記録して次回復帰時にタイムスキップ
         if (inst.lastGameHour !== currentHour) {
           timeSkipSchedule(inst, currentHour, _clockSpeedMs)
           inst.lastGameHour = currentHour
@@ -410,7 +418,36 @@ export function createNPCManager(scene: Phaser.Scene, ui: DialogUI): NPCManagerH
       }
       inst.lastGameHour = currentHour
 
-      // AI 再評価
+      // 攻撃クールダウン更新
+      if (inst.attackTimer > 0) inst.attackTimer -= delta
+
+      // ─── 敵対モード判定 ──────────────────────────────────────────
+      if (inst.def.canBeHostile) {
+        const detRange = inst.def.detectionRange ?? 200
+        const distToPlayer = Phaser.Math.Distance.Between(
+          inst.sprite.x, inst.sprite.y, playerX, playerY
+        )
+        const inRange = distToPlayer <= detRange
+
+        // 手配度が閾値以上ならプレイヤー検知で敵対化
+        if (isHostile() && inRange) {
+          inst.hostile = true
+          playerDetected = true
+        } else if (!isHostile()) {
+          // 手配度が下がったら NPC モードに復帰
+          inst.hostile = false
+          inst.currentPath = []
+        }
+
+        if (inst.hostile) {
+          executeHostileAction(inst, delta, playerX, playerY)
+          inst.speech.update(inst.sprite as unknown as Phaser.GameObjects.Sprite)
+          return
+        }
+      }
+      // ─────────────────────────────────────────────────────────────
+
+      // 通常 AI 再評価
       inst.actionEvalTimer -= delta
       if (inst.actionEvalTimer <= 0) {
         inst.actionEvalTimer = ACTION_EVAL_INTERVAL
@@ -421,12 +458,13 @@ export function createNPCManager(scene: Phaser.Scene, ui: DialogUI): NPCManagerH
         inst.currentAction = selectAction(inst, schedule)
       }
 
-      // アクション実行
+      // 通常アクション実行
       executeAction(inst, delta, playerX, playerY, currentHour)
-
-      // 吹き出し更新
       inst.speech.update(inst.sprite as unknown as Phaser.GameObjects.Sprite)
     })
+
+    // WantedSystem に検知状態を通知（減衰制御）
+    updateWanted(delta, playerDetected)
   }
 
   function executeAction(
@@ -474,6 +512,36 @@ export function createNPCManager(scene: Phaser.Scene, ui: DialogUI): NPCManagerH
         inst.sprite.play(idleKey, true)
       }
     }
+  }
+
+  function executeHostileAction(inst: NPCInstance, delta: number, playerX: number, playerY: number): void {
+    const atkRange = inst.def.attackRange ?? 60
+    const detRange = inst.def.detectionRange ?? 200
+    const speed = (inst.def.patrolSpeed ?? 60) * 1.4
+    const dx = playerX - inst.sprite.x
+    const dy = playerY - inst.sprite.y
+    const dist = Math.sqrt(dx * dx + dy * dy)
+
+    if (dist <= atkRange) {
+      // 攻撃圏内 → 停止して攻撃
+      applyMove(inst, 0, 0)
+      if (inst.attackTimer <= 0) {
+        inst.attackTimer = inst.def.attackCooldown ?? 1500
+        // ダメージイベント発火（MainScene が受け取る）
+        scene.events.emit('npc:attack', {
+          damage: inst.def.attackDamage ?? 15,
+          npcId: inst.def.id,
+        })
+      }
+    } else if (dist <= detRange) {
+      // 検知圏内 → 追跡
+      applyMove(inst, (dx / dist) * speed, (dy / dist) * speed)
+    } else {
+      // 圏外 → 停止（手配度が高ければここには来ない想定だが念のため）
+      applyMove(inst, 0, 0)
+    }
+
+    void delta  // unused but kept for signature consistency
   }
 
   function executeFleeAction(inst: NPCInstance, playerX: number, playerY: number): void {

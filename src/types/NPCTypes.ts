@@ -73,6 +73,12 @@ export interface NPCDef {
   utilityWeights?: UtilityWeights
   activitySpeeches?: Partial<Record<ActivityType, string[]>>
   directionAnims?: boolean  // true = 1024×256（16列×4行）形式の4方向アニメ
+  // 敵対モード（手配度システム連携）
+  canBeHostile?: boolean    // true = 手配度が閾値を超えたら敵対行動に移行
+  detectionRange?: number   // プレイヤー検知距離px（デフォルト: 200）
+  attackRange?: number      // 近接攻撃距離px（デフォルト: 60）
+  attackDamage?: number     // 1撃のダメージ（デフォルト: 15）
+  attackCooldown?: number   // 攻撃間隔ms（デフォルト: 1500）
 }
 
 export interface NPCSpawn {

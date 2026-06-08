@@ -2773,5 +2773,460 @@
       }
     ],
     "directionAnims": true
+  },
+  {
+    "id": "castle_succubus_aria",
+    "name": "アリア",
+    "spriteKey": "succubus",
+    "animated": true,
+    "directionAnims": true,
+    "movement": "scheduled",
+    "patrolSpeed": 55,
+    "canBeHostile": true,
+    "detectionRange": 220,
+    "attackRange": 60,
+    "attackDamage": 15,
+    "attackCooldown": 1500,
+    "speechLines": [
+      "ふふ、今日も獲物が美味しそう♥",
+      "あの男の血、最高に甘かったわ♥"
+    ],
+    "speechIntervalMs": 6000,
+    "dialogLines": [
+      {
+        "name": "アリア",
+        "text": "あら、見かけない顔ね。リアラ様の仲間？"
+      }
+    ],
+    "schedule": [
+      {
+        "id": "default",
+        "trigger": "always",
+        "priority": 0,
+        "waypoints": [
+          {
+            "x": 25,
+            "y": 15,
+            "waitMs": 4000,
+            "activity": "chat",
+            "speechLines": [
+              "ねぇ、あの男の味、どうだった？♥"
+            ]
+          },
+          {
+            "x": 35,
+            "y": 20,
+            "waitMs": 2000,
+            "activity": "walk"
+          },
+          {
+            "x": 30,
+            "y": 30,
+            "waitMs": 4000,
+            "activity": "chat",
+            "speechLines": [
+              "また捕まえに行きましょう♥"
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "castle_succubus_liena",
+    "name": "リーナ",
+    "spriteKey": "succubus",
+    "animated": true,
+    "directionAnims": true,
+    "movement": "scheduled",
+    "patrolSpeed": 50,
+    "canBeHostile": true,
+    "detectionRange": 200,
+    "attackRange": 60,
+    "attackDamage": 15,
+    "attackCooldown": 1500,
+    "speechLines": [
+      "おほほ♥　いい声で鳴かせてあげるわ",
+      "逃げても無駄よ～♥"
+    ],
+    "speechIntervalMs": 7000,
+    "dialogLines": [
+      {
+        "name": "リーナ",
+        "text": "今夜も楽しい夜になりそうね♥"
+      }
+    ],
+    "schedule": [
+      {
+        "id": "default",
+        "trigger": "always",
+        "priority": 0,
+        "waypoints": [
+          {
+            "x": 20,
+            "y": 45,
+            "waitMs": 5000,
+            "activity": "work",
+            "speechLines": [
+              "もっと鳴いて♥",
+              "ほら、もっとよ♥"
+            ]
+          },
+          {
+            "x": 35,
+            "y": 38,
+            "waitMs": 2000,
+            "activity": "walk"
+          },
+          {
+            "x": 40,
+            "y": 45,
+            "waitMs": 3000,
+            "activity": "chat",
+            "speechLines": [
+              "あぁ楽しい♥　今日も最高だわ"
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "castle_succubus_mira",
+    "name": "ミラ",
+    "spriteKey": "succubus",
+    "animated": true,
+    "directionAnims": true,
+    "movement": "scheduled",
+    "patrolSpeed": 60,
+    "canBeHostile": true,
+    "detectionRange": 200,
+    "attackRange": 60,
+    "attackDamage": 15,
+    "attackCooldown": 1500,
+    "speechLines": [
+      "あの男、3日で搾り尽くしたわ♥",
+      "お姉様の城は居心地がいいわ～"
+    ],
+    "speechIntervalMs": 6500,
+    "dialogLines": [
+      {
+        "name": "ミラ",
+        "text": "最近獲物が増えて嬉しい限りよ♥"
+      }
+    ],
+    "schedule": [
+      {
+        "id": "default",
+        "trigger": "always",
+        "priority": 0,
+        "waypoints": [
+          {
+            "x": 50,
+            "y": 20,
+            "waitMs": 3000,
+            "activity": "chat",
+            "speechLines": [
+              "あの村の人間たち、美味だったわ♥"
+            ]
+          },
+          {
+            "x": 55,
+            "y": 35,
+            "waitMs": 2000,
+            "activity": "walk"
+          },
+          {
+            "x": 45,
+            "y": 42,
+            "waitMs": 4000,
+            "activity": "rest",
+            "speechLines": [
+              "はぁ、今日も満足♥"
+            ]
+          },
+          {
+            "x": 50,
+            "y": 28,
+            "waitMs": 2000,
+            "activity": "walk"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "castle_succubus_sera",
+    "name": "セラ",
+    "spriteKey": "succubus",
+    "animated": true,
+    "directionAnims": true,
+    "movement": "scheduled",
+    "patrolSpeed": 65,
+    "canBeHostile": true,
+    "detectionRange": 240,
+    "attackRange": 60,
+    "attackDamage": 18,
+    "attackCooldown": 1400,
+    "speechLines": [
+      "怪しい者は通さないわ",
+      "この辺りはリアラ様の縄張りよ"
+    ],
+    "speechIntervalMs": 5000,
+    "dialogLines": [
+      {
+        "name": "セラ",
+        "text": "ここは立ち入り禁止よ。何の用？"
+      }
+    ],
+    "schedule": [
+      {
+        "id": "default",
+        "trigger": "always",
+        "priority": 0,
+        "waypoints": [
+          {
+            "x": 37,
+            "y": 8,
+            "waitMs": 3000,
+            "activity": "watch",
+            "speechLines": [
+              "怪しい者はいないか…"
+            ]
+          },
+          {
+            "x": 42,
+            "y": 12,
+            "waitMs": 1500,
+            "activity": "walk"
+          },
+          {
+            "x": 32,
+            "y": 12,
+            "waitMs": 1500,
+            "activity": "walk"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "castle_succubus_nina",
+    "name": "ニナ",
+    "spriteKey": "succubus",
+    "animated": true,
+    "directionAnims": true,
+    "movement": "scheduled",
+    "patrolSpeed": 52,
+    "canBeHostile": true,
+    "detectionRange": 200,
+    "attackRange": 60,
+    "attackDamage": 15,
+    "attackCooldown": 1500,
+    "speechLines": [
+      "ふふ♥　また遊びましょうね",
+      "こんなに美味しい世界、最高よ♥"
+    ],
+    "speechIntervalMs": 7000,
+    "dialogLines": [
+      {
+        "name": "ニナ",
+        "text": "私ね、この仕事が大好きなの♥"
+      }
+    ],
+    "schedule": [
+      {
+        "id": "default",
+        "trigger": "always",
+        "priority": 0,
+        "waypoints": [
+          {
+            "x": 60,
+            "y": 55,
+            "waitMs": 4000,
+            "activity": "work",
+            "speechLines": [
+              "もっと鳴かせてあげる♥"
+            ]
+          },
+          {
+            "x": 55,
+            "y": 48,
+            "waitMs": 2000,
+            "activity": "walk"
+          },
+          {
+            "x": 65,
+            "y": 50,
+            "waitMs": 3000,
+            "activity": "chat",
+            "speechLines": [
+              "今日の獲物は特別よ♥"
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "castle_succubus_faye",
+    "name": "フェイ",
+    "spriteKey": "succubus",
+    "animated": true,
+    "directionAnims": true,
+    "movement": "scheduled",
+    "patrolSpeed": 58,
+    "canBeHostile": true,
+    "detectionRange": 210,
+    "attackRange": 60,
+    "attackDamage": 15,
+    "attackCooldown": 1500,
+    "speechLines": [
+      "あの子ったら、全然離してくれないんだもの♥",
+      "甘い夜ね♥"
+    ],
+    "speechIntervalMs": 6000,
+    "dialogLines": [
+      {
+        "name": "フェイ",
+        "text": "折角だから私たちとも遊んでいって♥"
+      }
+    ],
+    "schedule": [
+      {
+        "id": "default",
+        "trigger": "always",
+        "priority": 0,
+        "waypoints": [
+          {
+            "x": 15,
+            "y": 62,
+            "waitMs": 4000,
+            "activity": "work",
+            "speechLines": [
+              "そうよ、もっといい声で♥"
+            ]
+          },
+          {
+            "x": 25,
+            "y": 58,
+            "waitMs": 2500,
+            "activity": "chat",
+            "speechLines": [
+              "ねぇ、次は誰を狙いましょうか♥"
+            ]
+          },
+          {
+            "x": 20,
+            "y": 68,
+            "waitMs": 3000,
+            "activity": "rest",
+            "speechLines": [
+              "はぁ♥　幸せ…"
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "castle_victim_a",
+    "name": "村人",
+    "spriteKey": "victhim3_l",
+    "animated": true,
+    "frameCount": 4,
+    "frameRate": 4,
+    "movement": "fixed",
+    "speechLines": [
+      "うぁ...だれか...たすけ...",
+      "あつい...体が..."
+    ],
+    "speechIntervalMs": 8000,
+    "dialogLines": [
+      {
+        "name": "村人",
+        "text": "た...たすけ...て..."
+      }
+    ]
+  },
+  {
+    "id": "castle_victim_b",
+    "name": "村人",
+    "spriteKey": "victhim3_r",
+    "animated": true,
+    "frameCount": 4,
+    "frameRate": 4,
+    "movement": "fixed",
+    "speechLines": [
+      "やめ...て...もう...",
+      "なに...も...わからない..."
+    ],
+    "speechIntervalMs": 9000,
+    "dialogLines": [
+      {
+        "name": "村人",
+        "text": "お...おねが...い..."
+      }
+    ]
+  },
+  {
+    "id": "castle_victim_c",
+    "name": "村人",
+    "spriteKey": "victhim3_l",
+    "animated": true,
+    "frameCount": 4,
+    "frameRate": 4,
+    "movement": "fixed",
+    "speechLines": [
+      "は...やく...にげ...て...",
+      "こわい...こわい..."
+    ],
+    "speechIntervalMs": 10000,
+    "dialogLines": [
+      {
+        "name": "村人",
+        "text": "に...にげ...て..."
+      }
+    ]
+  },
+  {
+    "id": "castle_victim_d",
+    "name": "村人",
+    "spriteKey": "victhim3_r",
+    "animated": true,
+    "frameCount": 4,
+    "frameRate": 4,
+    "movement": "fixed",
+    "speechLines": [
+      "ぐ...うぅ...",
+      "も...もう...やめ..."
+    ],
+    "speechIntervalMs": 8500,
+    "dialogLines": [
+      {
+        "name": "村人",
+        "text": "う...うぅ..."
+      }
+    ]
+  },
+  {
+    "id": "castle_victim_e",
+    "name": "村人",
+    "spriteKey": "victhim3_l",
+    "animated": true,
+    "frameCount": 4,
+    "frameRate": 4,
+    "movement": "fixed",
+    "speechLines": [
+      "か...かみさま...",
+      "いた...い...あつ...い..."
+    ],
+    "speechIntervalMs": 9500,
+    "dialogLines": [
+      {
+        "name": "村人",
+        "text": "か...体が...燃える..."
+      }
+    ]
   }
 ]

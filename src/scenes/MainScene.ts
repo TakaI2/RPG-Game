@@ -47,6 +47,7 @@ import type { FullPortalData } from '../systems/PortalManager'
 import type { ThenAction } from '../types/GameFlowTypes'
 import { advanceClock, setClockSpeed } from '../systems/GameClock'
 import { setDangerLevel, resetWorldState } from '../systems/WorldState'
+import { addWanted, resetWanted } from '../systems/WantedSystem'
 import { resolveText } from '../utils/LocaleManager'
 
 export default class MainScene extends Phaser.Scene {
@@ -281,6 +282,22 @@ export default class MainScene extends Phaser.Scene {
     // Escキーの登録
     this.escKey = this.input.keyboard?.addKey(Phaser.Input.Keyboard.KeyCodes.ESC)
     console.log('[MainScene] ESC key registered')
+
+    // NPC 近接攻撃イベント
+    this.events.on('npc:attack', (payload: { damage: number }) => {
+      if (this.player.getData('hitCool') || this.isGameOver) return
+      type PlayerWithHp = Phaser.Types.Physics.Arcade.SpriteWithDynamicBody & { hp: number }
+      const oldHP = (this.player as PlayerWithHp).hp
+      const newHP = Math.max(0, oldHP - payload.damage)
+      ;(this.player as PlayerWithHp).hp = newHP
+      this.updateHPDisplay()
+      this.player.setTint(0xff4444)
+      this.audioBus.playSe('se_player_hit', { volume: 0.8 })
+      this.player.setData('hitCool', true)
+      this.time.delayedCall(100, () => this.player.clearTint())
+      this.time.delayedCall(500, () => this.player.setData('hitCool', false))
+      if (newHP <= 0) this.triggerGameOver()
+    })
 
     // シャットダウン時のクリーンアップ
     this.events.once('shutdown', () => {
@@ -1561,8 +1578,9 @@ export default class MainScene extends Phaser.Scene {
     this.currentMapId = mapId
     this.currentMapData = mapData
 
-    // マップ遷移時に WorldState をリセット
+    // マップ遷移時に WorldState・WantedSystem をリセット
     resetWorldState()
+    resetWanted()
 
     // タイルマップを構築
     const tileDefArray = this.cache.json.get('tilesets') as TileDef[]

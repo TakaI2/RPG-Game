@@ -5362,8 +5362,8 @@
       5,
       5,
       5,
-      7,
-      7,
+      5,
+      5,
       5,
       5,
       5,
@@ -5444,8 +5444,8 @@
       5,
       5,
       5,
-      7,
-      7,
+      5,
+      5,
       5,
       5,
       5,
@@ -5526,8 +5526,8 @@
       5,
       5,
       5,
-      7,
-      7,
+      5,
+      5,
       5,
       5,
       5,
@@ -6590,14 +6590,126 @@
       "x": 16,
       "y": 10,
       "npcDefId": "npc_1775354231905"
+    },
+    {
+      "x": 25,
+      "y": 15,
+      "npcDefId": "castle_succubus_aria"
+    },
+    {
+      "x": 20,
+      "y": 45,
+      "npcDefId": "castle_succubus_liena"
+    },
+    {
+      "x": 50,
+      "y": 20,
+      "npcDefId": "castle_succubus_mira"
+    },
+    {
+      "x": 37,
+      "y": 8,
+      "npcDefId": "castle_succubus_sera"
+    },
+    {
+      "x": 60,
+      "y": 55,
+      "npcDefId": "castle_succubus_nina"
+    },
+    {
+      "x": 15,
+      "y": 62,
+      "npcDefId": "castle_succubus_faye"
+    },
+    {
+      "x": 18,
+      "y": 47,
+      "npcDefId": "castle_victim_a"
+    },
+    {
+      "x": 22,
+      "y": 50,
+      "npcDefId": "castle_victim_b"
+    },
+    {
+      "x": 25,
+      "y": 55,
+      "npcDefId": "castle_victim_c"
+    },
+    {
+      "x": 58,
+      "y": 52,
+      "npcDefId": "castle_victim_d"
+    },
+    {
+      "x": 18,
+      "y": 65,
+      "npcDefId": "castle_victim_e"
     }
   ],
   "portals": [
     {
       "x": 37,
       "y": 2,
-      "spriteKey": "door",
-      "rotation": 0
+      "spriteKey": "door"
+    }
+  ],
+  "activitySpots": [
+    {
+      "id": "first-chat-a",
+      "type": "chat",
+      "x": 30,
+      "y": 25,
+      "label": "談笑スポットA"
+    },
+    {
+      "id": "first-chat-b",
+      "type": "chat",
+      "x": 40,
+      "y": 45,
+      "label": "談笑スポットB"
+    },
+    {
+      "id": "first-victim-1",
+      "type": "work",
+      "x": 20,
+      "y": 46,
+      "label": "犠牲者周辺A"
+    },
+    {
+      "id": "first-victim-2",
+      "type": "work",
+      "x": 60,
+      "y": 53,
+      "label": "犠牲者周辺B"
+    },
+    {
+      "id": "first-victim-3",
+      "type": "work",
+      "x": 18,
+      "y": 63,
+      "label": "犠牲者周辺C"
+    },
+    {
+      "id": "first-watch-1",
+      "type": "watch",
+      "x": 37,
+      "y": 8,
+      "label": "入口見張り"
+    },
+    {
+      "id": "first-rest-1",
+      "type": "rest",
+      "x": 45,
+      "y": 42,
+      "label": "休憩場所"
+    },
+    {
+      "id": "first-rest-2",
+      "type": "rest",
+      "x": 20,
+      "y": 68,
+      "label": "休憩場所2"
     }
   ]
 }
