@@ -5,8 +5,8 @@
     "startDate": "2025-10-18",
     "currentBranch": "feature/title-screen-and-pause-menu"
   },
-  "latestUpdate": "2026-02-23",
-  "status": "Gameflowエディタ（Blueprint風ノードエディタ）実装完了。BGMマップ再生バグ3件修正済み（stopAll削除・fade:0即時再生・destroy()リスナー特定削除）。テスト未実施。",
+  "latestUpdate": "2026-03-20",
+  "status": "Webデプロイ環境修正完了（vite base・deploy.yml を /htdocs/Game_RPG/ に統一）。developer→mainマージ済み。CI/CD動作確認済み。残タスク: bad1.json接続・新キャラアセット統合。",
   "completedFeatures": [
     "タイトル画面実装",
     "ポーズメニュー実装",

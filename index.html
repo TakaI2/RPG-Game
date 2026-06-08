@@ -2,16 +2,52 @@
 <html lang="ja">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
     <title>Top‑Down Adventure</title>
     <style>
-      html,body { margin:0; height:100%; background:#0b0f14; }
-      #app { width:100vw; height:100vh; }
+      html, body { margin: 0; height: 100%; background: #0b0f14; overflow: hidden; }
+      #app { position: fixed; top: 0; left: 0; right: 0; bottom: 0; }
       canvas { image-rendering: pixelated; image-rendering: crisp-edges; }
+      /* オリエンテーションオーバーレイ: CSSメディアクエリで制御 */
+      #orientation-overlay {
+        display: flex;
+        position: fixed; inset: 0;
+        background: #000; color: #fff;
+        font-size: 5vw; text-align: center;
+        align-items: center; justify-content: center;
+        flex-direction: column; gap: 16px;
+        z-index: 99999; font-family: sans-serif;
+        cursor: pointer;
+      }
+      @media (orientation: landscape) {
+        #orientation-overlay { display: none; }
+      }
     </style>
   </head>
   <body>
     <div id="app"></div>
     <script type="module" src="/src/main.ts"></script>
+    <script>
+      if (location.hostname === 'localhost' || location.hostname === '127.0.0.1') {
+        const btn = document.createElement('a')
+        btn.href = 'tools/'
+        btn.target = '_blank'
+        btn.title = 'エディタを開く'
+        btn.textContent = '🛠'
+        btn.style.cssText = [
+          'position:fixed', 'bottom:16px', 'right:16px', 'z-index:99999',
+          'width:36px', 'height:36px', 'border-radius:50%',
+          'background:rgba(49,50,68,0.75)', 'color:#cba6f7',
+          'font-size:18px', 'line-height:36px', 'text-align:center',
+          'text-decoration:none', 'backdrop-filter:blur(4px)',
+          'border:1px solid rgba(203,166,247,0.3)',
+          'transition:background 0.2s, transform 0.15s',
+          'user-select:none'
+        ].join(';')
+        btn.onmouseenter = () => { btn.style.background = 'rgba(69,71,90,0.9)'; btn.style.transform = 'scale(1.1)' }
+        btn.onmouseleave = () => { btn.style.background = 'rgba(49,50,68,0.75)'; btn.style.transform = '' }
+        document.body.appendChild(btn)
+      }
+    </script>
   </body>
 </html>

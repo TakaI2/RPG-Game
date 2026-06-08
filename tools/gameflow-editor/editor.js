@@ -1,6 +1,62 @@
 // Gameflow Editor - vanilla JS, no dependencies
 // Catppuccin Mocha theme
 
+// ─── ストーリースクリプト一覧（assets/story/scripts/ から取得）─────────────────
+let storyScripts = [];
+(async () => {
+  try {
+    const res = await fetch('/api/list-assets?folder=assets/story/scripts');
+    const json = await res.json();
+    if (json.ok) storyScripts = json.files.filter(f => f.endsWith('.json')).map(f => f.replace(/\.json$/, ''));
+  } catch (e) {}
+})();
+
+// ─── ボスファイル一覧（assets/bosses/ から取得）─────────────────────────────
+let bossIds = [];
+(async () => {
+  try {
+    const res = await fetch('/api/list-assets?folder=assets/bosses');
+    const json = await res.json();
+    if (json.ok) bossIds = json.files.filter(f => f.endsWith('.json')).map(f => f.replace(/\.json$/, ''));
+  } catch (e) {}
+})();
+
+// ─── マップファイル一覧（assets/maps/ から取得）──────────────────────────────
+let mapIds = [];
+(async () => {
+  try {
+    const res = await fetch('/api/list-assets?folder=assets/maps');
+    const json = await res.json();
+    if (json.ok) mapIds = json.files.filter(f => f.endsWith('.json') && !f.includes('tilesets')).map(f => f.replace(/\.json$/, ''));
+  } catch (e) {}
+})();
+
+// ─── ロード画像一覧（assets/images/loading_images/ から取得）────────────────
+let loadingImageFiles = [];
+(async () => {
+  try {
+    const res = await fetch('/api/list-assets?folder=assets/images/loading_images');
+    const json = await res.json();
+    if (json.ok) loadingImageFiles = json.files.filter(f => /\.(png|jpg|jpeg|webp)$/i.test(f));
+  } catch (e) {}
+})();
+
+// ─── BGMファイル一覧（assets/story/bgm/ から取得）────────────────────────────
+// key → url のマップ。serialize 時に assets.bgm[] を自動生成するために使う
+let bgmFileMap = {};
+(async () => {
+  try {
+    const res = await fetch('/api/list-assets?folder=assets/story/bgm');
+    const json = await res.json();
+    if (json.ok) {
+      json.files.filter(f => /\.(ogg|mp3|wav)$/i.test(f)).forEach(f => {
+        const key = f.replace(/\.[^.]+$/, '');
+        bgmFileMap[key] = `assets/story/bgm/${f}`;
+      });
+    }
+  } catch (e) {}
+})();
+
 // ─── Constants ───────────────────────────────────────────────────────────────
 const NODE_W      = 220;
 const HEADER_H    = 36;
@@ -40,6 +96,10 @@ const state = {
   fileName: 'gameflow.json',
   /** Incrementing id counter */
   _nextId: 1,
+  /** @type {Array<{id:string, label:string, stories:string[], loadingImages:string[]}>} */
+  chapters: [{ id: 'chapter1', label: '', stories: [], loadingImages: [] }],
+  /** @type {number} 実ms / ゲーム1時間 */
+  clockSpeed: 180000,
 };
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
@@ -392,11 +452,16 @@ function renderNodeProperties(node) {
 }
 
 function buildMapProps(node) {
-  const bgmKeys = state.nodes
-    .filter(n => n.type === 'bgm')
-    .map(n => `<option value="${escHtml(n.data.key)}"${node.data.bgm === n.data.key ? ' selected' : ''}>${escHtml(n.data.key)}</option>`)
-    .join('');
-  const bgmBlank = node.data.bgm ? '' : ' selected';
+  const currentBgm = node.data.bgm || '';
+  // ファイル一覧 + 旧来のBGMノードキーをマージして選択肢を構築
+  const bgmNodeKeys = state.nodes.filter(n => n.type === 'bgm').map(n => n.data.key).filter(Boolean);
+  const allBgmKeys = [...new Set([...Object.keys(bgmFileMap), ...bgmNodeKeys])];
+  const bgmKeys = allBgmKeys.map(k =>
+    `<option value="${escHtml(k)}"${k === currentBgm ? ' selected' : ''}>${escHtml(k)}</option>`
+  ).join('');
+  const hasMatch = allBgmKeys.includes(currentBgm);
+  const extraBgm = (!hasMatch && currentBgm) ? `<option value="${escHtml(currentBgm)}" selected>${escHtml(currentBgm)}</option>` : '';
+  const bgmBlank = currentBgm ? '' : ' selected';
 
   let triggerRows = '';
   const triggers = node.data.eventTriggers || [];
@@ -408,8 +473,13 @@ function buildMapProps(node) {
           <td><select class="trig-type" data-ti="${i}">
             <option value="story" selected>story</option>
           </select></td>
-          <td><input class="trig-val" data-ti="${i}" value="${escHtml(t.storyId||'')}" placeholder="storyId"></td>
-          <td><button class="btn-del-trigger" data-ti="${i}">✕</button></td>
+          <td>${(() => {
+            const cur = t.storyId || ''
+            const opts = storyScripts.map(s => `<option value="${escHtml(s)}" ${s === cur ? 'selected' : ''}>${escHtml(s)}</option>`).join('')
+            const extra = (!storyScripts.includes(cur) && cur) ? `<option value="${escHtml(cur)}" selected>${escHtml(cur)}</option>` : ''
+            return `<select class="trig-val" data-ti="${i}"><option value="">-- 選択 --</option>${extra}${opts}</select>`
+          })()}</td>
+          <td><button type="button" class="btn-del-trigger" data-ti="${i}">✕</button></td>
         </tr>`;
     } else {
       // teleport 型（旧形式）: 警告表示のみ、編集不可
@@ -418,7 +488,7 @@ function buildMapProps(node) {
           <td>${i}</td>
           <td style="color:#f38ba8">[deprecated] teleport</td>
           <td style="color:#f38ba8">${escHtml(t.targetMap||'')}</td>
-          <td><button class="btn-del-trigger" data-ti="${i}">✕</button></td>
+          <td><button type="button" class="btn-del-trigger" data-ti="${i}">✕</button></td>
         </tr>`;
     }
   });
@@ -446,17 +516,27 @@ function buildMapProps(node) {
         <tbody id="portal-tbody">${portalRows}</tbody>
       </table>`;
 
+  const currentMapId = node.data.id || ''
+  const mapOptions = mapIds.map(m =>
+    `<option value="${escHtml(m)}" ${m === currentMapId ? 'selected' : ''}>${escHtml(m)}</option>`
+  ).join('')
+  const hasMapMatch = mapIds.includes(currentMapId)
+  const extraMapOption = (!hasMapMatch && currentMapId)
+    ? `<option value="${escHtml(currentMapId)}" selected>${escHtml(currentMapId)}</option>` : ''
   return `
     <div class="prop-section-title">Map</div>
     <div class="prop-group">
       <label>Map ID</label>
-      <input id="prop-map-id" value="${escHtml(node.data.id||'')}">
+      <select id="prop-map-id">
+        <option value="">-- 選択 --</option>
+        ${extraMapOption}${mapOptions}
+      </select>
     </div>
     <div class="prop-group">
       <label>BGM</label>
       <select id="prop-map-bgm">
         <option value=""${bgmBlank}>(なし)</option>
-        ${bgmKeys}
+        ${extraBgm}${bgmKeys}
       </select>
     </div>
     <div class="prop-group">
@@ -465,12 +545,33 @@ function buildMapProps(node) {
         <label for="prop-map-hasboss">hasBoss</label>
       </div>
     </div>
+    ${node.data.hasBoss ? (() => {
+      const curKey = node.data.bossConfigKey || '';
+      const bossOptions = bossIds.map(b => `<option value="${escHtml(b)}"${b === curKey ? ' selected' : ''}>${escHtml(b)}</option>`).join('');
+      const extraBossOpt = (!bossIds.includes(curKey) && curKey) ? `<option value="${escHtml(curKey)}" selected>${escHtml(curKey)}</option>` : '';
+      return `
+    <div class="prop-group">
+      <label>Boss Config</label>
+      <select id="prop-boss-configkey">
+        <option value="">-- 選択 --</option>
+        ${extraBossOpt}${bossOptions}
+      </select>
+    </div>
+    <div class="prop-group">
+      <label>Boss Spawn X</label>
+      <input type="number" id="prop-boss-x" value="${Number(node.data.bossX ?? 5)}" style="width:70px">
+    </div>
+    <div class="prop-group">
+      <label>Boss Spawn Y</label>
+      <input type="number" id="prop-boss-y" value="${Number(node.data.bossY ?? 5)}" style="width:70px">
+    </div>`;
+    })() : ''}
     <div class="prop-section-title">Event Triggers</div>
     <table class="trigger-table">
       <thead><tr><th>#</th><th>Type</th><th>Value</th><th></th></tr></thead>
       <tbody id="trigger-tbody">${triggerRows}</tbody>
     </table>
-    <button class="btn-add-trigger" id="btn-add-trigger">+ トリガー追加</button>
+    <button type="button" class="btn-add-trigger" id="btn-add-trigger">+ トリガー追加</button>
     <div class="prop-section-title" style="margin-top:12px">Portals</div>
     <p style="font-size:0.78rem;color:#6c7086;margin-bottom:6px;">portal[N] ピンを他Mapノードの in に接続して接続先を設定</p>
     ${portalSection}
@@ -482,11 +583,22 @@ function buildMapProps(node) {
 }
 
 function buildStoryProps(node) {
+  const currentStoryId = node.data.storyId || ''
+  const storyOptions = storyScripts.map(s =>
+    `<option value="${escHtml(s)}" ${s === currentStoryId ? 'selected' : ''}>${escHtml(s)}</option>`
+  ).join('')
+  const hasMatch = storyScripts.includes(currentStoryId)
+  const extraOption = (!hasMatch && currentStoryId)
+    ? `<option value="${escHtml(currentStoryId)}" selected>${escHtml(currentStoryId)}</option>` : ''
+  const isGotoMap = node.data.thenAction === 'goto_map'
   return `
     <div class="prop-section-title">Story</div>
     <div class="prop-group">
       <label>Story ID</label>
-      <input id="prop-story-id" value="${escHtml(node.data.storyId||'')}">
+      <select id="prop-story-id">
+        <option value="">-- 選択 --</option>
+        ${extraOption}${storyOptions}
+      </select>
     </div>
     <div class="prop-group">
       <label>Then Action</label>
@@ -495,6 +607,16 @@ function buildStoryProps(node) {
         <option value="goto_map"${node.data.thenAction === 'goto_map' ? ' selected' : ''}>goto_map</option>
         <option value="exit"${node.data.thenAction === 'exit' ? ' selected' : ''}>exit</option>
       </select>
+    </div>
+    <div id="prop-story-spawn-wrap" style="display:${isGotoMap ? '' : 'none'}">
+      <div class="prop-group">
+        <label>Spawn X (タイル)</label>
+        <input type="number" id="prop-story-spawn-x" value="${node.data.thenMapX ?? 10}" min="0">
+      </div>
+      <div class="prop-group">
+        <label>Spawn Y (タイル)</label>
+        <input type="number" id="prop-story-spawn-y" value="${node.data.thenMapY ?? 10}" min="0">
+      </div>
     </div>
     <p style="font-size:0.78rem;color:#6c7086;margin-top:6px;">then の遷移先は then ポートからエッジで接続してください</p>
   `;
@@ -529,7 +651,7 @@ function bindPropertyHandlers(node) {
   };
 
   if (node.type === 'map') {
-    listen('prop-map-id', 'input', e => {
+    listen('prop-map-id', 'change', e => {
       node.data.id = e.target.value;
       renderNodes(); // タイトル即時更新
       // Map JSON から portal 数を非同期取得
@@ -546,6 +668,16 @@ function bindPropertyHandlers(node) {
     listen('prop-map-hasboss', 'change', e => {
       node.data.hasBoss = e.target.checked;
       renderAll();
+      renderProperties();
+    });
+    listen('prop-boss-configkey', 'change', e => {
+      node.data.bossConfigKey = e.target.value;
+    });
+    listen('prop-boss-x', 'change', e => {
+      node.data.bossX = parseInt(e.target.value) || 0;
+    });
+    listen('prop-boss-y', 'change', e => {
+      node.data.bossY = parseInt(e.target.value) || 0;
     });
     // Trigger table
     const tbody = document.getElementById('trigger-tbody');
@@ -645,13 +777,21 @@ function bindPropertyHandlers(node) {
   }
 
   if (node.type === 'story') {
-    listen('prop-story-id', 'input', e => {
+    listen('prop-story-id', 'change', e => {
       node.data.storyId = e.target.value;
       renderNodes();
     });
     listen('prop-story-then', 'change', e => {
       node.data.thenAction = e.target.value;
+      const wrap = document.getElementById('prop-story-spawn-wrap');
+      if (wrap) wrap.style.display = e.target.value === 'goto_map' ? '' : 'none';
       renderNodes();
+    });
+    listen('prop-story-spawn-x', 'input', e => {
+      node.data.thenMapX = parseInt(e.target.value) || 0;
+    });
+    listen('prop-story-spawn-y', 'input', e => {
+      node.data.thenMapY = parseInt(e.target.value) || 0;
     });
   }
 
@@ -924,29 +1064,88 @@ function onCanvasWheel(e) {
   updateStatus();
 }
 
-// ─── Toolbar Buttons ──────────────────────────────────────────────────────────
-document.getElementById('btn-open').addEventListener('click', () => {
-  document.getElementById('file-input').click();
+// ─── ファイル名入力と state.fileName の同期 ───────────────────────────────────
+const fileNameInput = document.getElementById('file-name-input');
+fileNameInput.addEventListener('input', () => {
+  state.fileName = fileNameInput.value.trim() || 'gameflow.json';
 });
 
-document.getElementById('file-input').addEventListener('change', e => {
-  const file = e.target.files[0];
-  if (!file) return;
-  state.fileName = file.name;
-  const reader = new FileReader();
-  reader.onload = ev => {
-    try {
-      const json = JSON.parse(ev.target.result);
-      deserialize(json);
+function setFileName(name) {
+  state.fileName = name;
+  fileNameInput.value = name;
+}
+
+// ─── ファイルブラウザ ──────────────────────────────────────────────────────────
+document.getElementById('btn-browse').addEventListener('click', async () => {
+  let files = [];
+  try {
+    const res = await fetch('/api/list-assets?folder=assets/gameflows');
+    const json = await res.json();
+    if (json.ok) files = json.files.filter(f => f.endsWith('.json'));
+  } catch (e) {
+    alert('ファイル一覧の取得に失敗しました');
+    return;
+  }
+  if (files.length === 0) { alert('gameflows/ フォルダにファイルがありません'); return; }
+
+  // シンプルなモーダルで選択
+  const overlay = document.createElement('div');
+  overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:9999;display:flex;align-items:center;justify-content:center';
+  const box = document.createElement('div');
+  box.style.cssText = 'background:#1e1e2e;border:1px solid #45475a;border-radius:8px;padding:16px;min-width:260px;max-height:60vh;overflow-y:auto';
+  box.innerHTML = `<div style="font-weight:bold;margin-bottom:10px;color:#cdd6f4">gameflows/ のファイル</div>`;
+  files.forEach(f => {
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.textContent = f;
+    btn.style.cssText = 'display:block;width:100%;text-align:left;padding:6px 10px;margin-bottom:4px;background:#313244;border:none;border-radius:4px;color:#cdd6f4;cursor:pointer;font-size:14px';
+    btn.onmouseenter = () => btn.style.background = '#45475a';
+    btn.onmouseleave = () => btn.style.background = '#313244';
+    btn.onclick = () => { setFileName(f); document.body.removeChild(overlay); };
+    box.appendChild(btn);
+  });
+  const cancel = document.createElement('button');
+  cancel.type = 'button';
+  cancel.textContent = 'キャンセル';
+  cancel.style.cssText = 'margin-top:8px;width:100%;padding:6px;background:#45475a;border:none;border-radius:4px;color:#cdd6f4;cursor:pointer';
+  cancel.onclick = () => document.body.removeChild(overlay);
+  box.appendChild(cancel);
+  overlay.appendChild(box);
+  overlay.onclick = (e) => { if (e.target === overlay) document.body.removeChild(overlay); };
+  document.body.appendChild(overlay);
+});
+
+// ─── Toolbar Buttons ──────────────────────────────────────────────────────────
+document.getElementById('btn-new').addEventListener('click', () => {
+  if (state.nodes.length > 0 && !confirm('現在の内容を破棄して新規作成しますか？')) return;
+  state.nodes = [];
+  state.edges = [];
+  state.selectedId = null;
+  state._nextId = 1;
+  state.chapters = [{ id: 'chapter1', label: '', stories: [], loadingImages: [] }];
+  state.clockSpeed = 180000;
+  setFileName('gameflow.json');
+  // start ノードを追加
+  const startNode = { id: 'start', type: 'start', x: 100, y: 200, data: { label: 'START' } };
+  state.nodes.push(startNode);
+  renderAll();
+  renderProperties();
+  renderChaptersPanel();
+  window.showToast('新規作成しました', 'success');
+});
+
+document.getElementById('btn-open').addEventListener('click', () => {
+  const path = `assets/gameflows/${state.fileName}`;
+  fetch(`/api/load-asset?path=${encodeURIComponent(path)}&_t=${Date.now()}`, { cache: 'no-store' })
+    .then(r => r.json())
+    .then(res => {
+      if (!res.ok) throw new Error(res.error);
+      deserialize(JSON.parse(res.content));
       renderAll();
       renderProperties();
-    } catch (err) {
-      alert('JSONの読み込みに失敗しました: ' + err.message);
-    }
-  };
-  reader.readAsText(file);
-  // Reset so same file can be re-loaded
-  e.target.value = '';
+      window.showToast(`読み込みました: ${path}`, 'success');
+    })
+    .catch(err => alert('読み込みに失敗しました: ' + err.message));
 });
 
 document.getElementById('btn-save').addEventListener('click', () => {
@@ -958,6 +1157,11 @@ document.getElementById('btn-save').addEventListener('click', () => {
   a.download = state.fileName;
   a.click();
   URL.revokeObjectURL(url);
+});
+
+document.getElementById('btn-save-to-game').addEventListener('click', () => {
+  const path = `assets/gameflows/${state.fileName}`;
+  window.saveToGame(path, serialize());
 });
 
 document.getElementById('btn-add-map').addEventListener('click', () => {
@@ -1008,8 +1212,8 @@ function addNode(type) {
 
 function defaultData(type) {
   switch (type) {
-    case 'map':   return { id: 'new_map', bgm: '', hasBoss: false, eventTriggers: [], _portalCount: 0, _portalDests: [] };
-    case 'story': return { storyId: 'new_story', thenAction: 'stay' };
+    case 'map':   return { id: 'new_map', bgm: '', hasBoss: false, bossConfigKey: '', bossX: 5, bossY: 5, eventTriggers: [], _portalCount: 0, _portalDests: [] };
+    case 'story': return { storyId: 'new_story', thenAction: 'stay', thenMapX: 10, thenMapY: 10 };
     case 'bgm':   return { key: 'new_bgm', url: '' };
     case 'exit':  return {};
     case 'start': return {};
@@ -1086,7 +1290,10 @@ function deserialize(cfg) {
       data: {
         id:            mapId,
         bgm:           mapData.bgm || '',
-        hasBoss:       mapData.hasBoss || false,
+        hasBoss:       !!(mapData.hasBoss || mapData.boss),
+        bossConfigKey: mapData.boss?.configKey || '',
+        bossX:         mapData.boss?.x ?? 5,
+        bossY:         mapData.boss?.y ?? 5,
         eventTriggers: mapData.eventTriggers ? JSON.parse(JSON.stringify(mapData.eventTriggers)) : [],
         _portalCount:  portals.length,
         _portalDests:  portals.map(pt => ({ targetX: pt.targetX || 5, targetY: pt.targetY || 5 })),
@@ -1128,6 +1335,11 @@ function deserialize(cfg) {
   function resolveThen(storyNodeId, thenCfg) {
     if (!thenCfg) return;
     if (thenCfg.action === 'goto_map') {
+      const node = state.nodes.find(n => n.id === storyNodeId);
+      if (node) {
+        node.data.thenMapX = thenCfg.x ?? 10;
+        node.data.thenMapY = thenCfg.y ?? 10;
+      }
       const targetMapNodeId = ensureMapNode(thenCfg.mapId, cfg.maps?.[thenCfg.mapId] || {});
       addEdge(storyNodeId, 'then', targetMapNodeId, 'in');
     } else if (thenCfg.action === 'exit') {
@@ -1136,17 +1348,31 @@ function deserialize(cfg) {
     // 'stay' → no edge
   }
 
-  // Start node
-  if (cfg.start) {
+  // Chapters メタデータを state に読み込む（新形式: chapters[]、旧形式: start フォールバック）
+  state.chapters = (cfg.chapters || []).map(ch => ({
+    id: ch.id || 'chapter1',
+    label: ch.label || '',
+    stories: ch.stories || [],
+    loadingImages: cfg.assets?.loadingImages || [],
+  }));
+  if (state.chapters.length === 0) {
+    state.chapters = [{ id: 'chapter1', label: '', stories: [], loadingImages: cfg.assets?.loadingImages || [] }];
+  }
+  state.clockSpeed = cfg.assets?.clockSpeed ?? 180000;
+  renderChaptersPanel();
+
+  // Start node（chapters[0].start を優先、旧形式は cfg.start にフォールバック）
+  const startCfg = cfg.chapters?.[0]?.start ?? cfg.start;
+  if (startCfg) {
     const p = pos('start') || { x: autoLayout.startX, y: autoLayout.startY };
     const startNode = { id: genId(), type: 'start', x: p.x, y: p.y, data: {} };
     state.nodes.push(startNode);
 
-    if (cfg.start.story) {
-      const thenAction = cfg.start.then?.action || 'stay';
-      const storyNodeId = ensureStoryNode(cfg.start.story, thenAction);
+    if (startCfg.story) {
+      const thenAction = startCfg.then?.action || 'stay';
+      const storyNodeId = ensureStoryNode(startCfg.story, thenAction);
       addEdge(startNode.id, 'out', storyNodeId, 'in');
-      resolveThen(storyNodeId, cfg.start.then);
+      resolveThen(storyNodeId, startCfg.then);
     }
   }
 
@@ -1204,25 +1430,52 @@ function deserialize(cfg) {
 function serialize() {
   const result = {};
 
-  // BGM assets
-  const bgmNodes = state.nodes.filter(n => n.type === 'bgm');
-  if (bgmNodes.length > 0) {
-    result.assets = { bgm: bgmNodes.map(n => ({ key: n.data.key, url: n.data.url })) };
-  }
+  // BGM assets: BGMノード + マップノードで使われているBGMファイルをマージ
+  const bgmAssetsMap = new Map();
+  // 明示的なBGMノード（後方互換）
+  state.nodes.filter(n => n.type === 'bgm').forEach(n => {
+    if (n.data.key) bgmAssetsMap.set(n.data.key, n.data.url);
+  });
+  // マップノードで選択されたBGMファイル（bgmFileMap から URL を自動解決）
+  state.nodes.filter(n => n.type === 'map').forEach(n => {
+    const key = n.data.bgm;
+    if (key && !bgmAssetsMap.has(key) && bgmFileMap[key]) {
+      bgmAssetsMap.set(key, bgmFileMap[key]);
+    }
+  });
+  result.assets = { bgm: bgmAssetsMap.size > 0 ? Array.from(bgmAssetsMap, ([key, url]) => ({ key, url })) : [] };
+  const loadingImgs = state.chapters[0]?.loadingImages ?? [];
+  if (loadingImgs.length > 0) result.assets.loadingImages = loadingImgs;
+  if (state.clockSpeed && state.clockSpeed !== 180000) result.assets.clockSpeed = state.clockSpeed;
 
-  // Start
+  // Chapters（グラフの Start ノードを chapters[0].start として書き出し）
   const startNode = state.nodes.find(n => n.type === 'start');
+  let startConfig = null;
   if (startNode) {
     const outEdge = state.edges.find(e => e.fromNode === startNode.id && e.fromPort === 'out');
     if (outEdge) {
       const storyNode = findNode(outEdge.toNode);
       if (storyNode && storyNode.type === 'story') {
-        result.start = {
-          story: storyNode.data.storyId,
-          then: resolveThenConfig(storyNode),
-        };
+        startConfig = { story: storyNode.data.storyId, then: resolveThenConfig(storyNode) };
       }
     }
+  }
+  // chapter 1 の stories をグラフ上の全 Story ノードから自動収集
+  const autoStories = [...new Set(
+    state.nodes.filter(n => n.type === 'story' && n.data.storyId).map(n => n.data.storyId)
+  )];
+  if (state.chapters[0]) state.chapters[0].stories = autoStories;
+  renderChaptersPanel();
+
+  result.chapters = state.chapters.map((ch, i) => {
+    const obj = { id: ch.id };
+    if (ch.label) obj.label = ch.label;
+    obj.start = i === 0 ? (startConfig || { story: null, then: { action: 'stay' } }) : (ch.start || { story: null, then: { action: 'stay' } });
+    if (ch.stories && ch.stories.length > 0) obj.stories = ch.stories;
+    return obj;
+  });
+  if (result.chapters.length === 0 && startConfig) {
+    result.chapters = [{ id: 'chapter1', start: startConfig }];
   }
 
   // Maps
@@ -1234,10 +1487,14 @@ function serialize() {
       const mapObj = {
         bgm:     mapNode.data.bgm || null,
         onEnter: resolveMapPort(mapNode, 'onEnter'),
-        hasBoss: mapNode.data.hasBoss || false,
         onPlayerDefeat: resolveMapPort(mapNode, 'onPlayerDefeat'),
       };
       if (mapNode.data.hasBoss) {
+        mapObj.boss = {
+          configKey: mapNode.data.bossConfigKey || '',
+          x: mapNode.data.bossX ?? 5,
+          y: mapNode.data.bossY ?? 5,
+        };
         mapObj.onBossDefeat = resolveMapPort(mapNode, 'onBossDefeat');
       }
       // eventTriggers
@@ -1319,11 +1576,95 @@ function resolveThenConfig(storyNode) {
   const target = findNode(thenEdge.toNode);
   if (!target) return { action: 'stay' };
   if (target.type === 'exit') return { action: 'exit' };
-  if (target.type === 'map') return { action: 'goto_map', mapId: target.data.id, x: 10, y: 10 };
+  if (target.type === 'map') return { action: 'goto_map', mapId: target.data.id, x: storyNode.data.thenMapX ?? 10, y: storyNode.data.thenMapY ?? 10 };
   return { action: storyNode.data.thenAction || 'stay' };
+}
+
+// ─── Chapters Panel ───────────────────────────────────────────────────────────
+const chaptersContent = document.getElementById('chapters-content');
+
+function renderChaptersPanel() {
+  if (!chaptersContent) return;
+  const ch = state.chapters[0] || { id: 'chapter1', label: '', stories: [], loadingImages: [] };
+  const selectedImages = ch.loadingImages || [];
+
+  const imgOptions = loadingImageFiles
+    .filter(f => !selectedImages.includes(f))
+    .map(f => `<option value="${f}">${f}</option>`)
+    .join('');
+  const imgTags = selectedImages.map(f => `
+    <span style="display:inline-flex;align-items:center;gap:3px;background:var(--surface1);border-radius:4px;padding:2px 6px;margin:2px;font-size:0.8rem;">
+      ${f}<button type="button" data-img="${f}" style="background:none;border:none;color:var(--red);cursor:pointer;padding:0;line-height:1;">×</button>
+    </span>`).join('');
+
+  chaptersContent.innerHTML = `
+    <div class="prop-section-title">章設定（chapter 1）</div>
+    <div class="prop-group">
+      <label>章 ID</label>
+      <input id="ch-id" type="text" value="${ch.id || 'chapter1'}">
+    </div>
+    <div class="prop-group">
+      <label>ラベル</label>
+      <input id="ch-label" type="text" placeholder="例: 第一章" value="${ch.label || ''}">
+    </div>
+    <div class="prop-group">
+      <label>プリロード Story</label>
+      <div style="background:var(--mantle);border:1px solid var(--surface1);border-radius:4px;padding:4px;font-size:0.82rem;min-height:32px;color:var(--subtext0);">${(ch.stories || []).join(', ') || '（保存時に自動収集）'}</div>
+    </div>
+    <div class="prop-group">
+      <label>ゲーム内時計速度</label>
+      <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap;">
+        <input id="ch-clock-speed" type="number" min="1000" step="1000" value="${state.clockSpeed ?? 180000}" style="width:110px;">
+        <span style="font-size:0.8rem;color:var(--subtext0);">ms / ゲーム1時間</span>
+        <button type="button" data-preset="180000" style="font-size:0.78rem;padding:2px 6px;background:var(--surface1);border:none;border-radius:4px;cursor:pointer;color:var(--text);">3分/h</button>
+        <button type="button" data-preset="60000" style="font-size:0.78rem;padding:2px 6px;background:var(--surface1);border:none;border-radius:4px;cursor:pointer;color:var(--text);">1分/h(テスト)</button>
+      </div>
+    </div>
+    <div class="prop-group">
+      <label>ロード画像</label>
+      <div style="display:flex;gap:4px;margin-bottom:4px;">
+        <select id="ch-images-select" style="flex:1;background:var(--mantle);color:var(--text);border:1px solid var(--surface1);border-radius:4px;padding:2px 4px;">
+          <option value="">-- 画像を選択 --</option>
+          ${imgOptions}
+        </select>
+        <button id="ch-images-add" type="button" style="padding:2px 8px;background:var(--blue);color:var(--base);border:none;border-radius:4px;cursor:pointer;">追加</button>
+      </div>
+      <div id="ch-images-list" style="display:flex;flex-wrap:wrap;">${imgTags}</div>
+      ${loadingImageFiles.length === 0 ? '<p style="font-size:0.75rem;color:var(--overlay0);margin:2px 0;">loading_images/ フォルダに画像がありません</p>' : ''}
+    </div>
+  `;
+
+  document.getElementById('ch-id').addEventListener('input', e => { state.chapters[0].id = e.target.value; });
+  document.getElementById('ch-label').addEventListener('input', e => { state.chapters[0].label = e.target.value; });
+  document.getElementById('ch-clock-speed').addEventListener('input', e => { state.clockSpeed = parseInt(e.target.value) || 180000; });
+  chaptersContent.querySelectorAll('[data-preset]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      state.clockSpeed = parseInt(btn.getAttribute('data-preset'));
+      document.getElementById('ch-clock-speed').value = state.clockSpeed;
+    });
+  });
+
+  document.getElementById('ch-images-add').addEventListener('click', () => {
+    const sel = document.getElementById('ch-images-select');
+    const val = sel.value;
+    if (!val) return;
+    if (!state.chapters[0].loadingImages.includes(val)) {
+      state.chapters[0].loadingImages = [...state.chapters[0].loadingImages, val];
+      renderChaptersPanel();
+    }
+  });
+
+  chaptersContent.querySelectorAll('[data-img]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const img = btn.getAttribute('data-img');
+      state.chapters[0].loadingImages = state.chapters[0].loadingImages.filter(f => f !== img);
+      renderChaptersPanel();
+    });
+  });
 }
 
 // ─── Init ─────────────────────────────────────────────────────────────────────
 applyTransform();
 renderAll();
 renderProperties();
+renderChaptersPanel();

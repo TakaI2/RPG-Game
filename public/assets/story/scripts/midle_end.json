@@ -1,0 +1,401 @@
+{
+  "id": "midle_end",
+  "script": [
+    {
+      "op": "bg",
+      "name": "fire.png",
+      "fade": 500,
+      "x": 24,
+      "y": -148,
+      "scaleX": 0.75,
+      "scaleY": 0.75
+    },
+    {
+      "op": "bgm.play",
+      "name": "bgm1.ogg",
+      "loop": true,
+      "volume": 0.6,
+      "fade": 1000
+    },
+    {
+      "op": "say",
+      "lines": ["ひぃぃぃ・・・！！"],
+      "name": "リアラ",
+      "portrait": "reala_bolo.png",
+      "portraitScale": 0.8,
+      "portraitX": 950,
+      "portraitY": 544,
+      "i18n": {
+        "en": { "lines": ["Eeeek...!!"], "name": "Reala" },
+        "zh": { "lines": ["啊啊啊……！！"], "name": "丽阿拉" },
+        "es": { "lines": ["¡Eeek...!!"], "name": "Reala" }
+      }
+    },
+    {
+      "op": "say",
+      "lines": ["何よこれ～！！　私のマントが燃えちゃう・・・！！　お姉様から頂いた大事なものなのに！！"],
+      "name": "リアラ",
+      "i18n": {
+        "en": { "lines": ["What is this~!! My cloak is burning...!! It's something precious I received from Lady!!"], "name": "Reala" },
+        "zh": { "lines": ["这是什么啊～！！我的斗篷要烧起来了……！！那可是大人赠给我的重要东西！！"], "name": "丽阿拉" },
+        "es": { "lines": ["¡¿Qué es esto~!! ¡Mi capa se está quemando...!! ¡Es algo precioso que recibí de la señora!!"], "name": "Reala" }
+      }
+    },
+    {
+      "op": "say",
+      "lines": ["ふふ～ん、この火炎銃には私が調合した特別な聖油が入っているんだよ！"],
+      "name": "ベルナデット",
+      "portrait": "hunter_l2.png",
+      "portraitScale": 0.6,
+      "portraitX": 997,
+      "portraitY": 1073,
+      "i18n": {
+        "en": { "lines": ["Fufu~, this flamethrower contains special holy oil I formulated myself!"], "name": "Bernadette" },
+        "zh": { "lines": ["呵呵～，这把火焰枪里装的是我自己调制的特殊圣油！"], "name": "贝尔纳黛特" },
+        "es": { "lines": ["Fufu~, ¡este lanzallamas contiene aceite sagrado especial que yo misma formulé!"], "name": "Bernadette" }
+      }
+    },
+    {
+      "op": "say",
+      "lines": ["あんたたち吸血鬼のマントは厄介だからね！　素直に譲ってくれないなら燃やしちゃうの！"],
+      "name": "ベルナデット",
+      "i18n": {
+        "en": { "lines": ["Your vampire cloaks are such a nuisance! If you won't hand it over willingly, I'll just burn it!"], "name": "Bernadette" },
+        "zh": { "lines": ["你们吸血鬼的斗篷真麻烦！不肯乖乖交出来的话就烧掉！"], "name": "贝尔纳黛特" },
+        "es": { "lines": ["¡Esas capas de vampiro son tan molestas! ¡Si no la entregas voluntariamente, simplemente la quemaré!"], "name": "Bernadette" }
+      }
+    },
+    {
+      "op": "say",
+      "lines": ["これを浴びたら、布地に油がベットリ染みこんで、水を掛けても火は消えないわ！　\\n燃えカスになりたくないなら早く脱げば？"],
+      "name": "ベルナデット",
+      "i18n": {
+        "en": { "lines": ["Once this soaks into the fabric, the oil won't wash out even with water, and the fire won't go out!\nIf you don't want to become a pile of ash, you'd better take it off quickly."], "name": "Bernadette" },
+        "zh": { "lines": ["一旦这个渗进布料里，就算浇水也扑不灭火！\n如果不想变成灰烬的话，快点脱掉？"], "name": "贝尔纳黛特" },
+        "es": { "lines": ["¡Una vez que esto empapa la tela, el aceite no se elimina ni con agua, y el fuego no se apaga!\nSi no quieres convertirte en cenizas, será mejor que te la quites rápido."], "name": "Bernadette" }
+      }
+    },
+    {
+      "op": "say",
+      "lines": ["うるさいっ！！　どうせ私が脱いだら、これを盗んだ後で私を燃やすつもりなんでしょう？！"],
+      "name": "リアラ",
+      "portrait": "reala_bolo.png",
+      "portraitX": 944,
+      "portraitY": 915,
+      "i18n": {
+        "en": { "lines": ["Shut up!! You'll just steal it and then burn me after I take it off, won't you?!"], "name": "Reala" },
+        "zh": { "lines": ["闭嘴！！反正我脱掉之后，你就打算偷走它再把我烧掉，对吧？！"], "name": "丽阿拉" },
+        "es": { "lines": ["¡¡Cállate!! ¡Me lo robarás y luego me quemarás después de que me lo quite, ¿verdad?!"], "name": "Reala" }
+      }
+    },
+    {
+      "op": "say",
+      "lines": ["そうやって、私達を殺してきたのね！！"],
+      "name": "リアラ",
+      "i18n": {
+        "en": { "lines": ["That's how you've been killing us!!"], "name": "Reala" },
+        "zh": { "lines": ["就是这样把我们杀掉的吧！！"], "name": "丽阿拉" },
+        "es": { "lines": ["¡¡Así es como nos has estado matando!!"], "name": "Reala" }
+      }
+    },
+    {
+      "op": "say",
+      "lines": ["・・・うざいねアンタ、さっきから私のやり方にケチつけやがって・・・！！"],
+      "name": "ベルナデット",
+      "portrait": "hunter_a.png",
+      "portraitScale": 0.85,
+      "portraitX": 951,
+      "portraitY": 1600,
+      "i18n": {
+        "en": { "lines": ["...You're so annoying, griping about my methods since earlier...!!"], "name": "Bernadette" },
+        "zh": { "lines": ["……真烦啊你，从刚才就一直挑剔我的方式……！！"], "name": "贝尔纳黛特" },
+        "es": { "lines": ["...Eres tan molesta, quejándote de mis métodos desde antes...!!"], "name": "Bernadette" }
+      }
+    },
+    {
+      "op": "say",
+      "lines": ["えぇそうよ！！　あんたたちが後生大事に羽織ってるもんだから　　\\n火をつけたら面白いくらいよく燃えてくれるんだわ。"],
+      "name": "ベルナデット",
+      "i18n": {
+        "en": { "lines": ["Yes, that's right!! Because you vampires cling to them so dearly,\nthey burn so wonderfully well when lit."], "name": "Bernadette" },
+        "zh": { "lines": ["是又怎样！！正因为你们这么珍视这些斗篷，\n一点火就烧得非常好呢。"], "name": "贝尔纳黛特" },
+        "es": { "lines": ["¡¡Sí, así es!! Porque ustedes los vampiros se aferran tanto a ellas,\nse queman maravillosamente bien cuando se les prende fuego."], "name": "Bernadette" }
+      }
+    },
+    {
+      "op": "say",
+      "lines": ["そんなに脱ぐのがいやなら、どうぞここで焼け死んでちょうだい！　\\nマントはもう売物にならないけど、そのブーツくらいは燃え残るでしょ！"],
+      "name": "ベルナデット",
+      "i18n": {
+        "en": { "lines": ["If you hate taking it off that much, then please go ahead and burn to death here!\nThe cloak won't be sellable anymore, but those boots of yours should survive the fire!"], "name": "Bernadette" },
+        "zh": { "lines": ["如果那么不想脱的话，那就请在这里活活烧死吧！\n斗篷已经没有卖价了，但那双靴子应该能烧剩下来吧！"], "name": "贝尔纳黛特" },
+        "es": { "lines": ["¡Si tanto odias quitártela, entonces por favor quémate hasta morir aquí!\n¡La capa ya no se podrá vender, pero esas botas tuyas deberían sobrevivir al fuego!"], "name": "Bernadette" }
+      }
+    },
+    {
+      "op": "say",
+      "lines": ["ひぃっ！！　\\n いやぁ・・・まだ死にたくない！！　まだ100年も生きてないのに・・・！！"],
+      "name": "リアラ",
+      "portrait": "reala_bolo.png",
+      "portraitScale": 0.65,
+      "portraitX": 933,
+      "portraitY": 586,
+      "i18n": {
+        "en": { "lines": ["Eek!!\nNo... I don't want to die yet!! I haven't even lived 100 years yet...!!"], "name": "Reala" },
+        "zh": { "lines": ["啊！！\n不……我还不想死！！我才活了不到100年……！！"], "name": "丽阿拉" },
+        "es": { "lines": ["¡¡Eek!!\nNo... ¡todavía no quiero morir!! ¡Ni siquiera he vivido 100 años todavía...!!"], "name": "Reala" }
+      }
+    },
+    {
+      "op": "say",
+      "lines": ["お姉様～～～っ！！"],
+      "name": "リアラ",
+      "i18n": {
+        "en": { "lines": ["Lady~~~!!"], "name": "Reala" },
+        "zh": { "lines": ["大人～～～！！"], "name": "丽阿拉" },
+        "es": { "lines": ["¡¡¡Señora~~~!!"], "name": "Reala" }
+      }
+    },
+    {
+      "op": "say",
+      "lines": ["～～～～～っ！！！"],
+      "name": "リアラ",
+      "portrait": "bat_change.png",
+      "portraitScale": 0.65,
+      "portraitX": 960,
+      "portraitY": 439,
+      "i18n": {
+        "en": { "lines": ["~~~~~~!!!"], "name": "Reala" },
+        "zh": { "lines": ["……！！！"], "name": "丽阿拉" },
+        "es": { "lines": ["~~~~~~!!!"], "name": "Reala" }
+      }
+    },
+    {
+      "op": "say",
+      "lines": ["あぁ・・・！　もう少しで退治できたのに！　"],
+      "name": "ベルナデット",
+      "portrait": "hunter_a.png",
+      "portraitScale": 0.55,
+      "portraitX": 962,
+      "portraitY": 1066,
+      "i18n": {
+        "en": { "lines": ["Ahh...! I was so close to finishing her off!"], "name": "Bernadette" },
+        "zh": { "lines": ["啊……！再差一点就能消灭她了！"], "name": "贝尔纳黛特" },
+        "es": { "lines": ["¡Ahh...! ¡Estaba tan cerca de acabar con ella!"], "name": "Bernadette" }
+      }
+    },
+    {
+      "op": "say",
+      "lines": ["この炎にあんなに耐えるなんて・・・、やっぱそこらの吸血鬼の魔力じゃない。"],
+      "name": "ベルナデット",
+      "i18n": {
+        "en": { "lines": ["To withstand this much fire... her magic power is clearly not that of an ordinary vampire."], "name": "Bernadette" },
+        "zh": { "lines": ["能承受这么多火焰……果然不是一般吸血鬼的魔力。"], "name": "贝尔纳黛特" },
+        "es": { "lines": ["Para soportar tanto fuego... su poder mágico claramente no es el de un vampiro ordinario."], "name": "Bernadette" }
+      }
+    },
+    {
+      "op": "bg",
+      "fade": 500,
+      "y": 0,
+      "name": "fire.png",
+      "scaleX": 1.5,
+      "scaleY": 1.5
+    },
+    {
+      "op": "say",
+      "lines": ["お姉様とやらは相当な奴に違いないわね。　どんなお宝を持ってるか楽しみ・・・！"],
+      "name": "ベルナデット",
+      "i18n": {
+        "en": { "lines": ["This 'Lady' must be quite something. I can't wait to see what treasures she has...!"], "name": "Bernadette" },
+        "zh": { "lines": ["所谓的'大人'一定是个相当厉害的家伙。真期待她有什么宝贝……！"], "name": "贝尔纳黛特" },
+        "es": { "lines": ["Esta 'señora' debe ser algo especial. ¡No puedo esperar para ver qué tesoros tiene...!"], "name": "Bernadette" }
+      }
+    },
+    {
+      "op": "say",
+      "lines": ["あ・・・あの、ベルナデットさん・・・。"],
+      "name": "ルーネ",
+      "i18n": {
+        "en": { "lines": ["U-um, Bernadette..."], "name": "Rune" },
+        "zh": { "lines": ["那……那个，贝尔纳黛特小姐……"], "name": "卢尼" },
+        "es": { "lines": ["E-eh, Bernadette..."], "name": "Rune" }
+      }
+    },
+    {
+      "op": "say",
+      "lines": ["あぁ・・・、まだいたんだ君！　逃げたもんかと・・・。"],
+      "name": "ベルナデット",
+      "i18n": {
+        "en": { "lines": ["Ahh... you're still here! I thought you might have run off..."], "name": "Bernadette" },
+        "zh": { "lines": ["啊……你还在啊！我以为你可能逃跑了……"], "name": "贝尔纳黛特" },
+        "es": { "lines": ["Ahh... ¡todavía estás aquí! Pensé que podrías haber huido..."], "name": "Bernadette" }
+      }
+    },
+    {
+      "op": "say",
+      "lines": ["あ・・・あんなところで一人になったら魔物に襲われちゃいます！"],
+      "name": "ルーネ",
+      "i18n": {
+        "en": { "lines": ["If I were left alone in a place like that, I'd be attacked by monsters!"], "name": "Rune" },
+        "zh": { "lines": ["如果一个人待在那种地方，会被魔物袭击的！"], "name": "卢尼" },
+        "es": { "lines": ["¡Si me quedara solo en un lugar así, sería atacado por monstruos!"], "name": "Rune" }
+      }
+    },
+    {
+      "op": "say",
+      "lines": ["僕のお父さんだってもう・・・。"],
+      "name": "ルーネ",
+      "i18n": {
+        "en": { "lines": ["My father is already..."], "name": "Rune" },
+        "zh": { "lines": ["我的爸爸已经……"], "name": "卢尼" },
+        "es": { "lines": ["Mi padre ya..."], "name": "Rune" }
+      }
+    },
+    {
+      "op": "bg",
+      "name": "forest.png",
+      "fade": 500,
+      "scaleX": 2,
+      "scaleY": 2,
+      "y": -100
+    },
+    {
+      "op": "say",
+      "lines": [
+        "あー・・・。　あん中にいたんだ。\\nそれか、このへんの水溜まりのどれかかな？"
+      ],
+      "name": "ベルナデット",
+      "i18n": {
+        "en": { "lines": ["Oh... he was in there.\nOr maybe in one of the puddles around here?"], "name": "Bernadette" },
+        "zh": { "lines": ["啊……在里面啊。\n还是在附近的某个水坑里？"], "name": "贝尔纳黛特" },
+        "es": { "lines": ["Oh... estaba ahí dentro.\n¿O quizás en uno de los charcos por aquí?"], "name": "Bernadette" }
+      }
+    },
+    {
+      "op": "say",
+      "lines": ["まぁ、サキュバスや女吸血鬼に襲われた男なんて無惨なもんよね。　気持ち悪いし・・・。"],
+      "name": "ベルナデット",
+      "i18n": {
+        "en": { "lines": ["Well, a man who was attacked by succubi or female vampires is quite a pitiful sight. Pretty gross too..."], "name": "Bernadette" },
+        "zh": { "lines": ["嗯，被魅魔或女吸血鬼袭击过的男人真是惨不忍睹。而且很恶心……"], "name": "贝尔纳黛特" },
+        "es": { "lines": ["Bueno, un hombre atacado por súcubos o vampiras es bastante una vista lamentable. También bastante asqueroso..."], "name": "Bernadette" }
+      }
+    },
+    {
+      "op": "say",
+      "lines": [
+        "（この子がいるんじゃ、あの村は雑に焼き払うわけにはいかないか・・・。",
+        "\\n あー、あとで埋葬とか面倒くさそう。）"
+      ],
+      "name": "ベルナデット",
+      "i18n": {
+        "en": { "lines": ["(With this kid around, I can't just carelessly burn down that village...", "\nAhh, dealing with burials and such afterward sounds like such a hassle.)"], "name": "Bernadette" },
+        "zh": { "lines": ["（有这孩子在，就不能随便把那个村子烧掉了……", "\n啊，之后还要处理埋葬什么的，真麻烦。）"], "name": "贝尔纳黛特" },
+        "es": { "lines": ["(Con este chico presente, no puedo quemar el pueblo descuidadamente...", "\nAhh, lidiar con los entierros y eso después parece tan molesto.)"], "name": "Bernadette" }
+      }
+    },
+    {
+      "op": "say",
+      "lines": ["え・・・？"],
+      "name": "ルーネ",
+      "i18n": {
+        "en": { "lines": ["Eh...?"], "name": "Rune" },
+        "zh": { "lines": ["咦……？"], "name": "卢尼" },
+        "es": { "lines": ["¿Eh...?"], "name": "Rune" }
+      }
+    },
+    {
+      "op": "say",
+      "lines": ["ん、何でもない！　大丈夫！　それならお姉ちゃんについてきていいよ！"],
+      "name": "ベルナデット",
+      "portrait": "hunter.png",
+      "portraitScale": 0.6,
+      "portraitX": 940,
+      "portraitY": 1090,
+      "i18n": {
+        "en": { "lines": ["Hm, it's nothing! It's fine! In that case, you can come with big sis!"], "name": "Bernadette" },
+        "zh": { "lines": ["嗯，没什么！没关系！那样的话，你可以跟姐姐来！"], "name": "贝尔纳黛特" },
+        "es": { "lines": ["Hm, ¡no es nada! ¡Está bien! En ese caso, ¡puedes venir con la hermana mayor!"], "name": "Bernadette" }
+      }
+    },
+    {
+      "op": "say",
+      "lines": ["どのみち親玉を倒さなきゃ君は安全じゃないし。\\nそれからのことは後で考えよう！"],
+      "name": "ベルナデット",
+      "i18n": {
+        "en": { "lines": ["Either way, you won't be safe unless we defeat the ringleader.\nWe can figure out the rest afterward!"], "name": "Bernadette" },
+        "zh": { "lines": ["不管怎样，不打倒首领你就不安全。\n之后的事之后再想吧！"], "name": "贝尔纳黛特" },
+        "es": { "lines": ["De todas formas, no estarás seguro a menos que derrotemos al cabecilla.\n¡Lo del después lo pensamos luego!"], "name": "Bernadette" }
+      }
+    },
+    {
+      "op": "say",
+      "lines": ["でも悪いけど、ついてくるなら奴らの城にも一緒に来てもらうしかないかな？　\\nどう？ 奴らを倒すまでは私の言う事聞いてくれる？"],
+      "name": "ベルナデット",
+      "portrait": "hunter_a.png",
+      "portraitScale": 0.6,
+      "portraitX": 940,
+      "portraitY": 1090,
+      "i18n": {
+        "en": { "lines": ["But sorry, if you're coming along, you'll have to come to their castle too.\nHow about it? Will you listen to what I say until we defeat them?"], "name": "Bernadette" },
+        "zh": { "lines": ["不过抱歉，如果要跟着的话，也只能一起去他们的城堡了。\n怎么样？在打倒他们之前，你愿意听我的话吗？"], "name": "贝尔纳黛特" },
+        "es": { "lines": ["Pero lo siento, si vas a venir, tendrás que venir a su castillo también.\n¿Qué te parece? ¿Escucharás lo que digo hasta que los derrotemos?"], "name": "Bernadette" }
+      }
+    },
+    {
+      "op": "say",
+      "lines": ["わ・・・わかりました！！　怖いけど・・・頑張ります。"],
+      "name": "ルーネ",
+      "i18n": {
+        "en": { "lines": ["U-understood!! It's scary but... I'll do my best."], "name": "Rune" },
+        "zh": { "lines": ["我……我明白了！！虽然很害怕……但我会加油的。"], "name": "卢尼" },
+        "es": { "lines": ["E-entendido!! Da miedo pero... haré todo lo posible."], "name": "Rune" }
+      }
+    },
+    {
+      "op": "say",
+      "lines": ["うん、感心感心♥　　男の子はそうじゃないと・・・！"],
+      "name": "ベルナデット",
+      "portrait": "hunter_l2.png",
+      "portraitScale": 0.6,
+      "portraitX": 940,
+      "portraitY": 1090,
+      "i18n": {
+        "en": { "lines": ["Good, very admirable ♥ Boys need to be like that...!"], "name": "Bernadette" },
+        "zh": { "lines": ["嗯，真乖真乖♥ 男孩子就要这样……！"], "name": "贝尔纳黛特" },
+        "es": { "lines": ["Bien, muy admirable ♥ ¡Los chicos necesitan ser así...!"], "name": "Bernadette" }
+      }
+    },
+    {
+      "op": "say",
+      "lines": ["それじゃ、冒険といきましょうか！　しばしよろしくね。カワイイ相棒君♥"],
+      "name": "ベルナデット",
+      "i18n": {
+        "en": { "lines": ["Then, shall we go on an adventure! Take care of me for a while, my cute little partner ♥"], "name": "Bernadette" },
+        "zh": { "lines": ["那么，出发去冒险吧！暂时拜托你了，可爱的搭档♥"], "name": "贝尔纳黛特" },
+        "es": { "lines": ["¡Entonces, vamos de aventura! Cuídame un rato, mi querido compañero ♥"], "name": "Bernadette" }
+      }
+    },
+    {
+      "op": "portrait.hide"
+    },
+    {
+      "op": "bg",
+      "name": "endcard.png",
+      "fade": 500,
+      "x": 16,
+      "y": 20,
+      "scaleX": 1.25,
+      "scaleY": 1.25
+    },
+    {
+      "op": "delay",
+      "duration": 4000
+    },
+    {
+      "op": "end",
+      "returnTo": "MainScene"
+    }
+  ]
+}

@@ -1,11 +1,14 @@
 import Phaser from 'phaser'
 import { loadSoundConfig, saveSoundConfig } from '../utils/SoundConfig'
+import { SUPPORTED_LOCALES, getLocale, setLocale } from '../utils/LocaleManager'
+import { startKeepAlive } from '../utils/AudioKeepAlive'
 
 export default class TitleScene extends Phaser.Scene {
   private background!: Phaser.GameObjects.Image
   private playButton!: Phaser.GameObjects.Image
   private configButton!: Phaser.GameObjects.Image
   private modalContainer: Phaser.GameObjects.Container | null = null
+  private charmAudio: HTMLAudioElement | null = null
 
   constructor() {
     super({ key: 'TitleScene' })
@@ -29,6 +32,10 @@ export default class TitleScene extends Phaser.Scene {
     this.background.setDisplaySize(1920, 1080)
     this.background.setDepth(0)
 
+    // charm を事前フェッチ（ボタン押下時に即再生するため）
+    this.charmAudio = new Audio('assets/sounds/se/charm.m4a')
+    this.charmAudio.load()
+
     this.createPlayButton()
     this.createConfigButton()
 
@@ -48,7 +55,28 @@ export default class TitleScene extends Phaser.Scene {
     this.playButton.on('pointerdown', () => { this.playButton.setScale(1.9) })
     this.playButton.on('pointerup',   () => {
       this.playButton.setScale(2.2)
-      this.scene.start('MainScene')
+
+      // ① 事前ロード済み charm を即再生（iOS ユーザーアクティベーション取得 + 効果音）
+      if (this.charmAudio) {
+        this.charmAudio.currentTime = 0
+        this.charmAudio.play().catch(() => {})
+      }
+
+      // ② Web Audio API コンテキストを resume し、ループ無音バッファで active に保つ
+      //    iOS は再生が途切れると context を自動 suspend するためループが必須
+      if ('context' in this.sound) {
+        const ctx = (this.sound as Phaser.Sound.WebAudioSoundManager).context
+        if (ctx) {
+          ctx.resume().then(() => {
+            startKeepAlive(ctx)
+          }).catch(() => {})
+        }
+      }
+
+      // ChapterLoadingScene で第一章アセットをプリロードしてから MainScene へ
+      const config = this.cache.json.get('gameflow')
+      const firstChapterId = config?.chapters?.[0]?.id ?? 'chapter1'
+      this.scene.start('ChapterLoadingScene', { chapterId: firstChapterId })
     })
   }
 
@@ -69,16 +97,12 @@ export default class TitleScene extends Phaser.Scene {
     })
   }
 
-  // -------------------------------------------------------
-  // 音量設定モーダル
-  // -------------------------------------------------------
-
   private openVolumeModal(): void {
     if (this.modalContainer) return
 
     const cfg = loadSoundConfig()
     const W = 600
-    const H = 400
+    const H = 520
     const cx = 960
     const cy = 540
 
@@ -114,6 +138,41 @@ export default class TitleScene extends Phaser.Scene {
 
     sliderDefs.forEach(({ label, key, y }) => {
       this.buildSlider(container, cfg, label, key, cx, y)
+    })
+
+    // 言語選択
+    const langLabel = this.add.text(cx - 240, cy + 155, 'LANGUAGE', {
+      fontSize: '20px', fontFamily: 'monospace', color: '#ffffff'
+    }).setOrigin(0, 0.5)
+    container.add(langLabel)
+
+    const currentLocale = getLocale()
+    const btnSpacing = 100
+    const btnStartX = cx - (SUPPORTED_LOCALES.length - 1) * btnSpacing / 2
+
+    SUPPORTED_LOCALES.forEach((locale, i) => {
+      const isActive = locale.code === currentLocale
+      const bx = btnStartX + i * btnSpacing
+      const by = cy + 200
+
+      const bg = this.add.graphics()
+      bg.fillStyle(isActive ? 0x6644aa : 0x333355, 1)
+      bg.fillRoundedRect(bx - 42, by - 16, 84, 32, 6)
+
+      const btn = this.add.text(bx, by, locale.label, {
+        fontSize: '16px', fontFamily: 'monospace',
+        color: isActive ? '#ffffff' : '#aaaacc'
+      }).setOrigin(0.5).setInteractive({ useHandCursor: true })
+
+      btn.on('pointerover', () => btn.setColor('#ffffff'))
+      btn.on('pointerout',  () => btn.setColor(locale.code === getLocale() ? '#ffffff' : '#aaaacc'))
+      btn.on('pointerup', () => {
+        setLocale(locale.code)
+        this.closeVolumeModal()
+        this.openVolumeModal()
+      })
+
+      container.add([bg, btn])
     })
 
     // 閉じるボタン

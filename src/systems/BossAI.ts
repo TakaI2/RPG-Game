@@ -8,12 +8,17 @@ import {
   TeleportDashConfig,
   UltimateConfig
 } from '../types/BossTypes'
-import { fireArrowAngle, fireOrbAt, Projectile } from './Projectile'
+import { fireArrowAngle, fireOrbAt, createAnimatedOrbAt, Projectile } from './Projectile'
 import { AudioBus } from './AudioBus'
 import { CutinSystem } from './CutinSystem'
 import { BossSpeechBubble } from './BossSpeechBubble'
 import { createEnemyAnimations } from './AnimationManager'
 import { GAME_W, GAME_H } from '../config'
+import { resolveText } from '../utils/LocaleManager'
+
+interface SceneWithUiCamera extends Phaser.Scene {
+  addWorldObject?: (go: Phaser.GameObjects.GameObject) => void
+}
 
 /**
  * ボス設定をロード
@@ -103,8 +108,8 @@ export function updateBossAI(
   // フェーズ判定
   updatePhase(boss, speechBubble)
 
-  // idle/cooldown 中はプレイヤーに向かって歩く
-  if (boss.state === 'idle' || boss.state === 'cooldown') {
+  // idle/cooldown 中はプレイヤーに向かって歩く（突進中は速度を上書きしない）
+  if ((boss.state === 'idle' || boss.state === 'cooldown') && !boss.getData('dashActive')) {
     const dx = player.x - boss.x
     const dy = player.y - boss.y
     const dist = Math.sqrt(dx * dx + dy * dy)
@@ -157,7 +162,8 @@ function updatePhase(boss: Boss, speechBubble: BossSpeechBubble) {
 
         // フェーズ2突入時のセリフ
         if (boss.phase === 2 && !boss.phase2SpeechShown && config.speeches.phase2) {
-          speechBubble.show(boss, config.speeches.phase2, 1500)
+          const { phase2 } = resolveText({ phase2: config.speeches.phase2 }, config.speeches.i18n)
+          speechBubble.show(boss, phase2!, 1500)
           boss.phase2SpeechShown = true
         }
       }
@@ -167,7 +173,8 @@ function updatePhase(boss: Boss, speechBubble: BossSpeechBubble) {
 
   // 低HP時のセリフ
   if (boss.hp < 5 && !boss.lowHpSpeechShown && config.speeches.lowHp) {
-    speechBubble.show(boss, config.speeches.lowHp, 1500)
+    const { lowHp } = resolveText({ lowHp: config.speeches.lowHp }, config.speeches.i18n)
+    speechBubble.show(boss, lowHp!, 1500)
     boss.lowHpSpeechShown = true
   }
 }
@@ -225,7 +232,7 @@ function executeAttack(
       executeCircleAttack(scene, boss, player, projectiles, audioBus, attackConfig, time)
       break
     case 'teleport_dash':
-      executeTeleportDashAttack(scene, boss, player, audioBus, attackConfig, time)
+      executeTeleportDashAttack(scene, boss, player, audioBus, speechBubble, attackConfig, time)
       break
     case 'ultimate':
       executeUltimateAttack(scene, boss, player, projectiles, audioBus, cutinSystem, speechBubble, attackConfig, time)
@@ -287,6 +294,7 @@ function executeRadialAttack(
         proj.setBlendMode(Phaser.BlendModes.ADD)
         proj.setScale(0.8)
         scene.time.delayedCall(proj.life, () => { if (proj.active) proj.destroy() })
+        ;(scene as SceneWithUiCamera).addWorldObject?.(proj)
       }
     }
 
@@ -364,6 +372,7 @@ function executeTeleportDashAttack(
   boss: Boss,
   player: Phaser.GameObjects.Sprite,
   audioBus: AudioBus,
+  speechBubble: BossSpeechBubble,
   attackConfig: AttackConfig & { type: 'teleport_dash'; config: TeleportDashConfig },
   time: number
 ) {
@@ -372,6 +381,11 @@ function executeTeleportDashAttack(
 
   // フェードアウト
   if (elapsed < cfg.fadeOutDuration && boss.state === 'attacking') {
+    // セリフ表示（攻撃開始時）
+    if (attackConfig.speech) {
+      speechBubble.show(boss, resolveText({ text: attackConfig.speech.text }, attackConfig.speech.i18n).text, attackConfig.speech.duration ?? 1500, attackConfig.speech.color)
+    }
+
     if (attackConfig.se.teleport) {
       audioBus.playSe(attackConfig.se.teleport, { volume: 0.5 })
     }
@@ -401,6 +415,7 @@ function executeTeleportDashAttack(
               }
 
               const dashAngle = Phaser.Math.Angle.Between(boss.x, boss.y, player.x, player.y)
+              boss.setData('dashActive', true)
               boss.setVelocity(Math.cos(dashAngle) * cfg.dashSpeed, Math.sin(dashAngle) * cfg.dashSpeed)
               boss.setData('dashDamage', cfg.damage)
 
@@ -408,6 +423,7 @@ function executeTeleportDashAttack(
               scene.time.delayedCall(cfg.dashDuration, () => {
                 boss.setVelocity(0, 0)
                 boss.setData('dashDamage', 0)
+                boss.setData('dashActive', false)
               })
             })
           }
@@ -448,14 +464,23 @@ function executeUltimateAttack(
       cutinSystem.show(cutinImage, attackConfig.cutin.skillName, attackConfig.cutin.duration, () => {
         // カットイン終了後、セリフ表示
         if (attackConfig.speech) {
-          speechBubble.show(boss, attackConfig.speech.text, attackConfig.speech.duration, attackConfig.speech.color, () => {
+          speechBubble.show(boss, resolveText({ text: attackConfig.speech.text }, attackConfig.speech.i18n).text, attackConfig.speech.duration ?? 1500, attackConfig.speech.color, () => {
             // セリフ終了後、攻撃実行
             executeUltimateFire(scene, boss, player, projectiles, audioBus, cfg, attackConfig)
           })
         } else {
           executeUltimateFire(scene, boss, player, projectiles, audioBus, cfg, attackConfig)
         }
-      })
+      }, boss.config.cutin)
+    } else {
+      // カットインなし：セリフがあれば表示してから、なければ即発射
+      if (attackConfig.speech) {
+        speechBubble.show(boss, resolveText({ text: attackConfig.speech.text }, attackConfig.speech.i18n).text, attackConfig.speech.duration ?? 1500, attackConfig.speech.color, () => {
+          executeUltimateFire(scene, boss, player, projectiles, audioBus, cfg, attackConfig)
+        })
+      } else {
+        executeUltimateFire(scene, boss, player, projectiles, audioBus, cfg, attackConfig)
+      }
     }
 
     boss.lastAttackTime = time + (attackConfig.cutin?.duration || 0) + (attackConfig.speech?.duration || 0) + 2000
@@ -518,6 +543,7 @@ function executeUltimateFire(
   }
 
   // 螺旋弾発射
+  const useAnimated = (cfg.projectileFrames ?? 1) > 1
   for (let i = 0; i < cfg.projectileCount; i++) {
     const angle = (i * cfg.spiralAngleStep) * Math.PI / 180
     const radius = cfg.spiralRadiusStart + (i * cfg.spiralRadiusStep)
@@ -525,12 +551,16 @@ function executeUltimateFire(
     scene.time.delayedCall(i * cfg.spawnInterval, () => {
       const x = boss.x + Math.cos(angle) * radius
       const y = boss.y + Math.sin(angle) * radius
-      const orb = fireOrbAt(scene, projectiles, x, y, player, cfg.projectileSpeed, cfg.projectileTexture ?? 'orb')
-      orb.setData('damage', cfg.damage)
+      const texKey = cfg.projectileTexture ?? 'orb'
 
-      if (cfg.tint) {
-        const tintValue = parseInt(cfg.tint, 16)
-        orb.setTint(tintValue)
+      if (useAnimated) {
+        const proj = createAnimatedOrbAt(scene, projectiles, x, y, player, cfg.projectileSpeed, texKey, cfg.projectileFrames!)
+        proj.damage = cfg.damage
+        if (cfg.tint) proj.setTint(parseInt(cfg.tint, 16))
+      } else {
+        const orb = fireOrbAt(scene, projectiles, x, y, player, cfg.projectileSpeed, texKey)
+        orb.setData('damage', cfg.damage)
+        if (cfg.tint) orb.setTint(parseInt(cfg.tint, 16))
       }
     })
   }

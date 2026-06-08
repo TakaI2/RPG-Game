@@ -1,0 +1,968 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>NPC Editor</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div id="app">
+    <header class="header">
+      <h1><a href="../" style="color:inherit; text-decoration:none; font-size:0.75rem; opacity:0.6; margin-right:10px;">← ハブ</a>NPC Editor</h1>
+      <div class="header-actions">
+        <button id="btnOpen" class="btn-primary">開く</button>
+        <button id="btnExport">Export JSON</button>
+        <div class="separator"></div>
+        <button id="btnSaveToGame" class="btn-success">ゲームに保存</button>
+      </div>
+    </header>
+
+    <div class="main-content">
+      <aside class="sidebar">
+        <div class="sidebar-header">
+          <span>NPC一覧</span>
+          <button id="btnNew" class="btn-new">+ 新規作成</button>
+        </div>
+        <div class="char-list" id="charList"></div>
+      </aside>
+
+      <main class="right-panel" id="rightPanel">
+        <div class="empty-state" id="emptyState">NPCを選択するか、「+ 新規作成」でNPCを追加してください</div>
+
+        <div id="editorContent" style="display:none; flex-direction:column; gap:14px;">
+
+          <!-- 基本情報 -->
+          <div class="section-card">
+            <div class="section-title">基本情報</div>
+            <div class="section-body">
+              <div class="form-grid">
+                <div class="form-field">
+                  <label>ID</label>
+                  <input type="text" id="fieldId" placeholder="npc_villager_001">
+                </div>
+                <div class="form-field">
+                  <label>名前</label>
+                  <input type="text" id="fieldName" placeholder="村人">
+                </div>
+                <div class="form-field full-width">
+                  <label>スプライトキー（assets/images/{key}.png）</label>
+                  <input type="text" id="fieldSpriteKey" placeholder="npc_villager">
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- 役割・拠点 -->
+          <div class="section-card" id="roleSection">
+            <div class="section-title">役割・拠点</div>
+            <div class="section-body">
+              <div class="form-grid">
+                <div class="form-field">
+                  <label>役割 (role)</label>
+                  <select id="fieldRole">
+                    <option value="villager">villager（村人）</option>
+                    <option value="guard">guard（衛兵）</option>
+                    <option value="merchant">merchant（商人）</option>
+                    <option value="elder">elder（長老）</option>
+                    <option value="innkeeper">innkeeper（宿屋主）</option>
+                  </select>
+                </div>
+                <div class="form-field">
+                  <label>拠点 X (タイル)</label>
+                  <input type="number" id="fieldHomeX" placeholder="未設定" min="0">
+                </div>
+                <div class="form-field">
+                  <label>拠点 Y (タイル)</label>
+                  <input type="number" id="fieldHomeY" placeholder="未設定" min="0">
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- スプライト設定 -->
+          <div class="section-card">
+            <div class="section-title">スプライト設定</div>
+            <div class="section-body">
+              <div class="sprite-preview">
+                <canvas id="spriteCanvas" width="64" height="64"></canvas>
+              </div>
+              <div class="form-grid">
+                <div class="form-field">
+                  <label>アニメーション</label>
+                  <select id="fieldAnimated">
+                    <option value="false">なし（静止画）</option>
+                    <option value="true">あり（256×64、4コマ横並び）</option>
+                  </select>
+                </div>
+                <div class="form-field" id="frameRateField">
+                  <label>フレームレート</label>
+                  <input type="number" id="fieldFrameRate" value="6" min="1" max="30">
+                </div>
+                <div class="form-field" id="frameCountField">
+                  <label>フレーム数</label>
+                  <input type="number" id="fieldFrameCount" value="4" min="1" max="16">
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- 移動設定 -->
+          <div class="section-card">
+            <div class="section-title">移動設定</div>
+            <div class="section-body">
+              <div class="form-grid">
+                <div class="form-field">
+                  <label>移動タイプ</label>
+                  <select id="fieldMovement">
+                    <option value="fixed">固定（動かない）</option>
+                    <option value="patrol">パトロール（往復）</option>
+                    <option value="scheduled">スケジュール巡回</option>
+                  </select>
+                </div>
+                <div class="form-field" id="patrolSpeedField">
+                  <label>移動速度 (px/s)</label>
+                  <input type="number" id="fieldPatrolSpeed" value="60" min="10" max="300">
+                </div>
+                <div class="form-field" id="patrolRangeField">
+                  <label>移動範囲 (タイル数)</label>
+                  <input type="number" id="fieldPatrolRange" value="3" min="1" max="20">
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- スケジュール -->
+          <div class="section-card" id="scheduleSection" style="display:none">
+            <div class="section-title">スケジュール</div>
+            <div class="section-body">
+              <div id="scheduleList"></div>
+              <button class="btn-add-line" onclick="addScheduleEntry()">+ スケジュール追加</button>
+            </div>
+          </div>
+
+          <!-- 言語選択 -->
+          <div class="section-card">
+            <div class="section-title">言語 / Language</div>
+            <div class="section-body">
+              <div id="langTabs" style="display:flex;gap:6px;flex-wrap:wrap;"></div>
+              <div style="font-size:0.72rem;color:#6c7086;margin-top:6px;">JA 以外を選択すると、その言語の翻訳データを編集できます（speechLines / dialogLines / activitySpeeches）</div>
+            </div>
+          </div>
+
+          <!-- 状況別セリフ -->
+          <div class="section-card">
+            <div class="section-title">状況別セリフ (activitySpeeches)</div>
+            <div class="section-body">
+              <div id="activitySpeechTabs" style="display:flex;gap:4px;flex-wrap:wrap;margin-bottom:8px;"></div>
+              <div id="activitySpeechContent"></div>
+            </div>
+          </div>
+
+          <!-- ユーティリティ重み -->
+          <div class="section-card">
+            <div class="section-title">ユーティリティ重み (utilityWeights)</div>
+            <div class="section-body">
+              <div class="form-grid">
+                <div class="form-field">
+                  <label>flee 重み</label>
+                  <input type="number" id="fieldFleeWeight" step="0.1" min="0" max="5" value="1.0">
+                </div>
+                <div class="form-field">
+                  <label>schedule 重み</label>
+                  <input type="number" id="fieldScheduleWeight" step="0.1" min="0" max="5" value="1.0">
+                </div>
+                <div class="form-field">
+                  <label>idle 重み</label>
+                  <input type="number" id="fieldIdleWeight" step="0.1" min="0" max="5" value="1.0">
+                </div>
+                <div class="form-field">
+                  <label>patrol 重み</label>
+                  <input type="number" id="fieldPatrolWeight" step="0.1" min="0" max="5" value="1.0">
+                </div>
+              </div>
+              <button class="btn-add-line" onclick="resetUtilityWeights()">ロール初期値に戻す</button>
+            </div>
+          </div>
+
+          <!-- 吹き出しセリフ -->
+          <div class="section-card">
+            <div class="section-title">吹き出しセリフ（自動ループ）</div>
+            <div class="section-body">
+              <div class="form-grid" style="margin-bottom:10px;">
+                <div class="form-field">
+                  <label>表示間隔 (ms)</label>
+                  <input type="number" id="fieldSpeechInterval" value="5000" min="1000" max="30000">
+                </div>
+              </div>
+              <div class="lines-section" id="speechLines"></div>
+              <button class="btn-add-line" onclick="addSpeechLine()">+ セリフを追加</button>
+            </div>
+          </div>
+
+          <!-- 会話ウィンドウ -->
+          <div class="section-card">
+            <div class="section-title">会話ウィンドウ（話しかけた時）</div>
+            <div class="section-body">
+              <div class="lines-section" id="dialogLines"></div>
+              <button class="btn-add-line" onclick="addDialogLine()">+ セリフを追加</button>
+            </div>
+          </div>
+
+        </div>
+      </main>
+    </div>
+  </div>
+
+  <script src="../shared/save-api.js"></script>
+  <script>
+  const NPC_DEFS_PATH = 'assets/npcs/npc-defs.json'
+  const NPC_DEFS_URL = '../../public/assets/npcs/npc-defs.json'
+
+  let npcDefs = []
+  let selectedIdx = -1
+  let spriteCache = {}
+  let currentLang = 'ja'
+
+  const LANGS = [
+    { code: 'ja', label: 'JA 日本語' },
+    { code: 'en', label: 'EN English' },
+    { code: 'zh', label: 'ZH 中文' },
+    { code: 'es', label: 'ES Español' },
+  ]
+
+  function getLangTarget(def) {
+    if (currentLang === 'ja') return def
+    if (!def.i18n) def.i18n = {}
+    if (!def.i18n[currentLang]) def.i18n[currentLang] = {}
+    return def.i18n[currentLang]
+  }
+
+  function getCurrentLangData(def) {
+    if (currentLang === 'ja') return def
+    return def.i18n?.[currentLang] ?? {}
+  }
+
+  function switchLang(lang) {
+    currentLang = lang
+    renderLangTabs()
+    if (selectedIdx >= 0) {
+      const def = npcDefs[selectedIdx]
+      const src = getCurrentLangData(def)
+      renderSpeechLines(src.speechLines || [])
+      renderDialogLines(src.dialogLines || [])
+      renderActivitySpeeches(src.activitySpeeches || {})
+    }
+  }
+
+  function renderLangTabs() {
+    const container = document.getElementById('langTabs')
+    if (!container) return
+    container.innerHTML = ''
+    LANGS.forEach(({ code, label }) => {
+      const btn = document.createElement('button')
+      btn.textContent = label
+      const active = code === currentLang
+      btn.style.cssText = `font-size:0.78rem;padding:5px 12px;border-radius:4px;cursor:pointer;border:1px solid ${active ? '#89b4fa' : '#45475a'};background:${active ? '#89b4fa22' : '#1e1e2e'};color:${active ? '#89b4fa' : '#6c7086'};`
+      btn.addEventListener('click', () => switchLang(code))
+      container.appendChild(btn)
+    })
+  }
+
+  // ---- Init ----
+  window.addEventListener('DOMContentLoaded', () => {
+    loadDefsFromAPI()
+    renderLangTabs()
+
+    document.getElementById('btnNew').addEventListener('click', createNew)
+    document.getElementById('btnOpen').addEventListener('click', () => {
+      loadAsset(NPC_DEFS_PATH).then(data => {
+        if (!Array.isArray(data)) { alert('npc-defs.json はJSON配列である必要があります'); return }
+        npcDefs = data
+        selectedIdx = -1
+        renderList()
+        showEmpty()
+        showToast('読み込みました: ' + NPC_DEFS_PATH, 'success')
+      }).catch(err => alert('読み込みエラー: ' + err.message))
+    })
+    document.getElementById('btnExport').addEventListener('click', exportJSON)
+    document.getElementById('btnSaveToGame').addEventListener('click', () => {
+      saveToGame(NPC_DEFS_PATH, npcDefs)
+    })
+    document.getElementById('fieldSpriteKey').addEventListener('input', () => {
+      saveCurrentField('spriteKey', document.getElementById('fieldSpriteKey').value)
+      loadSpritePreview(document.getElementById('fieldSpriteKey').value)
+    })
+    document.getElementById('fieldId').addEventListener('input', () => {
+      saveCurrentField('id', document.getElementById('fieldId').value)
+      renderList()
+    })
+    document.getElementById('fieldName').addEventListener('input', () => {
+      saveCurrentField('name', document.getElementById('fieldName').value)
+      renderList()
+    })
+    document.getElementById('fieldAnimated').addEventListener('change', () => {
+      const animated = document.getElementById('fieldAnimated').value === 'true'
+      saveCurrentField('animated', animated)
+      toggleAnimFields(animated)
+    })
+    document.getElementById('fieldFrameRate').addEventListener('input', () =>
+      saveCurrentField('frameRate', parseInt(document.getElementById('fieldFrameRate').value)))
+    document.getElementById('fieldFrameCount').addEventListener('input', () =>
+      saveCurrentField('frameCount', parseInt(document.getElementById('fieldFrameCount').value)))
+    document.getElementById('fieldRole').addEventListener('change', () => {
+      saveCurrentField('role', document.getElementById('fieldRole').value)
+    })
+    document.getElementById('fieldHomeX').addEventListener('input', () => {
+      const v = document.getElementById('fieldHomeX').value
+      saveCurrentField('homeX', v === '' ? undefined : parseInt(v))
+    })
+    document.getElementById('fieldHomeY').addEventListener('input', () => {
+      const v = document.getElementById('fieldHomeY').value
+      saveCurrentField('homeY', v === '' ? undefined : parseInt(v))
+    })
+    document.getElementById('fieldMovement').addEventListener('change', () => {
+      const val = document.getElementById('fieldMovement').value
+      saveCurrentField('movement', val)
+      togglePatrolFields(val === 'patrol')
+      toggleScheduleSection(val === 'scheduled')
+    })
+    document.getElementById('fieldPatrolSpeed').addEventListener('input', () =>
+      saveCurrentField('patrolSpeed', parseInt(document.getElementById('fieldPatrolSpeed').value)))
+    document.getElementById('fieldPatrolRange').addEventListener('input', () =>
+      saveCurrentField('patrolRange', parseInt(document.getElementById('fieldPatrolRange').value)))
+    document.getElementById('fieldSpeechInterval').addEventListener('input', () =>
+      saveCurrentField('speechIntervalMs', parseInt(document.getElementById('fieldSpeechInterval').value)))
+    document.getElementById('fieldFleeWeight').addEventListener('input', () =>
+      saveUtilityWeight('fleeWeight', document.getElementById('fieldFleeWeight').value))
+    document.getElementById('fieldScheduleWeight').addEventListener('input', () =>
+      saveUtilityWeight('scheduleWeight', document.getElementById('fieldScheduleWeight').value))
+    document.getElementById('fieldIdleWeight').addEventListener('input', () =>
+      saveUtilityWeight('idleWeight', document.getElementById('fieldIdleWeight').value))
+    document.getElementById('fieldPatrolWeight').addEventListener('input', () =>
+      saveUtilityWeight('patrolWeight', document.getElementById('fieldPatrolWeight').value))
+  })
+
+  async function loadDefsFromAPI() {
+    try {
+      const res = await fetch(NPC_DEFS_URL)
+      if (res.ok) { npcDefs = await res.json(); renderList() }
+    } catch { /* no defs yet */ }
+  }
+
+  // ---- List ----
+  function renderList() {
+    const list = document.getElementById('charList')
+    list.innerHTML = ''
+    npcDefs.forEach((def, i) => {
+      const item = document.createElement('div')
+      item.className = 'char-item' + (i === selectedIdx ? ' selected' : '')
+      item.innerHTML = `
+        <span class="char-name">${def.name || def.id || '(未設定)'}</span>
+        <span style="font-size:0.7rem; color:#6c7086; margin-left:auto; margin-right:4px;">${def.movement}</span>
+        <button class="btn-delete" title="削除">✕</button>
+      `
+      item.querySelector('.btn-delete').addEventListener('click', (e) => {
+        e.stopPropagation()
+        if (confirm(`「${def.name || def.id}」を削除しますか？`)) {
+          npcDefs.splice(i, 1)
+          selectedIdx = -1
+          renderList()
+          showEmpty()
+        }
+      })
+      item.addEventListener('click', () => selectNPC(i))
+      list.appendChild(item)
+    })
+  }
+
+  function showEmpty() {
+    document.getElementById('emptyState').style.display = 'flex'
+    document.getElementById('editorContent').style.display = 'none'
+  }
+
+  function selectNPC(idx) {
+    selectedIdx = idx
+    renderList()
+    populateEditor(npcDefs[idx])
+  }
+
+  // ---- Editor Population ----
+  function populateEditor(def) {
+    document.getElementById('emptyState').style.display = 'none'
+    document.getElementById('editorContent').style.display = 'flex'
+
+    document.getElementById('fieldId').value = def.id || ''
+    document.getElementById('fieldName').value = def.name || ''
+    document.getElementById('fieldSpriteKey').value = def.spriteKey || ''
+    document.getElementById('fieldAnimated').value = def.animated ? 'true' : 'false'
+    document.getElementById('fieldFrameRate').value = def.frameRate ?? 6
+    document.getElementById('fieldFrameCount').value = def.frameCount ?? 4
+    document.getElementById('fieldMovement').value = def.movement || 'fixed'
+    document.getElementById('fieldPatrolSpeed').value = def.patrolSpeed ?? 60
+    document.getElementById('fieldPatrolRange').value = def.patrolRange ?? 3
+    document.getElementById('fieldSpeechInterval').value = def.speechIntervalMs ?? 5000
+
+    document.getElementById('fieldRole').value = def.role || 'villager'
+    document.getElementById('fieldHomeX').value = def.homeX ?? ''
+    document.getElementById('fieldHomeY').value = def.homeY ?? ''
+    renderScheduleList(def.schedule || [])
+    const w = def.utilityWeights || {}
+    document.getElementById('fieldFleeWeight').value = w.fleeWeight ?? 1.0
+    document.getElementById('fieldScheduleWeight').value = w.scheduleWeight ?? 1.0
+    document.getElementById('fieldIdleWeight').value = w.idleWeight ?? 1.0
+    document.getElementById('fieldPatrolWeight').value = w.patrolWeight ?? 1.0
+    toggleAnimFields(def.animated)
+    togglePatrolFields(def.movement === 'patrol')
+    toggleScheduleSection(def.movement === 'scheduled')
+    const src = getCurrentLangData(def)
+    renderSpeechLines(src.speechLines || [])
+    renderDialogLines(src.dialogLines || [])
+    renderActivitySpeeches(src.activitySpeeches || {})
+    renderLangTabs()
+    loadSpritePreview(def.spriteKey)
+  }
+
+  function toggleAnimFields(animated) {
+    document.getElementById('frameRateField').style.display = animated ? '' : 'none'
+    document.getElementById('frameCountField').style.display = animated ? '' : 'none'
+  }
+
+  function togglePatrolFields(patrol) {
+    document.getElementById('patrolSpeedField').style.display = patrol ? '' : 'none'
+    document.getElementById('patrolRangeField').style.display = patrol ? '' : 'none'
+  }
+
+  function toggleScheduleSection(show) {
+    document.getElementById('scheduleSection').style.display = show ? '' : 'none'
+    if (show) {
+      document.getElementById('patrolSpeedField').style.display = 'none'
+      document.getElementById('patrolRangeField').style.display = 'none'
+    }
+  }
+
+  // ---- Speech Lines ----
+  function renderSpeechLines(lines) {
+    const container = document.getElementById('speechLines')
+    container.innerHTML = ''
+    lines.forEach((line, i) => addLineRow(container, line, i, 'speech'))
+  }
+
+  function addSpeechLine() {
+    if (selectedIdx < 0) return
+    const def = npcDefs[selectedIdx]
+    const target = getLangTarget(def)
+    if (!target.speechLines) target.speechLines = []
+    target.speechLines.push('')
+    renderSpeechLines(target.speechLines)
+  }
+
+  // ---- Dialog Lines ----
+  function renderDialogLines(lines) {
+    const container = document.getElementById('dialogLines')
+    container.innerHTML = ''
+    lines.forEach((line, i) => addDialogLineRow(container, line, i))
+  }
+
+  function addDialogLine() {
+    if (selectedIdx < 0) return
+    const def = npcDefs[selectedIdx]
+    const target = getLangTarget(def)
+    if (!target.dialogLines) target.dialogLines = []
+    target.dialogLines.push('')
+    renderDialogLines(target.dialogLines)
+  }
+
+  function addDialogLineRow(container, value, idx) {
+    // value は string または { name, text }
+    const isObj = value && typeof value === 'object'
+    const textVal = isObj ? value.text : (value || '')
+    const nameVal = isObj ? value.name : ''
+
+    const row = document.createElement('div')
+    row.className = 'line-row dialog-line-row'
+    row.style.flexDirection = 'column'
+    row.style.alignItems = 'stretch'
+    row.style.gap = '4px'
+
+    // 上段: 話者名 + 削除ボタン
+    const topRow = document.createElement('div')
+    topRow.style.cssText = 'display:flex; gap:6px; align-items:center;'
+
+    const nameInput = document.createElement('input')
+    nameInput.type = 'text'
+    nameInput.value = nameVal
+    nameInput.placeholder = '話者名（空=NPC名）'
+    nameInput.style.cssText = 'width:180px; flex-shrink:0; font-size:0.8rem; opacity:0.8;'
+
+    const del = document.createElement('button')
+    del.className = 'btn-del-line'
+    del.textContent = '✕'
+    del.style.marginLeft = 'auto'
+
+    topRow.appendChild(nameInput)
+    topRow.appendChild(del)
+
+    // 下段: セリフ本文
+    const textInput = document.createElement('input')
+    textInput.type = 'text'
+    textInput.value = textVal
+    textInput.placeholder = 'セリフを入力...'
+
+    const sync = () => {
+      const def = npcDefs[selectedIdx]
+      const target = getLangTarget(def)
+      if (!target.dialogLines) target.dialogLines = []
+      const n = nameInput.value.trim()
+      target.dialogLines[idx] = n ? { name: n, text: textInput.value } : textInput.value
+    }
+    nameInput.addEventListener('input', sync)
+    textInput.addEventListener('input', sync)
+
+    del.addEventListener('click', () => {
+      const def = npcDefs[selectedIdx]
+      const target = getLangTarget(def)
+      if (!target.dialogLines) return
+      target.dialogLines.splice(idx, 1)
+      renderDialogLines(target.dialogLines)
+    })
+
+    row.appendChild(topRow)
+    row.appendChild(textInput)
+    container.appendChild(row)
+  }
+
+  function addLineRow(container, value, idx, type) {
+    const row = document.createElement('div')
+    row.className = 'line-row'
+    const input = document.createElement('input')
+    input.type = 'text'
+    input.value = value
+    input.placeholder = 'セリフを入力...'
+    input.addEventListener('input', () => {
+      const def = npcDefs[selectedIdx]
+      const target = getLangTarget(def)
+      if (!target.speechLines) target.speechLines = []
+      target.speechLines[idx] = input.value
+    })
+    const del = document.createElement('button')
+    del.className = 'btn-del-line'
+    del.textContent = '✕'
+    del.addEventListener('click', () => {
+      const def = npcDefs[selectedIdx]
+      const target = getLangTarget(def)
+      if (!target.speechLines) return
+      target.speechLines.splice(idx, 1)
+      renderSpeechLines(target.speechLines)
+    })
+    row.appendChild(input)
+    row.appendChild(del)
+    container.appendChild(row)
+  }
+
+  // ---- Sprite Preview ----
+  function loadSpritePreview(spriteKey) {
+    if (!spriteKey) return
+    const canvas = document.getElementById('spriteCanvas')
+    const ctx = canvas.getContext('2d')
+    ctx.clearRect(0, 0, 64, 64)
+
+    if (spriteCache[spriteKey]) {
+      ctx.drawImage(spriteCache[spriteKey], 0, 0, 64, 64, 0, 0, 64, 64)
+      return
+    }
+    const img = new Image()
+    img.onload = () => {
+      spriteCache[spriteKey] = img
+      ctx.drawImage(img, 0, 0, 64, 64, 0, 0, 64, 64)
+    }
+    img.src = `../../public/assets/images/npc/${spriteKey}.png`
+  }
+
+  // ---- Helpers ----
+  function saveCurrentField(key, value) {
+    if (selectedIdx < 0) return
+    npcDefs[selectedIdx][key] = value
+  }
+
+  function createNew() {
+    const id = `npc_${Date.now()}`
+    npcDefs.push({
+      id,
+      name: '新しいNPC',
+      spriteKey: '',
+      animated: false,
+      movement: 'fixed',
+      speechLines: [],
+      speechIntervalMs: 5000,
+      dialogLines: [],
+      role: 'villager',
+      schedule: [],
+      activitySpeeches: {},
+      utilityWeights: {}
+    })
+    selectedIdx = npcDefs.length - 1
+    renderList()
+    populateEditor(npcDefs[selectedIdx])
+  }
+
+  // ---- Role weights ----
+  const ROLE_WEIGHTS = {
+    villager:  { fleeWeight: 1.5, scheduleWeight: 1.0, idleWeight: 1.0, patrolWeight: 0.5 },
+    guard:     { fleeWeight: 0.2, scheduleWeight: 0.8, idleWeight: 0.5, patrolWeight: 1.5 },
+    merchant:  { fleeWeight: 1.0, scheduleWeight: 1.2, idleWeight: 1.5, patrolWeight: 0.3 },
+    elder:     { fleeWeight: 0.8, scheduleWeight: 1.5, idleWeight: 1.2, patrolWeight: 0.3 },
+    innkeeper: { fleeWeight: 1.0, scheduleWeight: 1.3, idleWeight: 1.5, patrolWeight: 0.2 },
+  }
+
+  function resetUtilityWeights() {
+    if (selectedIdx < 0) return
+    const def = npcDefs[selectedIdx]
+    const role = def.role || 'villager'
+    const w = ROLE_WEIGHTS[role] || ROLE_WEIGHTS['villager']
+    if (!def.utilityWeights) def.utilityWeights = {}
+    def.utilityWeights.fleeWeight = w.fleeWeight
+    def.utilityWeights.scheduleWeight = w.scheduleWeight
+    def.utilityWeights.idleWeight = w.idleWeight
+    def.utilityWeights.patrolWeight = w.patrolWeight
+    document.getElementById('fieldFleeWeight').value = w.fleeWeight
+    document.getElementById('fieldScheduleWeight').value = w.scheduleWeight
+    document.getElementById('fieldIdleWeight').value = w.idleWeight
+    document.getElementById('fieldPatrolWeight').value = w.patrolWeight
+  }
+
+  function saveUtilityWeight(key, value) {
+    if (selectedIdx < 0) return
+    const def = npcDefs[selectedIdx]
+    if (!def.utilityWeights) def.utilityWeights = {}
+    def.utilityWeights[key] = parseFloat(value)
+  }
+
+  // ---- Schedule ----
+  const ACTIVITY_OPTIONS = ['idle', 'walk', 'work', 'eat', 'sleep', 'rest', 'watch', 'chat', 'pray', 'flee']
+
+  function renderScheduleList(schedule) {
+    const container = document.getElementById('scheduleList')
+    container.innerHTML = ''
+    schedule.forEach((entry, i) => {
+      container.appendChild(buildScheduleEntryEl(entry, i))
+    })
+  }
+
+  function addScheduleEntry() {
+    if (selectedIdx < 0) return
+    const def = npcDefs[selectedIdx]
+    if (!def.schedule) def.schedule = []
+    def.schedule.push({ id: `sched_${Date.now()}`, trigger: 'always', priority: 0, waypoints: [] })
+    renderScheduleList(def.schedule)
+  }
+
+  function buildScheduleEntryEl(entry, entryIdx) {
+    const wrap = document.createElement('div')
+    wrap.style.cssText = 'border:1px solid #45475a; border-radius:6px; padding:10px; margin-bottom:10px; background:#1e1e2e;'
+
+    // ヘッダ行
+    const header = document.createElement('div')
+    header.style.cssText = 'display:flex; gap:8px; align-items:center; margin-bottom:8px; flex-wrap:wrap;'
+
+    // ID
+    const idLabel = document.createElement('span')
+    idLabel.textContent = 'ID:'
+    idLabel.style.cssText = 'font-size:0.75rem; color:#a6adc8;'
+    const idInput = document.createElement('input')
+    idInput.type = 'text'
+    idInput.value = entry.id || ''
+    idInput.placeholder = 'schedule_id'
+    idInput.style.cssText = 'width:140px; font-size:0.8rem;'
+    idInput.addEventListener('input', () => { entry.id = idInput.value })
+
+    // Trigger
+    const trigLabel = document.createElement('span')
+    trigLabel.textContent = 'トリガー:'
+    trigLabel.style.cssText = 'font-size:0.75rem; color:#a6adc8;'
+    const trigSelect = document.createElement('select')
+    trigSelect.style.cssText = 'font-size:0.8rem;'
+    ;['always', 'time', 'event'].forEach(t => {
+      const opt = document.createElement('option')
+      opt.value = t
+      opt.textContent = t
+      trigSelect.appendChild(opt)
+    })
+    trigSelect.value = entry.trigger || 'always'
+
+    // Priority
+    const prioLabel = document.createElement('span')
+    prioLabel.textContent = '優先度:'
+    prioLabel.style.cssText = 'font-size:0.75rem; color:#a6adc8;'
+    const prioInput = document.createElement('input')
+    prioInput.type = 'number'
+    prioInput.value = entry.priority ?? 0
+    prioInput.style.cssText = 'width:60px; font-size:0.8rem;'
+    prioInput.addEventListener('input', () => { entry.priority = parseInt(prioInput.value) || 0 })
+
+    // 削除ボタン
+    const delBtn = document.createElement('button')
+    delBtn.className = 'btn-del-line'
+    delBtn.textContent = '✕ エントリ削除'
+    delBtn.style.marginLeft = 'auto'
+    delBtn.addEventListener('click', () => {
+      const def = npcDefs[selectedIdx]
+      def.schedule.splice(entryIdx, 1)
+      renderScheduleList(def.schedule)
+    })
+
+    header.appendChild(idLabel)
+    header.appendChild(idInput)
+    header.appendChild(trigLabel)
+    header.appendChild(trigSelect)
+    header.appendChild(prioLabel)
+    header.appendChild(prioInput)
+    header.appendChild(delBtn)
+    wrap.appendChild(header)
+
+    // time/event 条件フィールド
+    const timeRow = document.createElement('div')
+    timeRow.style.cssText = 'display:flex; gap:8px; align-items:center; margin-bottom:8px; flex-wrap:wrap;'
+    const tsLabel = document.createElement('span')
+    tsLabel.textContent = '開始時刻 (0-23):'
+    tsLabel.style.cssText = 'font-size:0.75rem; color:#a6adc8;'
+    const tsInput = document.createElement('input')
+    tsInput.type = 'number'
+    tsInput.min = '0'; tsInput.max = '23'
+    tsInput.value = entry.timeStart ?? 8
+    tsInput.style.cssText = 'width:60px; font-size:0.8rem;'
+    tsInput.addEventListener('input', () => { entry.timeStart = parseInt(tsInput.value) })
+    const teLabel = document.createElement('span')
+    teLabel.textContent = '終了時刻 (0-23):'
+    teLabel.style.cssText = 'font-size:0.75rem; color:#a6adc8;'
+    const teInput = document.createElement('input')
+    teInput.type = 'number'
+    teInput.min = '0'; teInput.max = '23'
+    teInput.value = entry.timeEnd ?? 18
+    teInput.style.cssText = 'width:60px; font-size:0.8rem;'
+    teInput.addEventListener('input', () => { entry.timeEnd = parseInt(teInput.value) })
+    timeRow.appendChild(tsLabel); timeRow.appendChild(tsInput)
+    timeRow.appendChild(teLabel); timeRow.appendChild(teInput)
+
+    const eventRow = document.createElement('div')
+    eventRow.style.cssText = 'display:flex; gap:8px; align-items:center; margin-bottom:8px;'
+    const evLabel = document.createElement('span')
+    evLabel.textContent = 'イベント名:'
+    evLabel.style.cssText = 'font-size:0.75rem; color:#a6adc8;'
+    const evInput = document.createElement('input')
+    evInput.type = 'text'
+    evInput.value = entry.event || ''
+    evInput.placeholder = 'event_name'
+    evInput.style.cssText = 'flex:1; font-size:0.8rem;'
+    evInput.addEventListener('input', () => { entry.event = evInput.value })
+    eventRow.appendChild(evLabel); eventRow.appendChild(evInput)
+
+    const applyTriggerVisibility = (trig) => {
+      timeRow.style.display = trig === 'time' ? 'flex' : 'none'
+      eventRow.style.display = trig === 'event' ? 'flex' : 'none'
+    }
+    trigSelect.addEventListener('change', () => {
+      entry.trigger = trigSelect.value
+      applyTriggerVisibility(trigSelect.value)
+    })
+    applyTriggerVisibility(entry.trigger || 'always')
+    wrap.appendChild(timeRow)
+    wrap.appendChild(eventRow)
+
+    // ウェイポイントセクション
+    const wpTitle = document.createElement('div')
+    wpTitle.textContent = 'ウェイポイント'
+    wpTitle.style.cssText = 'font-size:0.75rem; font-weight:600; color:#cdd6f4; margin-bottom:6px;'
+    wrap.appendChild(wpTitle)
+
+    const wpContainer = document.createElement('div')
+    wpContainer.style.cssText = 'display:flex; flex-direction:column; gap:6px;'
+    if (!entry.waypoints) entry.waypoints = []
+    entry.waypoints.forEach((wp, wi) => {
+      wpContainer.appendChild(buildWaypointEl(wp, wi, entry, wpContainer))
+    })
+    wrap.appendChild(wpContainer)
+
+    const addWpBtn = document.createElement('button')
+    addWpBtn.className = 'btn-add-line'
+    addWpBtn.textContent = '+ ウェイポイント追加'
+    addWpBtn.style.marginTop = '6px'
+    addWpBtn.addEventListener('click', () => {
+      if (!entry.waypoints) entry.waypoints = []
+      entry.waypoints.push({ x: 0, y: 0, waitMs: 0, activity: 'idle', speech: '' })
+      wpContainer.innerHTML = ''
+      entry.waypoints.forEach((wp, wi) => {
+        wpContainer.appendChild(buildWaypointEl(wp, wi, entry, wpContainer))
+      })
+    })
+    wrap.appendChild(addWpBtn)
+
+    return wrap
+  }
+
+  function buildWaypointEl(wp, wpIdx, entry, wpContainer) {
+    const row = document.createElement('div')
+    row.style.cssText = 'display:flex; gap:6px; align-items:center; flex-wrap:wrap; background:#181825; padding:6px; border-radius:4px;'
+
+    const mk = (label, type, key, width, extraAttrs) => {
+      const span = document.createElement('span')
+      span.textContent = label
+      span.style.cssText = 'font-size:0.72rem; color:#a6adc8; white-space:nowrap;'
+      const inp = document.createElement('input')
+      inp.type = type
+      inp.value = wp[key] ?? (type === 'number' ? 0 : '')
+      inp.style.cssText = `width:${width}px; font-size:0.8rem;`
+      if (extraAttrs) Object.assign(inp, extraAttrs)
+      inp.addEventListener('input', () => {
+        wp[key] = type === 'number' ? parseInt(inp.value) || 0 : inp.value
+      })
+      row.appendChild(span); row.appendChild(inp)
+      return inp
+    }
+
+    mk('X:', 'number', 'x', 55)
+    mk('Y:', 'number', 'y', 55)
+    mk('待機(ms):', 'number', 'waitMs', 65)
+
+    // home座標ボタン
+    const homeBtn = document.createElement('button')
+    homeBtn.textContent = '🏠 拠点'
+    homeBtn.style.cssText = 'font-size:0.72rem; padding:2px 6px; background:#313244; border:1px solid #45475a; border-radius:4px; cursor:pointer; color:#cdd6f4;'
+    homeBtn.addEventListener('click', () => {
+      const def = npcDefs[selectedIdx]
+      const hx = def.homeX ?? 0
+      const hy = def.homeY ?? 0
+      wp.x = hx; wp.y = hy
+      wpContainer.innerHTML = ''
+      entry.waypoints.forEach((w2, wi2) => {
+        wpContainer.appendChild(buildWaypointEl(w2, wi2, entry, wpContainer))
+      })
+    })
+    row.appendChild(homeBtn)
+
+    // activity select
+    const actLabel = document.createElement('span')
+    actLabel.textContent = '行動:'
+    actLabel.style.cssText = 'font-size:0.72rem; color:#a6adc8;'
+    const actSelect = document.createElement('select')
+    actSelect.style.cssText = 'font-size:0.8rem;'
+    ACTIVITY_OPTIONS.forEach(a => {
+      const opt = document.createElement('option')
+      opt.value = a; opt.textContent = a
+      actSelect.appendChild(opt)
+    })
+    actSelect.value = wp.activity || 'idle'
+    actSelect.addEventListener('change', () => { wp.activity = actSelect.value })
+    row.appendChild(actLabel); row.appendChild(actSelect)
+
+    // speech
+    const spLabel = document.createElement('span')
+    spLabel.textContent = 'セリフ:'
+    spLabel.style.cssText = 'font-size:0.72rem; color:#a6adc8;'
+    const spInput = document.createElement('input')
+    spInput.type = 'text'
+    spInput.value = wp.speech || ''
+    spInput.placeholder = '（省略可）'
+    spInput.style.cssText = 'flex:1; min-width:80px; font-size:0.8rem;'
+    spInput.addEventListener('input', () => { wp.speech = spInput.value })
+    row.appendChild(spLabel); row.appendChild(spInput)
+
+    // 削除
+    const delBtn = document.createElement('button')
+    delBtn.className = 'btn-del-line'
+    delBtn.textContent = '✕'
+    delBtn.addEventListener('click', () => {
+      entry.waypoints.splice(wpIdx, 1)
+      wpContainer.innerHTML = ''
+      entry.waypoints.forEach((w2, wi2) => {
+        wpContainer.appendChild(buildWaypointEl(w2, wi2, entry, wpContainer))
+      })
+    })
+    row.appendChild(delBtn)
+
+    return row
+  }
+
+  // ---- Activity Speeches ----
+  const ACTIVITY_SPEECH_TABS = ['work', 'eat', 'sleep', 'rest', 'watch', 'pray', 'chat']
+  let currentActivityTab = 'work'
+
+  function renderActivitySpeeches(speeches) {
+    const tabsEl = document.getElementById('activitySpeechTabs')
+    const contentEl = document.getElementById('activitySpeechContent')
+    tabsEl.innerHTML = ''
+
+    ACTIVITY_SPEECH_TABS.forEach(tab => {
+      const btn = document.createElement('button')
+      btn.textContent = tab
+      btn.style.cssText = `font-size:0.75rem; padding:4px 10px; border-radius:4px; cursor:pointer; border:1px solid #45475a; background:${tab === currentActivityTab ? '#313244' : '#1e1e2e'}; color:${tab === currentActivityTab ? '#cdd6f4' : '#6c7086'};`
+      btn.addEventListener('click', () => {
+        currentActivityTab = tab
+        const def = npcDefs[selectedIdx]
+        const src = getCurrentLangData(def)
+        renderActivitySpeeches(src.activitySpeeches || {})
+      })
+      tabsEl.appendChild(btn)
+    })
+
+    contentEl.innerHTML = ''
+    const lines = speeches[currentActivityTab] || []
+    const linesContainer = document.createElement('div')
+    linesContainer.className = 'lines-section'
+
+    lines.forEach((line, i) => {
+      const row = document.createElement('div')
+      row.className = 'line-row'
+      const input = document.createElement('input')
+      input.type = 'text'
+      input.value = line
+      input.placeholder = 'セリフを入力...'
+      input.addEventListener('input', () => {
+        const def = npcDefs[selectedIdx]
+        const target = getLangTarget(def)
+        if (!target.activitySpeeches) target.activitySpeeches = {}
+        if (!target.activitySpeeches[currentActivityTab]) target.activitySpeeches[currentActivityTab] = []
+        target.activitySpeeches[currentActivityTab][i] = input.value
+      })
+      const del = document.createElement('button')
+      del.className = 'btn-del-line'
+      del.textContent = '✕'
+      del.addEventListener('click', () => {
+        const def = npcDefs[selectedIdx]
+        const target = getLangTarget(def)
+        if (!target.activitySpeeches?.[currentActivityTab]) return
+        target.activitySpeeches[currentActivityTab].splice(i, 1)
+        renderActivitySpeeches(target.activitySpeeches)
+      })
+      row.appendChild(input); row.appendChild(del)
+      linesContainer.appendChild(row)
+    })
+    contentEl.appendChild(linesContainer)
+
+    const addBtn = document.createElement('button')
+    addBtn.className = 'btn-add-line'
+    addBtn.textContent = `+ ${currentActivityTab} セリフ追加`
+    addBtn.addEventListener('click', () => {
+      const def = npcDefs[selectedIdx]
+      const target = getLangTarget(def)
+      if (!target.activitySpeeches) target.activitySpeeches = {}
+      if (!target.activitySpeeches[currentActivityTab]) target.activitySpeeches[currentActivityTab] = []
+      target.activitySpeeches[currentActivityTab].push('')
+      renderActivitySpeeches(target.activitySpeeches)
+    })
+    contentEl.appendChild(addBtn)
+  }
+
+  function exportJSON() {
+    const content = JSON.stringify(npcDefs, null, 2)
+    const blob = new Blob([content], { type: 'application/json' })
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = 'npc-defs.json'
+    a.click()
+    URL.revokeObjectURL(url)
+  }
+  </script>
+</body>
+</html>

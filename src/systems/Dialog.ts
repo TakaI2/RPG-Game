@@ -1,7 +1,8 @@
 import Phaser from 'phaser'
 import { GAME_W } from '../config'
 
-export type DialogData = { portraitTint?: number; lines: string[] }
+export type DialogLine = string | { name: string; text: string }
+export type DialogData = { portraitTint?: number; lines: DialogLine[] }
 
 export default class DialogUI {
   private scene: Phaser.Scene
@@ -10,10 +11,12 @@ export default class DialogUI {
   private msgText!: Phaser.GameObjects.Text
   private portrait!: Phaser.GameObjects.Image
 
-  private lines: string[] = []
+  private lines: DialogLine[] = []
+  private defaultName = ''
   private idx = 0
   private typing = false
   private fullLine = ''
+  private typingTimer: Phaser.Time.TimerEvent | null = null
 
   constructor(scene: Phaser.Scene) {
     this.scene = scene
@@ -35,19 +38,21 @@ export default class DialogUI {
     this.msgText = this.scene.add.text(240, 64, '', { fontFamily: 'monospace', fontSize: '30px', color: '#ffffff', wordWrap: { width: GAME_W - 360 } })
 
     this.container.add([bg, this.portrait, this.nameText, this.msgText])
-    this.container.setDepth(1000).setVisible(false)
+    this.container.setDepth(2000).setVisible(false)
   }
 
   get visible() { return this.container.visible }
 
+  getContainer(): Phaser.GameObjects.Container { return this.container }
+
   show(name: string, data: DialogData) {
     console.log('[DialogUI] show called with:', { name, lines: data.lines })
     this.lines = data.lines.slice()
+    this.defaultName = name
     this.idx = 0
-    this.nameText.setText(name)
     this.portrait.setTint(data.portraitTint ?? 0xffffff)
     this.container.setVisible(true)
-    this.typeLine(this.lines[this.idx])
+    this.showLine(this.lines[this.idx])
   }
 
   next() {
@@ -55,6 +60,7 @@ export default class DialogUI {
     if (this.typing) {
       console.log('[DialogUI] Still typing, showing full line immediately')
       this.typing = false
+      if (this.typingTimer) { this.typingTimer.remove(); this.typingTimer = null }
       this.msgText.setText(this.fullLine)
       return
     }
@@ -65,23 +71,33 @@ export default class DialogUI {
       return
     }
     console.log('[DialogUI] Showing line', this.idx, ':', this.lines[this.idx])
-    this.typeLine(this.lines[this.idx])
+    this.showLine(this.lines[this.idx])
+  }
+
+  private showLine(line: DialogLine) {
+    const text = typeof line === 'string' ? line : line.text
+    const name = typeof line === 'string' ? this.defaultName : line.name
+    this.nameText.setText(name)
+    this.typeLine(text)
   }
 
   private typeLine(text: string) {
+    // リテラルの \n を実際の改行文字に変換（JSONエスケープが二重になった場合の対策）
+    const normalized = text.replace(/\\n/g, '\n')
     this.typing = true
-    this.fullLine = text
+    this.fullLine = normalized
     this.msgText.setText('')
 
-    const chars = [...text]
+    const chars = [...normalized]
     let i = 0
-    const timer = this.scene.time.addEvent({
+    if (this.typingTimer) { this.typingTimer.remove() }
+    this.typingTimer = this.scene.time.addEvent({
       delay: 20,
       repeat: chars.length - 1,
       callback: () => {
         this.msgText.setText(this.msgText.text + chars[i])
         i++
-        if (i >= chars.length) { this.typing = false; timer.remove() }
+        if (i >= chars.length) { this.typing = false; this.typingTimer = null }
       }
     })
   }

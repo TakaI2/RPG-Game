@@ -5,16 +5,26 @@ export type GameFlowBgmAsset = {
 
 export type GameFlowAssets = {
   bgm: GameFlowBgmAsset[]
+  loadingImages?: string[]   // assets/images/loading_images/ 内のファイル名リスト
+  clockSpeed?: number        // 実ms / ゲーム1時間（デフォルト: 180000）
 }
 
 export type ThenAction =
   | { action: 'stay' }
   | { action: 'exit' }
   | { action: 'goto_map'; mapId: string; x: number; y: number }
+  | { action: 'goto_chapter'; chapterId: string }
 
 export type StoryThenConfig = {
   story: string | null
   then: ThenAction
+}
+
+export type ChapterDef = {
+  id: string
+  label?: string
+  start: StoryThenConfig
+  stories?: string[]   // このチャプターで事前ロードするストーリーIDリスト
 }
 
 export type GameFlowEventTrigger = {
@@ -42,7 +52,7 @@ export type BossMapConfig = {
 
 export type MapFlowConfig = {
   bgm?: string
-  onEnter: string | null
+  onEnter: StoryThenConfig | null
   boss?: BossMapConfig | null
   onPlayerDefeat: StoryThenConfig
   onBossDefeat?: StoryThenConfig
@@ -52,6 +62,6 @@ export type MapFlowConfig = {
 
 export type GameFlowConfig = {
   assets?: GameFlowAssets
-  start: StoryThenConfig
+  chapters: ChapterDef[]
   maps: Record<string, MapFlowConfig>
 }

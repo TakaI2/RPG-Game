@@ -1,0 +1,30 @@
+{
+  "assets": {},
+  "start": {
+    "then": {
+      "action": "goto_map",
+      "mapId": "Village_map",
+      "x": 5,
+      "y": 5
+    }
+  },
+  "maps": {
+    "Village_map": {
+      "boss": {
+        "configKey": "belladonna_boss",
+        "x": 20,
+        "y": 15
+      },
+      "onBossDefeat": {
+        "then": {
+          "action": "stay"
+        }
+      },
+      "onPlayerDefeat": {
+        "then": {
+          "action": "stay"
+        }
+      }
+    }
+  }
+}

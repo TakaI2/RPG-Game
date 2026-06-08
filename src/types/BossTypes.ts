@@ -51,8 +51,9 @@ export type CutinConfig = {
  */
 export type SpeechConfig = {
   text: string
-  duration: number
+  duration?: number
   color?: string
+  i18n?: Record<string, { text: string }>
 }
 
 /**
@@ -127,6 +128,7 @@ export type UltimateConfig = {
   projectileCount: number
   projectileType: 'orb'
   projectileTexture?: string
+  projectileFrames?: number   // 2以上でアニメーション（横並びフレーム数）
   spiralAngleStep: number
   spiralRadiusStep: number
   spiralRadiusStart: number
@@ -188,6 +190,9 @@ export type SpriteConfig = {
 export type CutinImageConfig = {
   image: string
   position: 'left' | 'right'
+  x?: number      // 最終X座標（省略時はpositionで決定）
+  y?: number      // Y座標（省略時は画面中央）
+  scale?: number  // スケール（省略時は2.5）
 }
 
 /**
@@ -201,13 +206,17 @@ export type StatsConfig = {
 }
 
 /**
- * セリフ集
+ * セリフ集（各言語訳）
  */
-export type SpeechesConfig = {
+type SpeechesI18n = {
   intro?: string
   phase2?: string
   lowHp?: string
   defeat?: string
+}
+
+export type SpeechesConfig = SpeechesI18n & {
+  i18n?: Record<string, SpeechesI18n>
 }
 
 /**

@@ -6,6 +6,91 @@
 // アセットのベースパス（相対パス）
 const ASSET_BASE = '../../public/assets/story';
 
+// i18n対応言語リスト
+const I18N_LOCALES = [
+  { code: 'ja', label: '日本語' },
+  { code: 'en', label: 'English' },
+  { code: 'zh', label: '中文' },
+  { code: 'es', label: 'Español' },
+]
+
+// sayコマンドで現在編集中の言語
+let sayEditLocale = 'ja'
+
+// BGMファイル一覧（起動時に /api/list-assets から取得）
+let bgmFiles = []
+
+async function loadBgmFiles() {
+  try {
+    const res = await fetch('/api/list-assets?folder=assets/story/bgm')
+    const json = await res.json()
+    if (json.ok) {
+      bgmFiles = json.files.filter(f => /\.(ogg|mp3|wav)$/i.test(f))
+    }
+  } catch (e) {}
+}
+
+// 立ち絵ファイル一覧（起動時に /api/list-assets から取得）
+let portraitFiles = []
+
+async function loadPortraitFiles() {
+  try {
+    const res = await fetch('/api/list-assets?folder=assets/story/portraits')
+    const json = await res.json()
+    if (json.ok) {
+      portraitFiles = json.files.filter(f => /\.(png|jpg|jpeg|webp)$/i.test(f))
+    }
+  } catch (e) {}
+}
+
+// SEファイル一覧（起動時に /api/list-assets から取得）
+let seFiles = []
+
+async function loadSeFiles() {
+  try {
+    const res = await fetch('/api/list-assets?folder=assets/story/se')
+    const json = await res.json()
+    if (json.ok) {
+      seFiles = json.files.filter(f => /\.(ogg|mp3|wav)$/i.test(f))
+    }
+  } catch (e) {}
+}
+
+// 背景ファイル一覧（起動時に /api/list-assets から取得）
+let bgFiles = []
+
+async function loadBgFiles() {
+  try {
+    const res = await fetch('/api/list-assets?folder=assets/story/bg')
+    const json = await res.json()
+    if (json.ok) {
+      bgFiles = json.files.filter(f => /\.(png|jpg|jpeg|webp)$/i.test(f))
+    }
+  } catch (e) {}
+}
+
+let bgmPreviewAudio = null
+function playBgmPreview(filename) {
+  if (bgmPreviewAudio) { bgmPreviewAudio.pause(); bgmPreviewAudio = null }
+  if (!filename) return
+  bgmPreviewAudio = new Audio(`${ASSET_BASE}/bgm/${filename}`)
+  bgmPreviewAudio.play().catch(() => {})
+}
+function stopBgmPreview() {
+  if (bgmPreviewAudio) { bgmPreviewAudio.pause(); bgmPreviewAudio = null }
+}
+
+let sePreviewAudio = null
+function playSePreview(filename) {
+  if (sePreviewAudio) { sePreviewAudio.pause(); sePreviewAudio = null }
+  if (!filename) return
+  sePreviewAudio = new Audio(`${ASSET_BASE}/se/${filename}`)
+  sePreviewAudio.play().catch(() => {})
+}
+function stopSePreview() {
+  if (sePreviewAudio) { sePreviewAudio.pause(); sePreviewAudio = null }
+}
+
 // ゲーム画面サイズ（config.tsと同じ）
 const GAME_W = 1920;
 const GAME_H = 1080;
@@ -35,8 +120,13 @@ const elements = {
 
 // 初期化
 document.addEventListener('DOMContentLoaded', () => {
+  loadBgmFiles()
+  loadPortraitFiles()
+  loadSeFiles()
+  loadBgFiles()
   initElements();
   initEventListeners();
+  initBgDrag();
   renderTimeline();
   updatePreview();
 });
@@ -58,10 +148,13 @@ function initEventListeners() {
   // ファイル操作
   document.getElementById('btn-new').addEventListener('click', newStory);
   document.getElementById('btn-import').addEventListener('click', () => {
-    document.getElementById('file-input').click();
+    openFileBrowser('assets/story/scripts', loadStoryData);
   });
-  document.getElementById('file-input').addEventListener('change', importJSON);
   document.getElementById('btn-export').addEventListener('click', exportJSON);
+  document.getElementById('btn-save-to-game').addEventListener('click', () => {
+    const data = { id: state.storyId, script: state.script };
+    window.saveToGame(`assets/story/scripts/${state.storyId}.json`, data);
+  });
 
   // コマンド追加
   document.getElementById('btn-add-command').addEventListener('click', showAddModal);
@@ -107,7 +200,7 @@ function initEventListeners() {
     }
     if (e.ctrlKey && e.key === 'o') {
       e.preventDefault();
-      document.getElementById('file-input').click();
+      openFileBrowser('assets/story/scripts', loadStoryData);
     }
     if (e.key === 'ArrowUp' && state.selectedIndex > 0) {
       selectCommand(state.selectedIndex - 1);
@@ -136,7 +229,8 @@ function initPortraitDrag() {
   portrait.addEventListener('mousedown', (e) => {
     if (state.selectedIndex < 0) return;
     const cmd = state.script[state.selectedIndex];
-    if (cmd.op !== 'say' || !cmd.portrait) return;
+    const isPortraitCmd = cmd.op === 'portrait.show' || (cmd.op === 'say' && cmd.portrait);
+    if (!isPortraitCmd) return;
 
     isDragging = true;
     portrait.classList.add('dragging');
@@ -144,8 +238,13 @@ function initPortraitDrag() {
     startMouseY = e.clientY;
 
     // 現在のゲーム座標を保存
-    startGameX = cmd.portraitX ?? (GAME_W / 2);
-    startGameY = cmd.portraitY ?? (GAME_H / 2);
+    if (cmd.op === 'portrait.show') {
+      startGameX = cmd.x ?? (GAME_W / 2);
+      startGameY = cmd.y ?? (GAME_H / 2);
+    } else {
+      startGameX = cmd.portraitX ?? (GAME_W / 2);
+      startGameY = cmd.portraitY ?? (GAME_H / 2);
+    }
 
     elements.positionIndicator.style.display = 'block';
     e.preventDefault();
@@ -166,20 +265,25 @@ function initPortraitDrag() {
     const newX = Math.round(startGameX + gameDx);
     const newY = Math.round(startGameY + gameDy);
 
-    // 現在のコマンドを更新
     const cmd = state.script[state.selectedIndex];
-    cmd.portraitX = newX;
-    cmd.portraitY = newY;
-
-    // プレビューを更新
-    updatePreviewPortrait(cmd);
+    if (cmd.op === 'portrait.show') {
+      cmd.x = newX;
+      cmd.y = newY;
+      updatePreviewPortrait({ portrait: cmd.portrait, portraitX: newX, portraitY: newY, portraitScale: cmd.scale });
+      const xInput = document.getElementById('prop-x');
+      const yInput = document.getElementById('prop-y');
+      if (xInput) xInput.value = newX;
+      if (yInput) yInput.value = newY;
+    } else {
+      cmd.portraitX = newX;
+      cmd.portraitY = newY;
+      updatePreviewPortrait(cmd);
+      const xInput = document.getElementById('prop-portraitX');
+      const yInput = document.getElementById('prop-portraitY');
+      if (xInput) xInput.value = newX;
+      if (yInput) yInput.value = newY;
+    }
     elements.positionIndicator.textContent = `X: ${newX}, Y: ${newY}`;
-
-    // プロパティパネルを更新
-    const xInput = document.getElementById('prop-portraitX');
-    const yInput = document.getElementById('prop-portraitY');
-    if (xInput) xInput.value = newX;
-    if (yInput) yInput.value = newY;
   });
 
   document.addEventListener('mouseup', () => {
@@ -189,6 +293,103 @@ function initPortraitDrag() {
       elements.positionIndicator.style.display = 'none';
     }
   });
+
+  // ホイールで立ち絵スケール変更
+  portrait.addEventListener('wheel', (e) => {
+    if (state.selectedIndex < 0) return;
+    const cmd = state.script[state.selectedIndex];
+    const isPortraitCmd = cmd.op === 'portrait.show' || (cmd.op === 'say' && cmd.portrait);
+    if (!isPortraitCmd) return;
+    e.preventDefault();
+
+    const step = 0.05;
+    const delta = e.deltaY > 0 ? -step : step;
+
+    if (cmd.op === 'portrait.show') {
+      cmd.scale = Math.max(0.1, Math.min(5.0, +((cmd.scale ?? 1.0) + delta).toFixed(2)));
+      updatePreviewPortrait({ portrait: cmd.portrait, portraitX: cmd.x, portraitY: cmd.y, portraitScale: cmd.scale });
+      const scaleInput = document.getElementById('prop-scale');
+      if (scaleInput) scaleInput.value = cmd.scale;
+    } else {
+      cmd.portraitScale = Math.max(0.1, Math.min(5.0, +((cmd.portraitScale ?? 1.0) + delta).toFixed(2)));
+      updatePreviewPortrait(cmd);
+      const scaleInput = document.getElementById('prop-portraitScale');
+      if (scaleInput) scaleInput.value = cmd.portraitScale;
+    }
+  }, { passive: false });
+}
+
+// 背景のドラッグ＆ホイール処理
+function initBgDrag() {
+  const bg = elements.previewBg;
+  const container = document.getElementById('preview-container');
+  let isDragging = false;
+  let startMouseX, startMouseY, startGameX, startGameY;
+
+  bg.addEventListener('mousedown', (e) => {
+    if (state.selectedIndex < 0) return;
+    const cmd = state.script[state.selectedIndex];
+    if (cmd.op !== 'bg') return;
+
+    isDragging = true;
+    bg.classList.add('dragging');
+    startMouseX = e.clientX;
+    startMouseY = e.clientY;
+    startGameX = cmd.x ?? 0;
+    startGameY = cmd.y ?? 0;
+
+    elements.positionIndicator.style.display = 'block';
+    e.preventDefault();
+  });
+
+  document.addEventListener('mousemove', (e) => {
+    if (!isDragging) return;
+
+    const containerRect = container.getBoundingClientRect();
+    const previewScale = containerRect.width / GAME_W;
+    const newX = Math.round(startGameX + (e.clientX - startMouseX) / previewScale);
+    const newY = Math.round(startGameY + (e.clientY - startMouseY) / previewScale);
+
+    const cmd = state.script[state.selectedIndex];
+    cmd.x = newX;
+    cmd.y = newY;
+    updatePreviewBg(cmd);
+
+    const xInput = document.getElementById('prop-x');
+    const yInput = document.getElementById('prop-y');
+    if (xInput) xInput.value = newX;
+    if (yInput) yInput.value = newY;
+
+    elements.positionIndicator.textContent = `X: ${newX}, Y: ${newY}`;
+  });
+
+  document.addEventListener('mouseup', () => {
+    if (isDragging) {
+      isDragging = false;
+      bg.classList.remove('dragging');
+      elements.positionIndicator.style.display = 'none';
+    }
+  });
+
+  // ホイールで背景スケール変更（scaleX/scaleY を均等に）
+  bg.addEventListener('wheel', (e) => {
+    if (state.selectedIndex < 0) return;
+    const cmd = state.script[state.selectedIndex];
+    if (cmd.op !== 'bg') return;
+    e.preventDefault();
+
+    const step = 0.05;
+    const delta = e.deltaY > 0 ? -step : step;
+    const newScale = Math.max(0.1, Math.min(5.0, +((cmd.scaleX ?? 1.0) + delta).toFixed(2)));
+    cmd.scaleX = newScale;
+    cmd.scaleY = newScale;
+    updatePreviewBg(cmd);
+
+    const scaleXInput = document.getElementById('prop-scaleX');
+    const scaleYInput = document.getElementById('prop-scaleY');
+    if (scaleXInput) scaleXInput.value = newScale;
+    if (scaleYInput) scaleYInput.value = newScale;
+  }, { passive: false });
 }
 
 // 新規ストーリー
@@ -205,7 +406,19 @@ function newStory() {
   renderProperties();
 }
 
-// JSONインポート
+// ストーリーデータ読み込み（APIファイルブラウザ用）
+function loadStoryData(data, filename) {
+  state.storyId = data.id || filename.replace('.json', '');
+  state.script = data.script || [];
+  state.selectedIndex = state.script.length > 0 ? 0 : -1;
+  elements.storyIdInput.value = state.storyId;
+  renderTimeline();
+  updatePreview();
+  renderProperties();
+  console.log('Loaded:', state.storyId, state.script.length, 'commands');
+}
+
+// JSONインポート（ローカルファイル fallback）
 function importJSON(e) {
   const file = e.target.files[0];
   if (!file) return;
@@ -214,14 +427,7 @@ function importJSON(e) {
   reader.onload = (event) => {
     try {
       const data = JSON.parse(event.target.result);
-      state.storyId = data.id || file.name.replace('.json', '');
-      state.script = data.script || [];
-      state.selectedIndex = state.script.length > 0 ? 0 : -1;
-      elements.storyIdInput.value = state.storyId;
-      renderTimeline();
-      updatePreview();
-      renderProperties();
-      console.log('Imported:', state.storyId, state.script.length, 'commands');
+      loadStoryData(data, file.name);
     } catch (err) {
       alert('JSONの読み込みに失敗しました: ' + err.message);
     }
@@ -296,6 +502,33 @@ function addCommand(type) {
         op: 'se',
         name: 'sound.mp3'
       };
+      break;
+    case 'se.stop':
+      newCmd = {
+        op: 'se.stop',
+        name: 'sound.mp3'
+      };
+      break;
+    case 'portrait.show':
+      newCmd = {
+        op: 'portrait.show',
+        portrait: 'character.png',
+        x: 960,
+        y: 800,
+        scale: 1.0
+      };
+      break;
+    case 'portrait.hide':
+      newCmd = { op: 'portrait.hide' };
+      break;
+    case 'delay':
+      newCmd = { op: 'delay', duration: 1000 };
+      break;
+    case 'fade.in':
+      newCmd = { op: 'fade.in', color: '#000000', duration: 500, alpha: 1.0 };
+      break;
+    case 'fade.out':
+      newCmd = { op: 'fade.out', duration: 500 };
       break;
     case 'end':
       newCmd = {
@@ -393,6 +626,9 @@ function getCommandLabel(op) {
     'bgm.stop': '⏹️ BGM停止',
     'bgm.cross': '🔀 BGMクロス',
     'se': '🔊 効果音',
+    'se.stop': '🔇 効果音停止',
+    'portrait.show': '🧍 立ち絵表示',
+    'portrait.hide': '🚫 立ち絵非表示',
     'end': '🏁 終了'
   };
   return labels[op] || op;
@@ -409,7 +645,19 @@ function getCommandPreview(cmd) {
     case 'bgm.stop':
       return `フェード: ${cmd.fade || 0}ms`;
     case 'se':
+      return (cmd.name || '(未設定)') + (cmd.loop ? ' 🔁' : '');
+    case 'se.stop':
       return cmd.name || '(未設定)';
+    case 'portrait.show':
+      return `${cmd.portrait || '(未設定)'} (${cmd.x ?? 960}, ${cmd.y ?? 540}) ×${cmd.scale ?? 1.0}`;
+    case 'portrait.hide':
+      return '立ち絵を消す';
+    case 'delay':
+      return `${cmd.duration ?? 1000}ms`;
+    case 'fade.in':
+      return `${cmd.color || '#000000'} / ${cmd.duration ?? 500}ms / α${cmd.alpha ?? 1.0}`;
+    case 'fade.out':
+      return `${cmd.duration ?? 500}ms`;
     case 'end':
       return `→ ${cmd.returnTo || 'MainScene'}`;
     default:
@@ -439,13 +687,19 @@ function updatePreview() {
     if (cmd.op === 'bg') {
       currentBgCmd = cmd;
     }
+    if (cmd.op === 'portrait.show') {
+      currentPortrait = cmd;
+    }
+    if (cmd.op === 'portrait.hide') {
+      currentPortrait = null;
+    }
     if (cmd.op === 'say') {
       currentSay = cmd;
       if (cmd.portrait) {
+        // sayにportrait指定があれば上書き
         currentPortrait = cmd;
-      } else {
-        currentPortrait = null;
       }
+      // portrait指定なしは現在のcurrentPortraitを維持
     }
   }
 
@@ -460,7 +714,11 @@ function updatePreview() {
 
   // 立ち絵
   if (currentPortrait && currentPortrait.portrait) {
-    updatePreviewPortrait(currentPortrait);
+    // portrait.show と say(legacy) で座標フィールド名が違うので正規化
+    const portraitDisplay = currentPortrait.op === 'portrait.show'
+      ? { portrait: currentPortrait.portrait, portraitX: currentPortrait.x, portraitY: currentPortrait.y, portraitScale: currentPortrait.scale }
+      : currentPortrait;
+    updatePreviewPortrait(portraitDisplay);
     elements.previewPortrait.style.display = 'block';
   } else {
     elements.previewPortrait.style.display = 'none';
@@ -606,6 +864,28 @@ function renderProperties() {
     case 'se':
       html = renderSeProperties(cmd);
       break;
+    case 'se.stop':
+      html = renderSeStopProperties(cmd);
+      break;
+    case 'portrait.show':
+      html = renderPortraitShowProperties(cmd);
+      break;
+    case 'portrait.hide':
+      html = '<p class="placeholder">立ち絵を非表示にします。プロパティはありません。</p>';
+      break;
+    case 'delay':
+      html = `
+        <div class="prop-group">
+          <label>遅延時間 (ms)</label>
+          <input type="number" id="prop-duration" value="${cmd.duration ?? 1000}" data-prop="duration" min="0" step="100">
+        </div>`;
+      break;
+    case 'fade.in':
+      html = renderFadeInProperties(cmd);
+      break;
+    case 'fade.out':
+      html = renderFadeOutProperties(cmd);
+      break;
     case 'end':
       html = renderEndProperties(cmd);
       break;
@@ -620,22 +900,99 @@ function renderProperties() {
     el.addEventListener('input', (e) => updateProperty(e.target));
     el.addEventListener('change', (e) => updateProperty(e.target));
   });
+
+  // 言語タブ切り替え
+  elements.propertiesContent.querySelectorAll('.lang-tab').forEach(btn => {
+    btn.addEventListener('click', () => {
+      sayEditLocale = btn.dataset.lang
+      renderProperties()
+    })
+  });
+
+  // BGM試聴ボタン
+  const btnBgmPlay = document.getElementById('btn-bgm-play')
+  const btnBgmStop = document.getElementById('btn-bgm-stop')
+  if (btnBgmPlay) {
+    btnBgmPlay.addEventListener('click', () => {
+      const filename = document.getElementById('prop-name')?.value
+      playBgmPreview(filename)
+    })
+  }
+  if (btnBgmStop) {
+    btnBgmStop.addEventListener('click', stopBgmPreview)
+  }
+
+  // カラーピッカー ↔ テキスト入力の同期（fade.in）
+  const colorPicker = document.getElementById('prop-color-picker')
+  const colorText = document.getElementById('prop-color')
+  if (colorPicker && colorText) {
+    colorPicker.addEventListener('input', () => {
+      colorText.value = colorPicker.value
+      updateProperty(colorText)
+    })
+    colorText.addEventListener('input', () => {
+      if (/^#[0-9a-fA-F]{6}$/.test(colorText.value)) {
+        colorPicker.value = colorText.value
+      }
+    })
+  }
+
+  // SE試聴ボタン
+  const btnSePlay = document.getElementById('btn-se-play')
+  const btnSeStop = document.getElementById('btn-se-stop')
+  if (btnSePlay) {
+    btnSePlay.addEventListener('click', () => {
+      const filename = document.getElementById('prop-name')?.value
+      playSePreview(filename)
+    })
+  }
+  if (btnSeStop) {
+    btnSeStop.addEventListener('click', stopSePreview)
+  }
 }
 
 function renderSayProperties(cmd) {
+  const tabs = I18N_LOCALES.map(l =>
+    `<button type="button" class="lang-tab ${l.code === sayEditLocale ? 'active' : ''}" data-lang="${l.code}">${l.label}</button>`
+  ).join('')
+
+  const isJa = sayEditLocale === 'ja'
+  const i18nEntry = cmd.i18n?.[sayEditLocale] ?? {}
+  const editName  = isJa ? (cmd.name  || '') : (i18nEntry.name  || '')
+  const editLines = isJa ? (cmd.lines || []) : (i18nEntry.lines || [])
+
+  const nameProp  = isJa ? 'name'     : 'i18n-name'
+  const linesProp = isJa ? 'lines'    : 'i18n-lines'
+
   return `
     <div class="prop-group">
+      <label>言語</label>
+      <div class="lang-tabs">${tabs}</div>
+    </div>
+    <div class="prop-group">
       <label>話者名</label>
-      <input type="text" id="prop-name" value="${escapeHtml(cmd.name || '')}" data-prop="name">
+      <input type="text" id="prop-name" value="${escapeHtml(editName)}" data-prop="${nameProp}">
     </div>
     <div class="prop-group">
       <label>セリフ（1行ずつ）</label>
-      <textarea id="prop-lines" data-prop="lines">${(cmd.lines || []).join('\n')}</textarea>
+      <textarea id="prop-lines" data-prop="${linesProp}">${editLines.join('\n')}</textarea>
       <div class="prop-hint">複数行で入力すると、ページ送りごとに表示されます</div>
     </div>
     <div class="prop-group">
       <label>立ち絵ファイル</label>
-      <input type="text" id="prop-portrait" value="${escapeHtml(cmd.portrait || '')}" data-prop="portrait" placeholder="例: priest.png">
+      ${(() => {
+        const current = cmd.portrait || ''
+        const options = portraitFiles.map(f =>
+          `<option value="${escapeHtml(f)}" ${f === current ? 'selected' : ''}>${escapeHtml(f)}</option>`
+        ).join('')
+        const hasMatch = portraitFiles.includes(current)
+        const extraOption = (!hasMatch && current)
+          ? `<option value="${escapeHtml(current)}" selected>${escapeHtml(current)}</option>` : ''
+        return `<select id="prop-portrait" data-prop="portrait">
+          <option value="">-- なし --</option>
+          ${extraOption}${options}
+        </select>`
+      })()}
       <div class="prop-hint">空欄で立ち絵なし</div>
     </div>
     <div class="prop-row">
@@ -656,10 +1013,20 @@ function renderSayProperties(cmd) {
 }
 
 function renderBgProperties(cmd) {
+  const current = cmd.name || ''
+  const options = bgFiles.map(f =>
+    `<option value="${escapeHtml(f)}" ${f === current ? 'selected' : ''}>${escapeHtml(f)}</option>`
+  ).join('')
+  const hasMatch = bgFiles.includes(current)
+  const extraOption = (!hasMatch && current)
+    ? `<option value="${escapeHtml(current)}" selected>${escapeHtml(current)}</option>` : ''
   return `
     <div class="prop-group">
       <label>背景ファイル</label>
-      <input type="text" id="prop-name" value="${escapeHtml(cmd.name || '')}" data-prop="name" placeholder="例: bad1.png">
+      <select id="prop-name" data-prop="name">
+        <option value="">-- 選択 --</option>
+        ${extraOption}${options}
+      </select>
     </div>
     <div class="prop-row">
       <div class="prop-group">
@@ -689,10 +1056,27 @@ function renderBgProperties(cmd) {
 }
 
 function renderBgmPlayProperties(cmd) {
+  const current = cmd.name || ''
+  const options = bgmFiles.map(f =>
+    `<option value="${escapeHtml(f)}" ${f === current ? 'selected' : ''}>${escapeHtml(f)}</option>`
+  ).join('')
+  // リストにない値（手入力済み）は先頭に追加
+  const hasMatch = bgmFiles.includes(current)
+  const extraOption = (!hasMatch && current)
+    ? `<option value="${escapeHtml(current)}" selected>${escapeHtml(current)}</option>`
+    : ''
   return `
     <div class="prop-group">
       <label>BGMファイル</label>
-      <input type="text" id="prop-name" value="${escapeHtml(cmd.name || '')}" data-prop="name" placeholder="例: bgm1.ogg">
+      <div class="se-input-row">
+        <select id="prop-name" data-prop="name">
+          <option value="">-- 選択 --</option>
+          ${extraOption}
+          ${options}
+        </select>
+        <button type="button" id="btn-bgm-play" title="試聴">▶</button>
+        <button type="button" id="btn-bgm-stop" title="停止">■</button>
+      </div>
     </div>
     <div class="prop-group">
       <label>ループ再生</label>
@@ -722,11 +1106,77 @@ function renderBgmStopProperties(cmd) {
 }
 
 function renderSeProperties(cmd) {
+  const current = cmd.name || ''
+  const options = seFiles.map(f =>
+    `<option value="${escapeHtml(f)}" ${f === current ? 'selected' : ''}>${escapeHtml(f)}</option>`
+  ).join('')
+  const hasMatch = seFiles.includes(current)
+  const extraOption = (!hasMatch && current)
+    ? `<option value="${escapeHtml(current)}" selected>${escapeHtml(current)}</option>` : ''
   return `
     <div class="prop-group">
       <label>効果音ファイル</label>
-      <input type="text" id="prop-name" value="${escapeHtml(cmd.name || '')}" data-prop="name" placeholder="例: footstep.mp3">
+      <div class="se-input-row">
+        <select id="prop-name" data-prop="name">
+          <option value="">-- 選択 --</option>
+          ${extraOption}${options}
+        </select>
+        <button type="button" id="btn-se-play" title="試聴">▶</button>
+        <button type="button" id="btn-se-stop" title="停止">■</button>
+      </div>
     </div>
+    <div class="prop-group">
+      <label>
+        <input type="checkbox" id="prop-loop" data-prop="loop" ${cmd.loop ? 'checked' : ''}>
+        ループ再生
+      </label>
+      <div class="prop-hint">ONにすると繰り返し再生。停止するには「効果音停止」コマンドを使用。</div>
+    </div>
+  `;
+}
+
+function renderSeStopProperties(cmd) {
+  const current = cmd.name || ''
+  const options = seFiles.map(f =>
+    `<option value="${escapeHtml(f)}" ${f === current ? 'selected' : ''}>${escapeHtml(f)}</option>`
+  ).join('')
+  const hasMatch = seFiles.includes(current)
+  const extraOption = (!hasMatch && current)
+    ? `<option value="${escapeHtml(current)}" selected>${escapeHtml(current)}</option>` : ''
+  return `
+    <div class="prop-group">
+      <label>停止する効果音ファイル</label>
+      <select id="prop-name" data-prop="name">
+        <option value="">-- 選択 --</option>
+        ${extraOption}${options}
+      </select>
+      <div class="prop-hint">ループ再生中の効果音を停止します。</div>
+    </div>
+  `;
+}
+
+function renderPortraitShowProperties(cmd) {
+  return `
+    <div class="prop-group">
+      <label>立ち絵ファイル</label>
+      <input type="text" id="prop-portrait" value="${escapeHtml(cmd.portrait || '')}" data-prop="portrait" placeholder="例: priest.png">
+      <div class="prop-hint">portraits/ フォルダのファイル名</div>
+    </div>
+    <div class="prop-row">
+      <div class="prop-group">
+        <label>X座標</label>
+        <input type="number" id="prop-x" value="${cmd.x ?? 960}" data-prop="x">
+      </div>
+      <div class="prop-group">
+        <label>Y座標</label>
+        <input type="number" id="prop-y" value="${cmd.y ?? 540}" data-prop="y">
+      </div>
+    </div>
+    <div class="prop-group">
+      <label>スケール</label>
+      <input type="number" id="prop-scale" value="${cmd.scale ?? 1.0}" data-prop="scale" step="0.1" min="0.1" max="3">
+    </div>
+    <div class="prop-hint">設定後はportrait.hideまで表示し続けます。プレビューでドラッグして位置を調整できます。</div>
   `;
 }
 
@@ -745,15 +1195,69 @@ function renderEndProperties(cmd) {
   `;
 }
 
+function renderFadeInProperties(cmd) {
+  const color = cmd.color || '#000000';
+  return `
+    <div class="prop-group">
+      <label>色</label>
+      <div style="display:flex; gap:8px; align-items:center;">
+        <input type="color" id="prop-color-picker" value="${color}" style="width:48px; height:32px; padding:2px; cursor:pointer;">
+        <input type="text" id="prop-color" value="${color}" data-prop="color" style="width:96px; font-family:monospace;" placeholder="#000000" maxlength="7">
+      </div>
+    </div>
+    <div class="prop-group">
+      <label>時間 (ms)</label>
+      <input type="number" id="prop-duration" value="${cmd.duration ?? 500}" data-prop="duration" min="0" step="100">
+    </div>
+    <div class="prop-group">
+      <label>不透明度 (0〜1)</label>
+      <input type="number" id="prop-alpha" value="${cmd.alpha ?? 1.0}" data-prop="alpha" min="0" max="1" step="0.1">
+    </div>
+  `;
+}
+
+function renderFadeOutProperties(cmd) {
+  return `
+    <div class="prop-group">
+      <label>時間 (ms)</label>
+      <input type="number" id="prop-duration" value="${cmd.duration ?? 500}" data-prop="duration" min="0" step="100">
+    </div>
+  `;
+}
+
 // プロパティ更新
 function updateProperty(input) {
   if (state.selectedIndex < 0) return;
 
   const prop = input.dataset.prop;
   let value = input.value;
+  const cmd = state.script[state.selectedIndex];
+
+  // i18nフィールドの更新
+  if (prop === 'i18n-name' || prop === 'i18n-lines') {
+    const lang = sayEditLocale
+    if (!cmd.i18n) cmd.i18n = {}
+    if (!cmd.i18n[lang]) cmd.i18n[lang] = {}
+    if (prop === 'i18n-lines') {
+      const lines = value.split('\n').filter(line => line.trim() !== '')
+      if (lines.length === 0) delete cmd.i18n[lang].lines
+      else cmd.i18n[lang].lines = lines
+    } else {
+      if (value === '') delete cmd.i18n[lang].name
+      else cmd.i18n[lang].name = value
+    }
+    // i18nエントリが空になったら削除
+    if (Object.keys(cmd.i18n[lang]).length === 0) delete cmd.i18n[lang]
+    if (Object.keys(cmd.i18n).length === 0) delete cmd.i18n
+    renderTimeline();
+    updatePreview();
+    return;
+  }
 
   // 型変換
-  if (input.type === 'number') {
+  if (input.type === 'checkbox') {
+    value = input.checked;
+  } else if (input.type === 'number') {
     value = parseFloat(value) || 0;
   } else if (prop === 'loop') {
     value = value === 'true';
@@ -763,9 +1267,9 @@ function updateProperty(input) {
 
   // 空文字列の場合はプロパティを削除
   if (value === '' && prop !== 'lines') {
-    delete state.script[state.selectedIndex][prop];
+    delete cmd[prop];
   } else {
-    state.script[state.selectedIndex][prop] = value;
+    cmd[prop] = value;
   }
 
   renderTimeline();

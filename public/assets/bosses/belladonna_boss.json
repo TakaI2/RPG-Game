@@ -13,20 +13,38 @@
   },
   "cutin": {
     "image": "boss_face",
-    "position": "left"
+    "position": "left",
+    "x": 910,
+    "y": 864,
+    "scale": 0.9
   },
   "phases": [
     {
       "phase": 1,
-      "hpRange": [16, 30],
+      "hpRange": [
+        16,
+        30
+      ],
       "attackCooldown": 0.8,
-      "patterns": ["orb_spread", "cursed_circle", "blink_dash"]
+      "patterns": [
+        "orb_spread",
+        "cursed_circle",
+        "blink_dash"
+      ]
     },
     {
       "phase": 2,
-      "hpRange": [0, 15],
+      "hpRange": [
+        0,
+        15
+      ],
       "attackCooldown": 0.5,
-      "patterns": ["orb_spread", "cursed_circle", "blink_dash", "witch_calamity"]
+      "patterns": [
+        "orb_spread",
+        "cursed_circle",
+        "blink_dash",
+        "witch_calamity"
+      ]
     }
   ],
   "attacks": [
@@ -71,7 +89,18 @@
       "speech": {
         "text": "逃げられると思って？",
         "duration": 1200,
-        "color": "#cc88ff"
+        "color": "#cc88ff",
+        "i18n": {
+          "en": {
+            "text": "Did you think you could run?"
+          },
+          "zh": {
+            "text": "你以为你能逃吗？"
+          },
+          "es": {
+            "text": "¿Pensabas que podías huir?"
+          }
+        }
       }
     },
     {
@@ -120,7 +149,18 @@
       "speech": {
         "text": "この世の呪いを、全部あんたにくれてやるよ！",
         "duration": 1800,
-        "color": "#cc88ff"
+        "color": "#cc88ff",
+        "i18n": {
+          "en": {
+            "text": "I'll give you every curse this world has to offer!"
+          },
+          "zh": {
+            "text": "把这世间所有的诅咒，全都送给你吧！"
+          },
+          "es": {
+            "text": "¡Te daré todas las maldiciones que este mundo tiene!"
+          }
+        }
       },
       "cameraEffects": {
         "darken": {
@@ -131,7 +171,11 @@
         "flash": {
           "enabled": true,
           "duration": 200,
-          "color": [170, 0, 255]
+          "color": [
+            170,
+            0,
+            255
+          ]
         }
       },
       "bgmControl": {
@@ -144,7 +188,27 @@
     "intro": "邪魔者は消えてもらうよ。これも命運というものさ。",
     "phase2": "ふふ、なかなかやるじゃないか。では本気を見せてあげよう。",
     "lowHp": "小癪な...！この私がここまでやられるとは...",
-    "defeat": "バカな...ベラドンナが...負けるなんて...嘘だろ..."
+    "defeat": "バカな...ベラドンナが...負けるなんて...嘘だろ...",
+    "i18n": {
+      "en": {
+        "intro": "I'll have you out of the way. Consider it fate.",
+        "phase2": "Heh, not bad at all. Then let me show you what I'm truly made of.",
+        "lowHp": "How impudent...! That even I could be pushed this far...",
+        "defeat": "Impossible... Belladonna... losing... you must be joking..."
+      },
+      "zh": {
+        "intro": "碍事的人，给我消失吧。这也是命运所然。",
+        "phase2": "呵，还挺能打嘛。那就让你见识一下我的真本事吧。",
+        "lowHp": "可恶……！我贝拉多纳竟被逼到这个地步……",
+        "defeat": "不可能……贝拉多纳……居然会输……这不是真的……"
+      },
+      "es": {
+        "intro": "Tendrás que desaparecer. Es el destino, al fin y al cabo.",
+        "phase2": "Jeje, nada mal. Entonces te mostraré lo que realmente soy capaz.",
+        "lowHp": "¡Atrevido...! Que incluso yo haya llegado a este punto...",
+        "defeat": "Imposible... Belladonna... perdiendo... esto no puede ser..."
+      }
+    }
   },
   "se": {
     "damage": "boss_belladonna_damage",

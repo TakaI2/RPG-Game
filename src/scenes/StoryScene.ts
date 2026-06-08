@@ -3,6 +3,11 @@ import DialogUI from '../systems/Dialog'
 import { StoryRunner } from '../systems/StoryRunner'
 import { AudioBus } from '../systems/AudioBus'
 import { events } from '../systems/Events'
+
+/** M4AをOGGより優先して返す（iOS SafariはOGG非対応のため） */
+function audioUrls(url: string): string[] {
+  return url.endsWith('.ogg') ? [url.replace(/\.ogg$/, '.m4a'), url] : [url]
+}
 import { GAME_W, GAME_H } from '../config'
 import type { ThenAction } from '../types/GameFlowTypes'
 
@@ -20,10 +25,13 @@ export default class StoryScene extends Phaser.Scene {
   private scriptId!: string
   private thenAction!: ThenAction
   private waitingForSpace = false
+  private isSkipping = false
 
   // 背景・立ち絵
   private bgImage?: Phaser.GameObjects.Image
   private portraitImage?: Phaser.GameObjects.Image
+  private skipBtn?: Phaser.GameObjects.Image
+  private fadeOverlay?: Phaser.GameObjects.Rectangle
 
   // クリーンアップ用
   private checkInterval?: Phaser.Time.TimerEvent
@@ -35,6 +43,9 @@ export default class StoryScene extends Phaser.Scene {
   init(data: { id: string; then?: ThenAction }) {
     this.scriptId = data?.id || 'intro'
     this.thenAction = data?.then ?? { action: 'stay' }
+    this.isSkipping = false
+    this.waitingForSpace = false
+    this.checkInterval = undefined
     console.log(`[StoryScene] init with id: ${this.scriptId}`, 'then:', this.thenAction)
 
     if (!data || !data.id) {
@@ -51,8 +62,10 @@ export default class StoryScene extends Phaser.Scene {
       g.fillStyle(0xffffff, 1).fillRect(0, 0, 200, 200).generateTexture('portrait', 200, 200).clear()
     }
 
-    // JSONスクリプトをロード
-    this.load.json(`story_${this.scriptId}`, `assets/story/scripts/${this.scriptId}.json`)
+    // JSONスクリプトをロード（既にキャッシュ済みならスキップ）
+    if (!this.cache.json.has(`story_${this.scriptId}`)) {
+      this.load.json(`story_${this.scriptId}`, `assets/story/scripts/${this.scriptId}.json`)
+    }
   }
 
   create() {
@@ -89,6 +102,10 @@ export default class StoryScene extends Phaser.Scene {
     // AudioBus作成
     this.audio = new AudioBus(this)
 
+    // フェードオーバーレイ（fade.in / fade.out コマンド用）
+    this.fadeOverlay = this.add.rectangle(GAME_W / 2, GAME_H / 2, GAME_W, GAME_H, 0x000000)
+      .setAlpha(0).setDepth(1500).setScrollFactor(0)
+
     // DialogUI作成
     this.ui = new DialogUI(this)
 
@@ -104,8 +121,20 @@ export default class StoryScene extends Phaser.Scene {
       onBg: async (payload) => {
         await this.showBg(payload)
       },
+      onPortraitShow: async (payload) => {
+        await this.showPortrait(payload)
+      },
+      onPortraitHide: async () => {
+        this.hidePortrait()
+      },
       onEnd: (_returnTo) => {
         this.endStory()
+      },
+      onFadeIn: async (color, duration, alpha) => {
+        await this.doFadeIn(color, duration, alpha)
+      },
+      onFadeOut: async (duration) => {
+        await this.doFadeOut(duration)
       }
     })
 
@@ -122,6 +151,15 @@ export default class StoryScene extends Phaser.Scene {
         this.onAdvance()
       }
     })
+
+    // スキップボタン（右下）
+    this.skipBtn = this.add.image(GAME_W - 120, GAME_H - 60, 'btn_skip')
+      .setDepth(2000)
+      .setScrollFactor(0)
+      .setInteractive({ useHandCursor: true })
+    this.skipBtn.on('pointerdown', () => this.skipStory())
+    this.skipBtn.on('pointerover', () => this.skipBtn?.setAlpha(0.75))
+    this.skipBtn.on('pointerout', () => this.skipBtn?.setAlpha(1))
 
     // シーン終了時のクリーンアップ
     this.events.once('shutdown', this.cleanup, this)
@@ -141,7 +179,7 @@ export default class StoryScene extends Phaser.Scene {
       if (op.op === 'bg' && op.name) {
         bgSet.add(op.name as string)
       }
-      if (op.op === 'say' && op.portrait) {
+      if ((op.op === 'say' || op.op === 'portrait.show') && op.portrait) {
         portraitSet.add(op.portrait as string)
       }
       if (op.op === 'bgm.play' && op.name) {
@@ -152,24 +190,28 @@ export default class StoryScene extends Phaser.Scene {
       }
     })
 
-    // 背景画像をロード
+    // 背景画像をロード（未ロードのみ）
     bgSet.forEach(bg => {
-      this.load.image(`story_bg_${bg}`, `assets/story/bg/${bg}`)
+      if (!this.textures.exists(`story_bg_${bg}`))
+        this.load.image(`story_bg_${bg}`, `assets/story/bg/${bg}`)
     })
 
-    // 立ち絵をロード
+    // 立ち絵をロード（未ロードのみ）
     portraitSet.forEach(portrait => {
-      this.load.image(`story_portrait_${portrait}`, `assets/story/portraits/${portrait}`)
+      if (!this.textures.exists(`story_portrait_${portrait}`))
+        this.load.image(`story_portrait_${portrait}`, `assets/story/portraits/${portrait}`)
     })
 
-    // BGMをロード
+    // BGMをロード（未ロードのみ）
     bgmSet.forEach(bgm => {
-      this.load.audio(bgm, `assets/story/bgm/${bgm}`)
+      if (!this.cache.audio.has(bgm))
+        this.load.audio(bgm, audioUrls(`assets/story/bgm/${bgm}`))
     })
 
-    // SEをロード
+    // SEをロード（未ロードのみ）
     seSet.forEach(se => {
-      this.load.audio(se, `assets/story/se/${se}`)
+      if (!this.cache.audio.has(se))
+        this.load.audio(se, audioUrls(`assets/story/se/${se}`))
     })
 
     console.log('[StoryScene] BGM/SE/BG/Portrait assets to load:', {
@@ -189,6 +231,13 @@ export default class StoryScene extends Phaser.Scene {
     // アセットロード完了時にコールバックを呼ぶ
     this.load.once('complete', () => {
       console.log('[StoryScene] Assets loaded, calling onComplete')
+      // pixelArt: true によるニアレストネイバーを上書きし、背景・立ち絵を線形補間で描画
+      bgSet.forEach(bg => {
+        this.textures.get(`story_bg_${bg}`).setFilter(Phaser.Textures.FilterMode.LINEAR)
+      })
+      portraitSet.forEach(portrait => {
+        this.textures.get(`story_portrait_${portrait}`).setFilter(Phaser.Textures.FilterMode.LINEAR)
+      })
       onComplete()
     })
 
@@ -213,6 +262,14 @@ export default class StoryScene extends Phaser.Scene {
     if (this.portraitImage) {
       this.portraitImage.destroy()
       this.portraitImage = undefined
+    }
+    if (this.skipBtn) {
+      this.skipBtn.destroy()
+      this.skipBtn = undefined
+    }
+    if (this.fadeOverlay) {
+      this.fadeOverlay.destroy()
+      this.fadeOverlay = undefined
     }
 
     // Spaceキーリスナーを削除
@@ -263,6 +320,34 @@ export default class StoryScene extends Phaser.Scene {
     }
   }
 
+  private async showPortrait(payload: { portrait: string; x?: number; y?: number; scale?: number }): Promise<void> {
+    const key = `story_portrait_${payload.portrait}`
+    if (!this.textures.exists(key)) {
+      console.warn(`[StoryScene] Portrait not found: ${key}`)
+      return
+    }
+
+    if (this.portraitImage) {
+      this.portraitImage.destroy()
+    }
+
+    const x = payload.x ?? GAME_W / 2
+    const y = payload.y ?? GAME_H / 2
+    const scale = payload.scale ?? 1.0
+
+    this.portraitImage = this.add.image(x, y, key).setOrigin(0.5, 0.5).setDepth(-500)
+    this.portraitImage.setScale(scale)
+    this.portraitImage.setAlpha(0)
+    this.tweens.add({ targets: this.portraitImage, alpha: 1, duration: 300 })
+  }
+
+  private hidePortrait(): void {
+    if (this.portraitImage) {
+      this.portraitImage.destroy()
+      this.portraitImage = undefined
+    }
+  }
+
   private async showSay(payload: {
     name: string
     lines: string[]
@@ -273,41 +358,14 @@ export default class StoryScene extends Phaser.Scene {
   }): Promise<void> {
     console.log('[StoryScene] showSay START:', { name: payload.name, lines: payload.lines })
 
-    // 立ち絵の更新
+    // sayにportrait指定がある場合のみ立ち絵を更新（なければ現在の立ち絵を維持）
     if (payload.portrait) {
-      const key = `story_portrait_${payload.portrait}`
-
-      if (!this.textures.exists(key)) {
-        console.warn(`[StoryScene] Portrait not found: ${key}`)
-      } else {
-        // 既存の立ち絵を削除
-        if (this.portraitImage) {
-          this.portraitImage.destroy()
-        }
-
-        // デフォルト: 画面中央
-        const x = payload.portraitX ?? GAME_W / 2
-        const y = payload.portraitY ?? GAME_H / 2
-        const scale = payload.portraitScale ?? 1.0
-
-        // 新しい立ち絵を作成
-        this.portraitImage = this.add.image(x, y, key).setOrigin(0.5, 0.5).setDepth(-500)
-        this.portraitImage.setScale(scale)
-
-        // フェードイン
-        this.portraitImage.setAlpha(0)
-        this.tweens.add({
-          targets: this.portraitImage,
-          alpha: 1,
-          duration: 300
-        })
-      }
-    } else {
-      // portrait指定がない場合は立ち絵を非表示
-      if (this.portraitImage) {
-        this.portraitImage.destroy()
-        this.portraitImage = undefined
-      }
+      await this.showPortrait({
+        portrait: payload.portrait,
+        x: payload.portraitX,
+        y: payload.portraitY,
+        scale: payload.portraitScale
+      })
     }
 
     // ダイアログ表示
@@ -341,9 +399,24 @@ export default class StoryScene extends Phaser.Scene {
   }
 
   /**
+   * ストーリーをスキップして即終了
+   */
+  private skipStory() {
+    if (this.isSkipping) return
+    this.isSkipping = true
+    // 待機中のタイマーを即座に停止（showSay のPromiseは未解決のまま放置、scene.stop で破棄される）
+    if (this.checkInterval) {
+      this.checkInterval.remove()
+      this.checkInterval = undefined
+    }
+    this.endStory()
+  }
+
+  /**
    * ストーリーを進める（Spaceキーまたは左クリック）
    */
   private onAdvance() {
+    if (this.isSkipping) return
     console.log('[StoryScene] Advance triggered, ui.visible:', this.ui.visible, 'waitingForSpace:', this.waitingForSpace)
     if (this.ui.visible) {
       console.log('[StoryScene] Calling ui.next()')
@@ -354,6 +427,20 @@ export default class StoryScene extends Phaser.Scene {
     } else {
       console.log('[StoryScene] Waiting for current say to complete')
     }
+  }
+
+  private doFadeIn(color: string, duration: number, alpha: number): Promise<void> {
+    return new Promise(resolve => {
+      const colorInt = parseInt(color.replace('#', ''), 16)
+      this.fadeOverlay!.setFillStyle(colorInt).setAlpha(0)
+      this.tweens.add({ targets: this.fadeOverlay, alpha, duration, onComplete: () => resolve() })
+    })
+  }
+
+  private doFadeOut(duration: number): Promise<void> {
+    return new Promise(resolve => {
+      this.tweens.add({ targets: this.fadeOverlay, alpha: 0, duration, onComplete: () => resolve() })
+    })
   }
 
   /**

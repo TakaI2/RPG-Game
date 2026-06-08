@@ -3,6 +3,12 @@ import { GAME_W, GAME_H, TILE } from '../config'
 import type { GameFlowConfig } from '../types/GameFlowTypes'
 import type { TileDef } from '../types/tileset'
 import type { BossConfig } from '../types/BossTypes'
+import type { NPCDef } from '../types/NPCTypes'
+
+/** M4AをOGGより優先して返す（iOS SafariはOGG非対応のため） */
+function audioUrls(url: string): string[] {
+  return url.endsWith('.ogg') ? [url.replace(/\.ogg$/, '.m4a'), url] : [url]
+}
 
 /**
  * ローディング画面
@@ -49,18 +55,57 @@ export default class LoadingScene extends Phaser.Scene {
     // 飛び道具
     this.load.image('arrow', 'assets/images/arrow.png')
     this.load.image('orb', 'assets/images/magic_orb.png')
+    this.load.image('hert', 'assets/images/hert.png')
 
-    // NPCスプライト（64x64）
-    this.load.image('npc_villager', 'assets/images/npc_villager.png')
-    this.load.image('npc_merchant', 'assets/images/npc_merchant.png')
+    // NPC定義JSON（同期XHRで先行取得 → スプライト画像を直接ロード）
+    this.load.json('npc-defs', 'assets/npcs/npc-defs.json')
+    try {
+      const xhr = new XMLHttpRequest()
+      xhr.open('GET', 'assets/npcs/npc-defs.json', false)
+      xhr.send()
+      if (xhr.status === 200) {
+        const npcDefs = JSON.parse(xhr.responseText) as NPCDef[]
+        const loadedKeys = new Set<string>()
+        npcDefs.forEach(def => {
+          if (loadedKeys.has(def.spriteKey) || this.textures.exists(def.spriteKey)) return
+          loadedKeys.add(def.spriteKey)
+          if (def.directionAnims) {
+            // 4方向アニメ: 1024×256 スプライトシート（キャラ画像フォルダから直接読まない場合もある）
+            if (!this.textures.exists(def.spriteKey)) {
+              this.load.spritesheet(def.spriteKey, `assets/images/npc/${def.spriteKey}.png`, {
+                frameWidth: 64, frameHeight: 64,
+              })
+            }
+          } else if (def.animated) {
+            this.load.spritesheet(def.spriteKey, `assets/images/npc/${def.spriteKey}.png`, {
+              frameWidth: 64,
+              frameHeight: 64,
+            })
+          } else {
+            this.load.image(def.spriteKey, `assets/images/npc/${def.spriteKey}.png`)
+          }
+        })
+      }
+    } catch (e) {
+      console.warn('[LoadingScene] Could not sync-load npc-defs.json:', e)
+    }
 
-    // ゲームフロー設定JSON（最初にロードして、完了後に BGM・ボスJSONを動的追加）
-    this.load.json('gameflow', 'assets/gameflow.json')
+    // ゲームフロー設定JSON（?gameflow=xxx で assets/gameflows/xxx.json をロード）
+    const params = new URLSearchParams(window.location.search)
+    const gameflowName = params.get('gameflow') ?? (params.has('testFlow') ? 'test_gameflow' : 'gameflow')
+    const gameflowUrl = `assets/gameflows/${gameflowName}.json`
+    this.load.json('gameflow', gameflowUrl)
     this.load.once('filecomplete-json-gameflow', () => {
       const config = this.cache.json.get('gameflow') as GameFlowConfig
       config.assets?.bgm?.forEach(({ key, url }) => {
-        this.load.audio(key, url)
+        this.load.audio(key, audioUrls(url))
       })
+
+      // ロード画像を事前ロード（ChapterLoadingScene で使う）
+      config.assets?.loadingImages?.forEach(img => {
+        this.load.image(`loading_img_${img}`, `assets/images/loading_images/${img}`)
+      })
+
       // ボスJSON動的ロード（gameflow.json に定義された configKey を収集）
       const bossKeys = new Set<string>()
       Object.values(config.maps).forEach(mapConfig => {
@@ -77,7 +122,25 @@ export default class LoadingScene extends Phaser.Scene {
             Object.values(atk.se).forEach(v => { if (v) seKeys.add(v) })
           })
           seKeys.forEach(seKey => {
-            this.load.audio(seKey, `assets/sounds/se/${seKey}.ogg`)
+            this.load.audio(seKey, audioUrls(`assets/sounds/se/${seKey}.ogg`))
+          })
+          // カットイン画像・飛び道具テクスチャを assets/images/boss/{configKey}/ から動的ロード
+          const cutinImg = bossConfig.cutin?.image
+          if (cutinImg && !this.textures.exists(cutinImg)) {
+            this.load.image(cutinImg, `assets/images/boss/${key}/${cutinImg}.png`)
+          }
+          bossConfig.attacks?.forEach(atk => {
+            if (atk.type === 'projectile_radial' || atk.type === 'projectile_circle' || atk.type === 'ultimate') {
+              const tex = atk.config.projectileTexture
+              if (tex && !this.textures.exists(tex)) {
+                const frames = atk.type === 'ultimate' ? (atk.config.projectileFrames ?? 1) : 1
+                if (frames > 1) {
+                  this.load.spritesheet(tex, `assets/images/boss/${key}/${tex}.png`, { frameWidth: 64, frameHeight: 64 })
+                } else {
+                  this.load.image(tex, `assets/images/boss/${key}/${tex}.png`)
+                }
+              }
+            }
           })
           this.load.start()
         })
@@ -112,40 +175,50 @@ export default class LoadingScene extends Phaser.Scene {
     this.load.json('boss_map', 'assets/maps/boss_map.json')
     this.load.json('first_map', 'assets/maps/first_map.json')
 
-    // NPC設定JSON
-    this.load.json('npc_config', 'assets/npcs/npcs.json')
-
     // 敵定義JSON
     this.load.json('enemy-defs', 'assets/enemies/enemy-defs.json')
-
-    // NPCダイアログファイル
-    this.load.json('dialog_npc1', 'assets/dialog/npc1.json')
-    this.load.json('dialog_merchant', 'assets/dialog/merchant.json')
-
-    // ボスカットイン用画像（オプション：画像がない場合はプレースホルダー表示）
-    this.load.image('boss_face', 'assets/images/boss_face.png')
 
     // タイトル画面用アセット
     this.load.image('title', 'assets/images/title.png')
 
-    // ボタン画像
-    this.load.image('btn_play', 'assets/images/Play_button.png')
-    this.load.image('btn_resume', 'assets/images/Resume_Button.png')
-    this.load.image('btn_backtotitle', 'assets/images/BacktoTitle_Button.png')
+    // ボタン画像（ui/フォルダ）
+    this.load.image('btn_play', 'assets/images/ui/Play_button.png')
+    this.load.image('btn_resume', 'assets/images/ui/Resume_Button.png')
+    this.load.image('btn_backtotitle', 'assets/images/ui/BacktoTitle_Button.png')
+    this.load.image('btn_skip', 'assets/images/ui/skip_button.png')
 
-    // ポータルスプライト（チョロマキー処理のため raw で読み込む）
-    this.load.image('door_raw', 'assets/images/door.png')
+    // ポータルスプライト（portal-defs.json に基づき動的ロード）
+    this.load.json('portal-defs', 'assets/images/portal/portal-defs.json')
+    try {
+      const xhr = new XMLHttpRequest()
+      xhr.open('GET', 'assets/images/portal/portal-defs.json', false)
+      xhr.send()
+      if (xhr.status === 200) {
+        const defs = JSON.parse(xhr.responseText) as Array<{ key: string; animated: boolean; frameCount: number; frameRate: number }>
+        defs.forEach(def => {
+          if (def.animated) {
+            this.load.spritesheet(def.key, `assets/images/portal/${def.key}.png`, {
+              frameWidth: 64,
+              frameHeight: 64,
+            })
+          } else {
+            this.load.image(def.key, `assets/images/portal/${def.key}.png`)
+          }
+        })
+      }
+    } catch (e) {
+      console.warn('[LoadingScene] Could not sync-load portal-defs.json:', e)
+    }
 
     // 飛び道具（プレイヤー用）
     this.load.image('magic_fire', 'assets/images/magic_fire.png')
-    this.load.image('witch_orb', 'assets/images/witch_orb.png')
 
     // UIボタン
-    this.load.image('btn_config', 'assets/images/Se_config_Button.png')
+    this.load.image('btn_config', 'assets/images/ui/Se_config_Button.png')
 
     // ゲームSE（ファイルが存在しない場合は loaderror で警告のみ）
-    this.load.audio('se_player_attack', 'assets/sounds/se/player_attack.ogg')
-    this.load.audio('se_player_hit',    'assets/sounds/se/player_hit.ogg')
+    this.load.audio('se_player_attack', audioUrls('assets/sounds/se/player_attack.ogg'))
+    this.load.audio('se_player_hit',    audioUrls('assets/sounds/se/player_hit.ogg'))
     this.load.audio('se_flame',         'assets/sounds/se/flame.mp3')
 
     // enemy-defs ロード完了後に hitSound/attackSound を動的ロード
@@ -158,7 +231,7 @@ export default class LoadingScene extends Phaser.Scene {
           if (sound && !loaded.has(sound)) {
             loaded.add(sound)
             const key = 'se_' + sound.replace(/\.(ogg|mp3)$/, '')
-            this.load.audio(key, `assets/sounds/se/${sound}`)
+            this.load.audio(key, audioUrls(`assets/sounds/se/${sound}`))
           }
         })
       })
@@ -241,8 +314,8 @@ export default class LoadingScene extends Phaser.Scene {
       alpha: 0,
       duration: 500,
       onComplete: () => {
-        // TitleSceneへ遷移
-        this.scene.start('TitleScene')
+        const testMode = new URLSearchParams(window.location.search).has('testFlow')
+        this.scene.start(testMode ? 'MainScene' : 'TitleScene')
       }
     })
   }
@@ -256,7 +329,6 @@ export default class LoadingScene extends Phaser.Scene {
     this.applyChromaKey('vamp2_raw',    'vamp2',    0, 254, 0, 64, 64)
     this.applyChromaKey('succubus_raw', 'succubus', 0, 254, 0, 64, 64)
     this.applyChromaKey('mage_raw',     'mage',     0, 254, 0, 64, 64)
-    this.applyChromaKey('door_raw',     'door',     0, 254, 0, 64, 64)
     this.applyChromaKey('belladonna_raw', 'belladonna', 0, 254, 0, 64, 64)
 
     // タイル用のテクスチャを生成

@@ -1,8 +1,9 @@
 import Phaser from 'phaser'
 import { fireArrow, fireHomingOrb } from './Projectile'
 import { EnemySpeech } from './EnemySpeech'
+import { resolveText } from '../utils/LocaleManager'
 
-export type DialogEntry = { lines: string[]; intervalMs?: number }
+export type DialogEntry = { lines: string[]; intervalMs?: number; i18n?: Record<string, { lines: string[] }> }
 
 const DEFAULT_SPEECH_INTERVAL = 5000
 export type EnemyDialogs = Partial<Record<string, DialogEntry>>
@@ -34,6 +35,7 @@ export type EnemyWithAI = Phaser.Types.Physics.Arcade.SpriteWithDynamicBody & {
   speech?: EnemySpeech
   lastSpeechTime: number
   lastSpeechState: string
+  speechStateIndices: Record<string, number>
 }
 
 // 遠距離攻撃敵（Archer）の状態
@@ -56,6 +58,7 @@ export type Archer = Phaser.Types.Physics.Arcade.SpriteWithDynamicBody & {
   speech?: EnemySpeech
   lastSpeechTime: number
   lastSpeechState: string
+  speechStateIndices: Record<string, number>
 }
 
 // メイジの状態
@@ -80,6 +83,7 @@ export type Mage = Phaser.Types.Physics.Arcade.SpriteWithDynamicBody & {
   speech?: EnemySpeech
   lastSpeechTime: number
   lastSpeechState: string
+  speechStateIndices: Record<string, number>
 }
 
 // Bruteの状態
@@ -106,12 +110,13 @@ export type Brute = Phaser.Types.Physics.Arcade.SpriteWithDynamicBody & {
   speech?: EnemySpeech
   lastSpeechTime: number
   lastSpeechState: string
+  speechStateIndices: Record<string, number>
 }
 
 export type AnyEnemy = EnemyWithAI | Archer | Mage | Brute
 
 export function makeEnemy(scene: Phaser.Scene, x: number, y: number, overrides?: EnemyOverrides): EnemyWithAI {
-  const en = scene.physics.add.sprite(x, y, 'solder').setScale(2) as EnemyWithAI
+  const en = scene.physics.add.sprite(x, y, 'solder').setScale(1) as EnemyWithAI
   en.state = 'patrol'
   en.speed = 180
   en.hp = 3
@@ -120,6 +125,7 @@ export function makeEnemy(scene: Phaser.Scene, x: number, y: number, overrides?:
   en.animKey = 'blob'
   en.lastSpeechTime = 0
   en.lastSpeechState = ''
+  en.speechStateIndices = {}
   if (overrides) {
     const { dialogs, ...rest } = overrides
     Object.assign(en, rest)
@@ -145,6 +151,7 @@ export function makeArcher(scene: Phaser.Scene, x: number, y: number, overrides?
   archer.animKey = 'archer'
   archer.lastSpeechTime = 0
   archer.lastSpeechState = ''
+  archer.speechStateIndices = {}
   if (overrides) {
     const { dialogs, ...rest } = overrides
     Object.assign(archer, rest)
@@ -172,6 +179,7 @@ export function makeMage(scene: Phaser.Scene, x: number, y: number, overrides?: 
   mage.animKey = 'mage'
   mage.lastSpeechTime = 0
   mage.lastSpeechState = ''
+  mage.speechStateIndices = {}
   if (overrides) {
     const { dialogs, ...rest } = overrides
     Object.assign(mage, rest)
@@ -201,6 +209,7 @@ export function makeBrute(scene: Phaser.Scene, x: number, y: number, overrides?:
   brute.animKey = 'brute'
   brute.lastSpeechTime = 0
   brute.lastSpeechState = ''
+  brute.speechStateIndices = {}
   if (overrides) {
     const { dialogs, ...rest } = overrides
     Object.assign(brute, rest)
@@ -216,17 +225,20 @@ export function updateEnemyAI(scene: Phaser.Scene, en: EnemyWithAI, player: Phas
   const vision = 220, attackR = 44
   const now = scene.time.now
 
-  // セリフトリガー
+  // セリフトリガー（attackはchaseと同一扱い：attack→chase即遷移による連続発火を防ぐ）
   if (en.dialogs && en.speech) {
-    const stateStr = en.state as string
-    if (en.lastSpeechState !== stateStr) {
-      const dialog = en.dialogs[stateStr]
+    const speechKey = en.state === 'attack' ? 'chase' : en.state as string
+    if (en.lastSpeechState !== speechKey) {
+      const dialog = en.dialogs[speechKey]
       if (dialog && dialog.lines.length > 0) {
-        en.speech.startLoop(en, dialog.lines, 2000, dialog.intervalMs ?? DEFAULT_SPEECH_INTERVAL)
+        const { lines: resolvedLines } = resolveText({ lines: dialog.lines }, dialog.i18n)
+        const idx = en.speechStateIndices[speechKey] ?? 0
+        en.speechStateIndices[speechKey] = (idx + 1) % resolvedLines.length
+        en.speech.startLoop(en, resolvedLines, 2000, dialog.intervalMs ?? DEFAULT_SPEECH_INTERVAL, idx)
       } else {
         en.speech.stopLoop()
       }
-      en.lastSpeechState = stateStr
+      en.lastSpeechState = speechKey
     }
   }
 
@@ -285,7 +297,10 @@ export function updateArcherAI(scene: Phaser.Scene, archer: Archer, player: Phas
     if (archer.lastSpeechState !== stateStr) {
       const dialog = archer.dialogs[stateStr]
       if (dialog && dialog.lines.length > 0) {
-        archer.speech.startLoop(archer, dialog.lines, 2000, dialog.intervalMs ?? DEFAULT_SPEECH_INTERVAL)
+        const { lines: resolvedLines } = resolveText({ lines: dialog.lines }, dialog.i18n)
+        const idx = archer.speechStateIndices[stateStr] ?? 0
+        archer.speechStateIndices[stateStr] = (idx + 1) % resolvedLines.length
+        archer.speech.startLoop(archer, resolvedLines, 2000, dialog.intervalMs ?? DEFAULT_SPEECH_INTERVAL, idx)
       } else {
         archer.speech.stopLoop()
       }
@@ -375,7 +390,10 @@ export function updateMageAI(scene: Phaser.Scene, mage: Mage, player: Phaser.Phy
     if (mage.lastSpeechState !== stateStr) {
       const dialog = mage.dialogs[stateStr]
       if (dialog && dialog.lines.length > 0) {
-        mage.speech.startLoop(mage, dialog.lines, 2000, dialog.intervalMs ?? DEFAULT_SPEECH_INTERVAL)
+        const { lines: resolvedLines } = resolveText({ lines: dialog.lines }, dialog.i18n)
+        const idx = mage.speechStateIndices[stateStr] ?? 0
+        mage.speechStateIndices[stateStr] = (idx + 1) % resolvedLines.length
+        mage.speech.startLoop(mage, resolvedLines, 2000, dialog.intervalMs ?? DEFAULT_SPEECH_INTERVAL, idx)
       } else {
         mage.speech.stopLoop()
       }
@@ -473,7 +491,10 @@ export function updateBruteAI(scene: Phaser.Scene, brute: Brute, player: Phaser.
     if (brute.lastSpeechState !== stateStr) {
       const dialog = brute.dialogs[stateStr]
       if (dialog && dialog.lines.length > 0) {
-        brute.speech.startLoop(brute, dialog.lines, 2000, dialog.intervalMs ?? DEFAULT_SPEECH_INTERVAL)
+        const { lines: resolvedLines } = resolveText({ lines: dialog.lines }, dialog.i18n)
+        const idx = brute.speechStateIndices[stateStr] ?? 0
+        brute.speechStateIndices[stateStr] = (idx + 1) % resolvedLines.length
+        brute.speech.startLoop(brute, resolvedLines, 2000, dialog.intervalMs ?? DEFAULT_SPEECH_INTERVAL, idx)
       } else {
         brute.speech.stopLoop()
       }
