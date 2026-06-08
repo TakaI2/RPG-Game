@@ -11,6 +11,14 @@ import { startKeepAlive } from './utils/AudioKeepAlive'
 // コンソールログの自動記録を開始
 logger.startCapture()
 
+// 音声ファイルのデコード失敗（m4a未存在によるEncodingError）を黙殺
+// se_beat / se_beam など ogg のみ存在するファイルが原因。音が鳴らないだけでゲームは継続する
+window.addEventListener('unhandledrejection', (e) => {
+  if (e.reason instanceof Error && e.reason.name === 'EncodingError') {
+    e.preventDefault()
+  }
+})
+
 console.log('=== GAME STARTING ===')
 console.log('Game dimensions:', GAME_W, GAME_H)
 
