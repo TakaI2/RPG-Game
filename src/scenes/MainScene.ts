@@ -47,7 +47,7 @@ import type { FullPortalData } from '../systems/PortalManager'
 import type { ThenAction } from '../types/GameFlowTypes'
 import { advanceClock, setClockSpeed } from '../systems/GameClock'
 import { setDangerLevel, resetWorldState } from '../systems/WorldState'
-import { addWanted, resetWanted } from '../systems/WantedSystem'
+import { addWanted, resetWanted, onWantedChange, getWantedLevel } from '../systems/WantedSystem'
 import { resolveText } from '../utils/LocaleManager'
 
 export default class MainScene extends Phaser.Scene {
@@ -71,6 +71,7 @@ export default class MainScene extends Phaser.Scene {
   private isRightMouseHeld: boolean = false
   private projectiles!: Phaser.Physics.Arcade.Group
   private hpText!: Phaser.GameObjects.Text
+  private wantedContainer?: Phaser.GameObjects.Container
   private isGameOver: boolean = false
   private gameOverText?: Phaser.GameObjects.Text
   private isGameCleared: boolean = false
@@ -199,6 +200,7 @@ export default class MainScene extends Phaser.Scene {
 
     // HP表示を先に作成
     this.createHPDisplay()
+    this.createWantedHUD()
 
     // ログダウンロードボタンを作成（開発時のみ）
     if (import.meta.env.DEV) {
@@ -375,6 +377,58 @@ export default class MainScene extends Phaser.Scene {
     console.log('HP Display created at position:', this.hpText.x, this.hpText.y)
 
     this.updateHPDisplay()
+  }
+
+  private createWantedHUD() {
+    const STAR_COUNT = 5
+    const THRESHOLD = 30   // WantedSystem のデフォルト閾値
+    const starSize = 28
+    const gap = 6
+    const totalW = STAR_COUNT * (starSize + gap) - gap
+    const startX = GAME_W / 2 - totalW / 2
+    const y = 28
+
+    const container = this.add.container(0, 0).setDepth(10001).setScrollFactor(0)
+
+    // 背景ラベル
+    const label = this.add.text(startX - 4, y - 2, '手配度', {
+      fontSize: '18px', fontFamily: 'monospace', color: '#ffcccc',
+      stroke: '#000000', strokeThickness: 4,
+    }).setScrollFactor(0).setOrigin(1, 0)
+    container.add(label)
+
+    // 星アイコン × 5
+    const stars: Phaser.GameObjects.Text[] = []
+    for (let i = 0; i < STAR_COUNT; i++) {
+      const star = this.add.text(startX + i * (starSize + gap), y, '★', {
+        fontSize: `${starSize}px`, fontFamily: 'monospace', color: '#333333',
+        stroke: '#000000', strokeThickness: 3,
+      }).setScrollFactor(0).setOrigin(0, 0)
+      container.add(star)
+      stars.push(star)
+    }
+
+    const updateStars = (level: number) => {
+      const filledCount = Math.ceil((level / 100) * STAR_COUNT)
+      const hostile = level >= THRESHOLD
+      stars.forEach((s, i) => {
+        if (i < filledCount) {
+          s.setColor(hostile ? '#ff2222' : '#ffaa00')
+        } else {
+          s.setColor('#333333')
+        }
+      })
+      // 手配度 0 なら非表示
+      container.setVisible(level > 0)
+    }
+
+    updateStars(0)
+    container.setVisible(false)
+    this.wantedContainer = container
+
+    // 変化通知で更新
+    onWantedChange(updateStars)
+    updateStars(getWantedLevel())
   }
 
   private createLogDownloadButton() {
@@ -1630,6 +1684,12 @@ export default class MainScene extends Phaser.Scene {
     this.npcManager.loadFromSpawns(npcSpawns, npcDefs)
     const npcColliders = this.npcManager.setupCollisions(this.player)
     this.colliders.push(...npcColliders)
+
+    // プレイヤー攻撃 → 手配度上昇（敵対可能NPCへのhitbox接触）
+    const npcHitColliders = this.npcManager.setupHitboxOverlap(this.hitbox, (_npcId) => {
+      addWanted(35)
+    })
+    this.colliders.push(...npcHitColliders)
 
     // NPCスプライト・吹き出しをUIカメラから除外
     this.npcManager.getGameObjects().forEach(go => this.addWorldObject(go))

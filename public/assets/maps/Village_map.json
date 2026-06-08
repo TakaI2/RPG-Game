@@ -1247,6 +1247,11 @@
       "x": 17,
       "y": 0,
       "spriteKey": "vector"
+    },
+    {
+      "x": 29,
+      "y": 15,
+      "spriteKey": "door"
     }
   ]
 }

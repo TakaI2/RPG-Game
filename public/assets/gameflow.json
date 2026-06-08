@@ -60,6 +60,11 @@
           "targetMap": "grave_map",
           "targetX": 5,
           "targetY": 5
+        },
+        {
+          "targetMap": "first_map",
+          "targetX": 37,
+          "targetY": 5
         }
       ]
     },
@@ -83,6 +88,17 @@
           "targetY": 36
         },
         {}
+      ],
+      "eventTriggers": []
+    },
+    "first_map": {
+      "bgm": "redmoon",
+      "portals": [
+        {
+          "targetMap": "Village_map",
+          "targetX": 10,
+          "targetY": 10
+        }
       ],
       "eventTriggers": []
     }

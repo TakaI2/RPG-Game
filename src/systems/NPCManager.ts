@@ -246,6 +246,7 @@ export type NPCManagerHandle = {
   update: (delta: number, playerX: number, playerY: number) => void
   tryInteract: (player: Phaser.Types.Physics.Arcade.SpriteWithDynamicBody, maxDistance?: number) => boolean
   setupCollisions: (player: Phaser.Types.Physics.Arcade.SpriteWithDynamicBody) => Phaser.Physics.Arcade.Collider[]
+  setupHitboxOverlap: (hitbox: Phaser.GameObjects.Rectangle, onHit: (npcId: string) => void) => Phaser.Physics.Arcade.Collider[]
   getGameObjects: () => Phaser.GameObjects.GameObject[]
   destroy: () => void
 }
@@ -689,6 +690,26 @@ export function createNPCManager(scene: Phaser.Scene, ui: DialogUI): NPCManagerH
     return instances.map(inst => scene.physics.add.collider(player, inst.sprite))
   }
 
+  function setupHitboxOverlap(
+    hitbox: Phaser.GameObjects.Rectangle,
+    onHit: (npcId: string) => void,
+  ): Phaser.Physics.Arcade.Collider[] {
+    return instances
+      .filter(inst => inst.def.canBeHostile)
+      .map(inst => {
+        let hitCool = false
+        return scene.physics.add.overlap(hitbox, inst.sprite, () => {
+          if (hitCool || !inst.sprite.active) return
+          hitCool = true
+          scene.time.delayedCall(400, () => { hitCool = false })
+          onHit(inst.def.id)
+          // ヒットフラッシュ
+          inst.sprite.setTint(0xff4444)
+          scene.time.delayedCall(150, () => inst.sprite.clearTint())
+        })
+      })
+  }
+
   function getGameObjects(): Phaser.GameObjects.GameObject[] {
     const objects: Phaser.GameObjects.GameObject[] = []
     instances.forEach(inst => {
@@ -704,5 +725,5 @@ export function createNPCManager(scene: Phaser.Scene, ui: DialogUI): NPCManagerH
     destroyAll()
   }
 
-  return { loadFromSpawns, loadActivitySpots, loadWallGrid, update, tryInteract, setupCollisions, getGameObjects, destroy }
+  return { loadFromSpawns, loadActivitySpots, loadWallGrid, update, tryInteract, setupCollisions, setupHitboxOverlap, getGameObjects, destroy }
 }
