@@ -49,6 +49,8 @@ import { advanceClock, setClockSpeed } from '../systems/GameClock'
 import { setDangerLevel, resetWorldState } from '../systems/WorldState'
 import { addWanted, resetWanted, onWantedChange, getWantedLevel } from '../systems/WantedSystem'
 import { resolveText } from '../utils/LocaleManager'
+import { createSurvivorController, type SurvivorController } from '../systems/survivor/SurvivorController'
+import { BGM as SURVIVOR_BGM, BOSS as SURVIVOR_BOSS, RESULT_DISPLAY_MS } from '../systems/survivor/SurvivorConfig'
 
 export default class MainScene extends Phaser.Scene {
   private cursors!: Phaser.Types.Input.Keyboard.CursorKeys
@@ -117,6 +119,10 @@ export default class MainScene extends Phaser.Scene {
   // UIカメラ（ゲームカメラとは別にUI要素をzoom=1で描画）
   private uiCamera!: Phaser.Cameras.Scene2D.Camera
   private logDownloadButton?: Phaser.GameObjects.Text
+
+  // サバイバーモード（gameflow の survivorMode: true のマップでのみ有効）
+  private survivor!: SurvivorController
+  private lastBossHitSe: number = 0
 
   constructor() { super('MainScene') }
 
@@ -202,6 +208,20 @@ export default class MainScene extends Phaser.Scene {
     this.createHPDisplay()
     this.createWantedHUD()
 
+    // サバイバーモード制御（HUD は setupCameras より前に生成しておく）
+    this.survivor = createSurvivorController({
+      scene: this,
+      player: this.player,
+      projectiles: this.projectiles,
+      audioBus: this.audioBus,
+      tileSize: TILE,
+      addWorldObject: (go) => this.addWorldObject(go),
+      damagePlayer: (amount) => this.damagePlayer(amount),
+      damageBoss: (amount) => this.damageBoss(amount),
+      getBoss: () => this.boss,
+      onBossEngage: (boss) => this.onSurvivorBossEngage(boss),
+    })
+
     // ログダウンロードボタンを作成（開発時のみ）
     if (import.meta.env.DEV) {
       this.createLogDownloadButton()
@@ -231,6 +251,8 @@ export default class MainScene extends Phaser.Scene {
 
     // アニメ完了時のイベント
     this.player.on(Phaser.Animations.Events.ANIMATION_COMPLETE, (anim: Phaser.Animations.Animation) => {
+      // サバイバーモードの斬撃アニメは SurvivorController 側で管理
+      if (this.survivor.isActive()) return
       if (anim.key.startsWith('hero-atk-')) {
         this.isAttacking = false
         if (this.isRightMouseHeld || this.isMobileSpecialHeld) {
@@ -244,6 +266,8 @@ export default class MainScene extends Phaser.Scene {
 
     // 攻撃判定とアニメの同期
     this.player.on(Phaser.Animations.Events.ANIMATION_UPDATE, (anim: Phaser.Animations.Animation, frame: Phaser.Animations.AnimationFrame) => {
+      // サバイバーモードは自動攻撃のため手動攻撃ヒットボックスを使わない
+      if (this.survivor.isActive()) return
       if (anim.key.startsWith('hero-atk-')) {
         const f = frame.index % 4
         const active = (f === 1 || f === 2)
@@ -261,6 +285,7 @@ export default class MainScene extends Phaser.Scene {
         return
       }
 
+      if (this.survivor.isActive()) return
       this.doAttack()
     })
 
@@ -314,6 +339,7 @@ export default class MainScene extends Phaser.Scene {
       this.archers.forEach(ar => ar.speech?.destroy())
       this.mages.forEach(mg => mg.speech?.destroy())
       this.brutes.forEach(br => br.speech?.destroy())
+      this.survivor.destroy()
       console.log('[MainScene] Cleanup complete')
     })
 
@@ -332,6 +358,7 @@ export default class MainScene extends Phaser.Scene {
       this.cutinSystem.getContainer(),
       this.pauseMenu!.getContainer(),
       ...this.wantedObjects,
+      ...this.survivor.getUiObjects(),
     ]
     if (this.virtualJoystick) {
       uiObjects.push(this.virtualJoystick.getContainer())
@@ -416,7 +443,9 @@ export default class MainScene extends Phaser.Scene {
       })
     }
 
-    onWantedChange(updateStars)
+    // シーン再起動時に破棄済みテキストへ通知しないよう、shutdown で購読解除する
+    const unsubscribe = onWantedChange(updateStars)
+    this.events.once('shutdown', unsubscribe)
     updateStars(getWantedLevel())
   }
 
@@ -506,6 +535,8 @@ export default class MainScene extends Phaser.Scene {
       }
       // NPC近くならインタラクト
       if (this.npcManager.tryInteract(this.player, 80)) return
+      // サバイバーモードは自動攻撃
+      if (this.survivor.isActive()) return
 
       rightPointerId = pointer.id
       rightStartX = pointer.x
@@ -554,6 +585,7 @@ export default class MainScene extends Phaser.Scene {
           return
         }
         if (this.npcManager.tryInteract(this.player, 80)) return
+        if (this.survivor.isActive()) return
         this.isRightMouseHeld = true
         this.performAttack()
       }
@@ -569,7 +601,9 @@ export default class MainScene extends Phaser.Scene {
       }
     })
 
-    this.input.on('pointerdown', (pointer: Phaser.Input.Pointer) => {
+    this.input.on('pointerdown', (pointer: Phaser.Input.Pointer, currentlyOver: Phaser.GameObjects.GameObject[]) => {
+      // UIボタン（火炎バーストボタン等）のクリックでは移動しない
+      if (currentlyOver.length > 0) return
       if (pointer.leftButtonDown()) {
         this.isMouseMoving = true
         this.updateMouseWorldPosition(pointer)
@@ -651,8 +685,8 @@ export default class MainScene extends Phaser.Scene {
       }
     }
 
-    // ボスAI更新
-    if (this.boss && this.boss.state !== 'defeated') {
+    // ボスAI更新（サバイバーモードではプレイヤー接近まで休眠）
+    if (this.boss && this.boss.state !== 'defeated' && this.survivor.isBossAwake()) {
       updateBossAI(
         this,
         this.boss,
@@ -705,6 +739,9 @@ export default class MainScene extends Phaser.Scene {
     // 誘導魔法弾の更新
     updateHomingOrbs(this)
     updateRotatingProjectiles(this)
+
+    // サバイバーモード（自動近接・湧き・火炎バースト）
+    this.survivor.update(delta)
 
     // 火炎放射の更新
     this.updateFireBalls(time)
@@ -768,13 +805,13 @@ export default class MainScene extends Phaser.Scene {
         const direction = getDirectionFromVelocity(v.x, v.y)
         this.playerDirection = direction
 
-        const targetAnim = `hero-walk-${direction}`
+        const targetAnim = this.survivor.getPlayerAnimOverride(direction) ?? `hero-walk-${direction}`
         if (this.player.anims.currentAnim?.key !== targetAnim) {
           this.player.play(targetAnim, true)
         }
       } else {
         this.player.setVelocity(0, 0)
-        const idleAnim = `hero-idle-${this.playerDirection}`
+        const idleAnim = this.survivor.getPlayerAnimOverride(this.playerDirection) ?? `hero-idle-${this.playerDirection}`
         const currentKey = this.player.anims.currentAnim?.key
         if (currentKey !== idleAnim) {
           this.player.play(idleAnim, true)
@@ -980,7 +1017,13 @@ export default class MainScene extends Phaser.Scene {
       }
     })
 
-    this.cameras.main.fadeOut(800, 0, 0, 0)
+    if (this.survivor.isActive()) {
+      this.survivor.freeze()
+      this.survivor.showResult('clear')
+      this.time.delayedCall(RESULT_DISPLAY_MS, () => this.cameras.main.fadeOut(800, 0, 0, 0))
+    } else {
+      this.cameras.main.fadeOut(800, 0, 0, 0)
+    }
   }
 
   private getDirectionToPlayer(enemy: Phaser.GameObjects.Sprite): string {
@@ -1205,6 +1248,58 @@ export default class MainScene extends Phaser.Scene {
     }
   }
 
+  /**
+   * プレイヤーへのダメージ（サバイバーモード用）。無敵時間中などで適用されなければ false
+   */
+  private damagePlayer(amount: number): boolean {
+    if (this.player.getData('hitCool') || this.isGameOver) return false
+    type PlayerWithHp = Phaser.Types.Physics.Arcade.SpriteWithDynamicBody & { hp: number }
+    const newHP = Math.max(0, (this.player as PlayerWithHp).hp - amount)
+    ;(this.player as PlayerWithHp).hp = newHP
+    this.updateHPDisplay()
+    this.player.setTint(0xff4444)
+    this.audioBus.playSe('se_player_hit', { volume: 0.8 })
+    this.player.setData('hitCool', true)
+    this.time.delayedCall(100, () => this.player.clearTint())
+    this.time.delayedCall(500, () => this.player.setData('hitCool', false))
+    if (newHP <= 0) this.triggerGameOver()
+    return true
+  }
+
+  /**
+   * ボスへのダメージ（サバイバーモード用）
+   */
+  private damageBoss(amount: number): void {
+    const boss = this.boss
+    if (!boss || !boss.active || boss.state === 'defeated') return
+    boss.hp = Math.max(0, boss.hp - amount)
+    boss.setTintFill(0xffffff)
+    this.time.delayedCall(60, () => {
+      if (this.boss === boss && boss.active) boss.clearTint()
+    })
+    const now = this.time.now
+    if (boss.config.se.damage && now - this.lastBossHitSe >= SURVIVOR_BOSS.hitSeCool) {
+      this.lastBossHitSe = now
+      this.audioBus.playSe(boss.config.se.damage, { volume: 0.7 })
+    }
+    this.bossHpUI?.update(boss.hp, boss.maxHp, boss.phase)
+    if (boss.hp <= 0) this.defeatBoss()
+  }
+
+  /**
+   * サバイバーモードでプレイヤーが最深部に近づきボスが起動したとき
+   */
+  private onSurvivorBossEngage(boss: Boss): void {
+    this.bossHpUI?.show()
+    this.bossHpUI?.update(boss.hp, boss.maxHp, boss.phase)
+    if (boss.config.speeches.intro) {
+      const { intro } = resolveText({ intro: boss.config.speeches.intro }, boss.config.speeches.i18n)
+      if (intro) this.bossSpeechBubble.show(boss, intro, 2200)
+    }
+    this.audioBus.stopBgm()
+    this.audioBus.playBgm(SURVIVOR_BGM.boss, { loop: true, fade: 0 })
+  }
+
   private triggerGameOver() {
     console.log('triggerGameOver called! isGameOver:', this.isGameOver)
 
@@ -1229,7 +1324,13 @@ export default class MainScene extends Phaser.Scene {
       }
     })
 
-    this.cameras.main.fadeOut(800, 0, 0, 0)
+    if (this.survivor.isActive()) {
+      this.survivor.freeze()
+      this.survivor.showResult('defeat')
+      this.time.delayedCall(RESULT_DISPLAY_MS, () => this.cameras.main.fadeOut(800, 0, 0, 0))
+    } else {
+      this.cameras.main.fadeOut(800, 0, 0, 0)
+    }
   }
 
   /**
@@ -1506,6 +1607,9 @@ export default class MainScene extends Phaser.Scene {
   private switchMap(mapId: string, targetX: number, targetY: number) {
     console.log(`[MainScene] Switching to map: ${mapId} at (${targetX}, ${targetY})`)
 
+    // サバイバーモードの敵・コライダーを破棄（新マップで必要なら loadMap で再開）
+    this.survivor.stop()
+
     // すべての衝突判定を破棄
     this.colliders.forEach(collider => {
       if (collider && collider.active) {
@@ -1687,6 +1791,12 @@ export default class MainScene extends Phaser.Scene {
       row.map(tileId => (tileDefMap.get(tileId)?.role === 'wall'))
     )
     this.npcManager.loadWallGrid(wallGrid)
+
+    // サバイバーモード開始（ボスHP UI は接近してボスが起動するまで隠す）
+    if (mapConfig?.survivorMode && this.walls) {
+      this.survivor.start({ walls: this.walls, wallGrid, worldW: result.worldW, worldH: result.worldH })
+      this.bossHpUI?.hide()
+    }
     this.npcManager.loadFromSpawns(npcSpawns, npcDefs)
     const npcColliders = this.npcManager.setupCollisions(this.player)
     this.colliders.push(...npcColliders)

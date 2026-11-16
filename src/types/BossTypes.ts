@@ -225,6 +225,7 @@ export type SpeechesConfig = SpeechesI18n & {
 export type BossConfig = {
   id: string
   name: string
+  assetDir?: string   // 画像フォルダ名（assets/images/boss/{assetDir}/）。省略時は id と同じ
   stats: StatsConfig
   sprite: SpriteConfig
   cutin: CutinImageConfig

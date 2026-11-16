@@ -58,6 +58,7 @@ export type MapFlowConfig = {
   onBossDefeat?: StoryThenConfig
   eventTriggers: GameFlowEventTrigger[]
   portals?: PortalDestination[]
+  survivorMode?: boolean   // true: 自動近接攻撃・無限湧きのサバイバーモード
 }
 
 export type GameFlowConfig = {

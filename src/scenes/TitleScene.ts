@@ -2,6 +2,9 @@ import Phaser from 'phaser'
 import { loadSoundConfig, saveSoundConfig } from '../utils/SoundConfig'
 import { SUPPORTED_LOCALES, getLocale, setLocale } from '../utils/LocaleManager'
 import { startKeepAlive } from '../utils/AudioKeepAlive'
+import type { GameFlowConfig } from '../types/GameFlowTypes'
+
+const SURVIVOR_CHAPTER_ID = 'survivor'
 
 export default class TitleScene extends Phaser.Scene {
   private background!: Phaser.GameObjects.Image
@@ -38,6 +41,7 @@ export default class TitleScene extends Phaser.Scene {
 
     this.createPlayButton()
     this.createConfigButton()
+    this.createSurvivorButton()
 
     console.log('[TitleScene] create() completed')
   }
@@ -55,28 +59,63 @@ export default class TitleScene extends Phaser.Scene {
     this.playButton.on('pointerdown', () => { this.playButton.setScale(1.9) })
     this.playButton.on('pointerup',   () => {
       this.playButton.setScale(2.2)
-
-      // ① 事前ロード済み charm を即再生（iOS ユーザーアクティベーション取得 + 効果音）
-      if (this.charmAudio) {
-        this.charmAudio.currentTime = 0
-        this.charmAudio.play().catch(() => {})
-      }
-
-      // ② Web Audio API コンテキストを resume し、ループ無音バッファで active に保つ
-      //    iOS は再生が途切れると context を自動 suspend するためループが必須
-      if ('context' in this.sound) {
-        const ctx = (this.sound as Phaser.Sound.WebAudioSoundManager).context
-        if (ctx) {
-          ctx.resume().then(() => {
-            startKeepAlive(ctx)
-          }).catch(() => {})
-        }
-      }
+      this.unlockAudio()
 
       // ChapterLoadingScene で第一章アセットをプリロードしてから MainScene へ
       const config = this.cache.json.get('gameflow')
       const firstChapterId = config?.chapters?.[0]?.id ?? 'chapter1'
       this.scene.start('ChapterLoadingScene', { chapterId: firstChapterId })
+    })
+  }
+
+  /**
+   * ボタン押下時の音声アンロック（iOS 対策）
+   */
+  private unlockAudio(): void {
+    // ① 事前ロード済み charm を即再生（iOS ユーザーアクティベーション取得 + 効果音）
+    if (this.charmAudio) {
+      this.charmAudio.currentTime = 0
+      this.charmAudio.play().catch(() => {})
+    }
+
+    // ② Web Audio API コンテキストを resume し、ループ無音バッファで active に保つ
+    //    iOS は再生が途切れると context を自動 suspend するためループが必須
+    if ('context' in this.sound) {
+      const ctx = (this.sound as Phaser.Sound.WebAudioSoundManager).context
+      if (ctx) {
+        ctx.resume().then(() => {
+          startKeepAlive(ctx)
+        }).catch(() => {})
+      }
+    }
+  }
+
+  /**
+   * サバイバーモード（gameflow に survivor チャプターがある場合のみ表示）
+   */
+  private createSurvivorButton(): void {
+    const config = this.cache.json.get('gameflow') as GameFlowConfig | undefined
+    if (!config?.chapters?.some(c => c.id === SURVIVOR_CHAPTER_ID)) return
+
+    const button = this.add.text(960, 1030, 'SURVIVOR MODE', {
+      fontSize: '40px',
+      fontFamily: 'Courier New, monospace',
+      fontStyle: 'bold',
+      color: '#ffd9a0',
+      stroke: '#3a0000',
+      strokeThickness: 8,
+      backgroundColor: '#5a0e0ecc',
+      padding: { x: 28, y: 8 },
+    }).setOrigin(0.5)
+    button.setInteractive({ useHandCursor: true })
+
+    button.on('pointerover', () => { button.setScale(1.08).setColor('#ffffff') })
+    button.on('pointerout',  () => { button.setScale(1).setColor('#ffd9a0') })
+    button.on('pointerdown', () => { button.setScale(0.96) })
+    button.on('pointerup',   () => {
+      button.setScale(1.08)
+      this.unlockAudio()
+      this.scene.start('ChapterLoadingScene', { chapterId: SURVIVOR_CHAPTER_ID })
     })
   }
 

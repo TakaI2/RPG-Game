@@ -8,6 +8,10 @@
       {
         "key": "spiral",
         "url": "assets/story/bgm/spiral.ogg"
+      },
+      {
+        "key": "bgm1",
+        "url": "assets/story/bgm/bgm1.ogg"
       }
     ]
   },
@@ -31,6 +35,20 @@
         "midle_end",
         "badend_vil"
       ]
+    },
+    {
+      "id": "survivor",
+      "label": "サバイバーモード",
+      "start": {
+        "story": null,
+        "then": {
+          "action": "goto_map",
+          "mapId": "survivor_map",
+          "x": 60,
+          "y": 114
+        }
+      },
+      "stories": []
     }
   ],
   "maps": {
@@ -107,6 +125,30 @@
           "targetY": 30
         }
       ]
+    },
+    "survivor_map": {
+      "bgm": "bgm1",
+      "onEnter": null,
+      "survivorMode": true,
+      "boss": {
+        "configKey": "survivor_boss",
+        "x": 60,
+        "y": 12
+      },
+      "onPlayerDefeat": {
+        "story": null,
+        "then": {
+          "action": "exit"
+        }
+      },
+      "onBossDefeat": {
+        "story": null,
+        "then": {
+          "action": "exit"
+        }
+      },
+      "eventTriggers": [],
+      "portals": []
     }
   },
   "_editorPositions": {

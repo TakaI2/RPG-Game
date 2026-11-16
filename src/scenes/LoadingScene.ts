@@ -124,10 +124,11 @@ export default class LoadingScene extends Phaser.Scene {
           seKeys.forEach(seKey => {
             this.load.audio(seKey, audioUrls(`assets/sounds/se/${seKey}.ogg`))
           })
-          // カットイン画像・飛び道具テクスチャを assets/images/boss/{configKey}/ から動的ロード
+          // カットイン画像・飛び道具テクスチャを assets/images/boss/{assetDir ?? configKey}/ から動的ロード
+          const assetDir = bossConfig.assetDir ?? key
           const cutinImg = bossConfig.cutin?.image
           if (cutinImg && !this.textures.exists(cutinImg)) {
-            this.load.image(cutinImg, `assets/images/boss/${key}/${cutinImg}.png`)
+            this.load.image(cutinImg, `assets/images/boss/${assetDir}/${cutinImg}.png`)
           }
           bossConfig.attacks?.forEach(atk => {
             if (atk.type === 'projectile_radial' || atk.type === 'projectile_circle' || atk.type === 'ultimate') {
@@ -135,9 +136,9 @@ export default class LoadingScene extends Phaser.Scene {
               if (tex && !this.textures.exists(tex)) {
                 const frames = atk.type === 'ultimate' ? (atk.config.projectileFrames ?? 1) : 1
                 if (frames > 1) {
-                  this.load.spritesheet(tex, `assets/images/boss/${key}/${tex}.png`, { frameWidth: 64, frameHeight: 64 })
+                  this.load.spritesheet(tex, `assets/images/boss/${assetDir}/${tex}.png`, { frameWidth: 64, frameHeight: 64 })
                 } else {
-                  this.load.image(tex, `assets/images/boss/${key}/${tex}.png`)
+                  this.load.image(tex, `assets/images/boss/${assetDir}/${tex}.png`)
                 }
               }
             }
@@ -220,6 +221,10 @@ export default class LoadingScene extends Phaser.Scene {
     this.load.audio('se_player_attack', audioUrls('assets/sounds/se/player_attack.ogg'))
     this.load.audio('se_player_hit',    audioUrls('assets/sounds/se/player_hit.ogg'))
     this.load.audio('se_flame',         'assets/sounds/se/flame.mp3')
+    // サバイバーモード用SE
+    this.load.audio('se_beam',          'assets/sounds/se/beam.ogg')
+    this.load.audio('se_beat',          'assets/sounds/se/beat.ogg')
+    this.load.audio('se_enemy_hit',     audioUrls('assets/sounds/se/enemy_hit.ogg'))
 
     // enemy-defs ロード完了後に hitSound/attackSound を動的ロード
     this.load.once('filecomplete-json-enemy-defs', () => {
