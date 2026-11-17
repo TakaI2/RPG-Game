@@ -178,6 +178,17 @@ export class AudioBus {
     this.loopSounds.delete(key)
   }
 
+  playStorySeLoop(key: string): void {
+    if (this.loopSounds.has(key)) return
+    if (!this.scene.cache.audio.exists(key)) {
+      console.warn(`[AudioBus] StorySeLoop not found: ${key}`)
+      return
+    }
+    const sound = this.scene.sound.add(key, { loop: true, volume: this.storySeVolume })
+    sound.play()
+    this.loopSounds.set(key, sound)
+  }
+
   // -------------------------------------------------------
   // レガシー互換
   // -------------------------------------------------------

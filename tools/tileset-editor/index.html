@@ -77,7 +77,7 @@
 
         .tile-row {
             display: grid;
-            grid-template-columns: 64px 1fr 80px 80px auto;
+            grid-template-columns: 64px 1fr 80px 80px 60px auto;
             gap: 12px;
             align-items: center;
             background: #1e1e2e;
@@ -119,6 +119,9 @@
         }
         .role-floor { background: #1a3a28; color: #a6e3a1; border: 1px solid #a6e3a1; }
         .role-wall  { background: #3a2a1a; color: #fab387; border: 1px solid #fab387; }
+        .layer-floor   { background: #1a2a3a; color: #89b4fa; border: 1px solid #89b4fa; }
+        .layer-object  { background: #1a3a2a; color: #a6e3a1; border: 1px solid #a6e3a1; }
+        .layer-overlay { background: #2a1a3a; color: #cba6f7; border: 1px solid #cba6f7; }
 
         .id-badge {
             font-size: 0.72rem;
@@ -208,12 +211,13 @@
     </style>
 </head>
 <body>
-    <h1>RPG Tileset Editor</h1>
+    <h1><a href="../" style="color:#a6adc8; text-decoration:none; font-size:0.75rem; opacity:0.6; margin-right:10px;">← ハブ</a>RPG Tileset Editor</h1>
     <p class="subtitle">maptip 画像を tilesets.json に登録するツール</p>
 
     <div class="toolbar">
         <button class="primary" onclick="importJSON()">tilesets.json を読み込む</button>
         <button class="primary" onclick="exportJSON()">tilesets.json をエクスポート</button>
+        <button class="primary" onclick="saveToGameJSON()">ゲームに保存</button>
         <input type="file" id="fileInput" accept=".json" style="display:none" onchange="onFileLoaded(event)">
         <span style="color:#6c7086; font-size:0.8rem; margin-left:auto;">
             画像パス: public/assets/images/maptip/{ファイル名}.png
@@ -234,7 +238,10 @@
         <div class="add-form">
             <label>ファイル名 (.png 不要)</label>
             <div class="filename-row">
-                <input type="text" id="fFilename" placeholder="例: grass2">
+                <select id="fFilenameSelect" onchange="onFileSelect(this.value)" style="flex:1;">
+                    <option value="">-- フォルダから選択 --</option>
+                </select>
+                <input type="text" id="fFilename" placeholder="例: grass2" style="flex:1;">
                 <button onclick="previewImage()">プレビュー</button>
             </div>
 
@@ -263,6 +270,14 @@
 
             <label>アニメ FPS</label>
             <input type="number" id="fFps" value="8" min="1" max="30" disabled>
+
+            <label>レイヤーヒント</label>
+            <select id="fLayer">
+                <option value="">（なし – role に準じる）</option>
+                <option value="floor">floor — 床レイヤー</option>
+                <option value="object">object — オブジェクトレイヤー（プレイヤー手前）</option>
+                <option value="overlay">overlay — オーバーレイレイヤー（プレイヤー背後）</option>
+            </select>
 
             <label></label>
             <div class="form-actions">
@@ -310,6 +325,10 @@
         URL.revokeObjectURL(url)
     }
 
+    function saveToGameJSON() {
+        window.saveToGame('assets/maps/tilesets.json', tileDefs)
+    }
+
     // ---- 自動読み込み（同一オリジン時） ----
     window.onload = async () => {
         try {
@@ -321,6 +340,37 @@
         } catch {
             // fetch 失敗時はファイル選択で読み込む
         }
+        loadMaptipFileList()
+    }
+
+    async function loadMaptipFileList() {
+        try {
+            const files = await listAssets('assets/images/maptip')
+            const sel = document.getElementById('fFilenameSelect')
+            files
+                .filter(f => f.endsWith('.png'))
+                .sort()
+                .forEach(f => {
+                    const opt = document.createElement('option')
+                    opt.value = f.replace(/\.png$/, '')
+                    opt.textContent = f
+                    sel.appendChild(opt)
+                })
+        } catch {
+            // devサーバー未起動時はドロップダウンを無効化
+            const sel = document.getElementById('fFilenameSelect')
+            sel.disabled = true
+            sel.options[0].textContent = '-- (devサーバー必要) --'
+        }
+    }
+
+    function onFileSelect(value) {
+        if (!value) return
+        document.getElementById('fFilename').value = value
+        if (!document.getElementById('fLabel').value) {
+            document.getElementById('fLabel').value = value
+        }
+        previewImage()
     }
 
     // ---- タイル一覧描画 ----
@@ -369,6 +419,13 @@
             roleBadge.className = `role-badge role-${def.role}`
             roleBadge.textContent = def.role
 
+            // レイヤーバッジ
+            const layerBadge = document.createElement('div')
+            if (def.layer) {
+                layerBadge.className = `role-badge layer-${def.layer}`
+                layerBadge.textContent = def.layer
+            }
+
             // ID バッジ
             const idBadge = document.createElement('span')
             idBadge.className = 'id-badge'
@@ -387,6 +444,7 @@
             row.appendChild(canvas)
             row.appendChild(info)
             row.appendChild(roleBadge)
+            row.appendChild(layerBadge)
             row.appendChild(idBadge)
             row.appendChild(delBtn)
             container.appendChild(row)
@@ -466,6 +524,7 @@
             return
         }
 
+        const layer = document.getElementById('fLayer').value
         const maxId = tileDefs.length > 0 ? Math.max(...tileDefs.map(d => d.id)) : -1
         const newDef = {
             id: maxId + 1,
@@ -474,6 +533,7 @@
             label,
             color: role === 'floor' ? '#2a3a2a' : '#3a3a4a',
             ...(animated ? { animated: true, fps } : {}),
+            ...(layer ? { layer } : {}),
         }
 
         tileDefs.push(newDef)
@@ -485,16 +545,19 @@
     }
 
     function clearForm() {
+        document.getElementById('fFilenameSelect').value = ''
         document.getElementById('fFilename').value = ''
         document.getElementById('fLabel').value = ''
         document.getElementById('fRole').value = 'floor'
         document.getElementById('fAnimated').checked = false
         document.getElementById('fFps').disabled = true
         document.getElementById('fFps').value = '8'
+        document.getElementById('fLayer').value = ''
         const canvas = document.getElementById('previewCanvas')
         canvas.getContext('2d').clearRect(0, 0, 64, 64)
         setPreviewState('', 'ファイル名を入力してプレビューを押してください')
     }
     </script>
+    <script src="../shared/save-api.js"></script>
 </body>
 </html>

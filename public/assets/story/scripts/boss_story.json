@@ -1,0 +1,461 @@
+{
+  "id": "boss_story",
+  "script": [
+    {
+      "op": "bgm.play",
+      "name": "bgm1.ogg",
+      "loop": true,
+      "volume": 0.6,
+      "fade": 1000
+    },
+    {
+      "op": "say",
+      "lines": ["ふぅ・・・、こんな狭い村によくもワラワラと・・・。"],
+      "portrait": "hunter_a.png",
+      "portraitX": 928,
+      "portraitY": 611,
+      "portraitScale": 0.35,
+      "name": "ベルナデット",
+      "i18n": {
+        "en": { "lines": ["Phew... so many of them swarming in such a small village..."], "name": "Bernadette" },
+        "zh": { "lines": ["呼……这么小的村子里居然有这么多……"], "name": "贝尔纳黛特" },
+        "es": { "lines": ["Uf... cuántas en un pueblo tan pequeño..."], "name": "Bernadette" }
+      }
+    },
+    {
+      "op": "say",
+      "lines": ["生存者はあの子くらいか。　男達はみんな死にかけの廃人・・・、\n見るも酸鼻な乱交パーティの跡ね。"],
+      "name": "ベルナデット",
+      "i18n": {
+        "en": { "lines": ["That kid is about the only survivor. All the men are barely alive, broken husks...\nWhat a gruesome scene of carnage."], "name": "Bernadette" },
+        "zh": { "lines": ["幸存者就只有那个孩子吧。男人们都已经半死不活……\n真是惨不忍睹的现场。"], "name": "贝尔纳黛特" },
+        "es": { "lines": ["Ese chico es prácticamente el único superviviente. Todos los hombres están destrozados...\nVaya escena de devastación."], "name": "Bernadette" }
+      }
+    },
+    {
+      "op": "say",
+      "lines": ["それにしても酷い匂い・・・。\n腐った精液や血が混じって鼻が曲がりそう・・・。"],
+      "portrait": "hunter_a.png",
+      "portraitX": 911,
+      "portraitY": 1802,
+      "name": "ベルナデット",
+      "i18n": {
+        "en": { "lines": ["Even so, what a terrible smell...\nThe stench of blood and decay mixed together — it's almost unbearable..."], "name": "Bernadette" },
+        "zh": { "lines": ["尽管如此，味道也太难闻了……\n混杂着腐烂的气息，快要受不了了……"], "name": "贝尔纳黛特" },
+        "es": { "lines": ["Aun así, qué olor tan horrible...\nEl hedor a sangre y putrefacción mezclados — es casi insoportable..."], "name": "Bernadette" }
+      }
+    },
+    {
+      "op": "say",
+      "lines": ["まさか、この辺の白く濁った水溜まり全部？　\nこりゃ相当な人数絞り尽くされてもう溶かされてるわね・・・。"],
+      "name": "ベルナデット",
+      "i18n": {
+        "en": { "lines": ["Don't tell me... are all those murky white puddles around here...?\nSo many people have been drained and dissolved already..."], "name": "Bernadette" },
+        "zh": { "lines": ["难道说，周围这些浑浊的白色水坑都是……？\n被榨干和溶解的人数相当可观啊……"], "name": "贝尔纳黛特" },
+        "es": { "lines": ["No me digas... ¿todos esos charcos turbios de por aquí son...?\nA cuánta gente ya han drenado y disuelto..."], "name": "Bernadette" }
+      }
+    },
+    {
+      "op": "say",
+      "lines": ["女魔物の集団に襲われたらこうもなるか・・・。　でも不自然ね。サキュバスは夜にこっそり襲いに来るものなのに。"],
+      "name": "ベルナデット",
+      "i18n": {
+        "en": { "lines": ["I suppose this is what happens when a group of female monsters attacks... But something's off. Succubi usually prey stealthily at night."], "name": "Bernadette" },
+        "zh": { "lines": ["被一群女性魔物袭击的话也会变成这样吧……但是不对劲。魅魔应该是在夜里悄悄袭击的。"], "name": "贝尔纳黛特" },
+        "es": { "lines": ["Supongo que esto es lo que pasa cuando un grupo de monstruas ataca... Pero algo no cuadra. Las súcubos suelen cazar sigilosamente de noche."], "name": "Bernadette" }
+      }
+    },
+    {
+      "op": "say",
+      "lines": ["女の生存者がいないってことは・・・、たぶんあのサキュバス達は成れの果てか。"],
+      "name": "ベルナデット",
+      "i18n": {
+        "en": { "lines": ["No female survivors... which means those succubi are probably what became of the women here."], "name": "Bernadette" },
+        "zh": { "lines": ["没有女性幸存者……也就是说，那些魅魔大概就是这里的女人们变成的吧。"], "name": "贝尔纳黛特" },
+        "es": { "lines": ["No hay supervivientes femeninas... lo que significa que esas súcubos son probablemente en lo que se convirtieron las mujeres de aquí."], "name": "Bernadette" }
+      }
+    },
+    {
+      "op": "say",
+      "lines": ["たぶん、あのリアラの魔力で眷属に変えられたんだろうけど・・・、　\nこんな強力な魔法を使えるにしては小物くさいんだよな。"],
+      "name": "ベルナデット",
+      "i18n": {
+        "en": { "lines": ["They were probably transformed into thralls by Reala's magic, but...\nFor someone who can use such powerful magic, she comes across as surprisingly small-time."], "name": "Bernadette" },
+        "zh": { "lines": ["大概是被那个丽阿拉的魔力变成眷属了……但是，\n能用这么强力的魔法，感觉却像个小人物。"], "name": "贝尔纳黛特" },
+        "es": { "lines": ["Probablemente fueron convertidas en súbditas por la magia de Reala, pero...\nPara alguien capaz de usar magia tan poderosa, da la impresión de ser bastante poca cosa."], "name": "Bernadette" }
+      }
+    },
+    {
+      "op": "portrait.hide"
+    },
+    {
+      "op": "say",
+      "lines": ["酷いじゃないのよ。　小物呼ばわりなんて！"],
+      "name": "リアラ",
+      "i18n": {
+        "en": { "lines": ["How rude! Calling me small-time!"], "name": "Reala" },
+        "zh": { "lines": ["太过分了。居然说我是小人物！"], "name": "丽阿拉" },
+        "es": { "lines": ["¡Qué grosera! ¡Llamarme poca cosa!"], "name": "Reala" }
+      }
+    },
+    {
+      "op": "say",
+      "lines": ["ご明察の通り、この村の女たちはみんなこの私の魔法でサキュバスに変えてやったの・・・♥"],
+      "name": "リアラ",
+      "portrait": "reala2.png",
+      "portraitX": 989,
+      "portraitY": 900,
+      "portraitScale": 0.95,
+      "i18n": {
+        "en": { "lines": ["As you correctly surmised, I transformed all the women in this village into succubi with my magic...♥"], "name": "Reala" },
+        "zh": { "lines": ["如您所料，这个村子里的女人们都被我用魔法变成了魅魔……♥"], "name": "丽阿拉" },
+        "es": { "lines": ["Como has deducido correctamente, transformé a todas las mujeres de este pueblo en súcubos con mi magia...♥"], "name": "Reala" }
+      }
+    },
+    {
+      "op": "say",
+      "name": "リアラ",
+      "lines": ["その足元の水溜まりも、ご想像の通り！　\n私が襲ったオス達の残骸よ！"],
+      "i18n": {
+        "en": { "lines": ["And those puddles at your feet are exactly what you think!\nThe remains of the males I attacked!"], "name": "Reala" },
+        "zh": { "lines": ["脚边那些水坑，正如你所想！\n那是我袭击的那些雄性的残骸！"], "name": "丽阿拉" },
+        "es": { "lines": ["¡Y esos charcos a tus pies son exactamente lo que piensas!\n¡Los restos de los machos que ataqué!"], "name": "Reala" }
+      }
+    },
+    {
+      "op": "say",
+      "lines": ["ハンターなら知っているでしょう？　最近私達に流行ってる獲物の食べ方♥"],
+      "portrait": "reala2_2.png",
+      "portraitX": 980,
+      "portraitY": 1210,
+      "portraitScale": 1.45,
+      "name": "リアラ",
+      "i18n": {
+        "en": { "lines": ["As a hunter you'd know, wouldn't you? The feeding method that's been popular among us lately♥"], "name": "Reala" },
+        "zh": { "lines": ["作为猎人你应该知道吧？最近在我们之间流行的猎物享用方式♥"], "name": "丽阿拉" },
+        "es": { "lines": ["Como cazadora, lo sabrás, ¿verdad? El método de alimentación que está de moda entre nosotras últimamente♥"], "name": "Reala" }
+      }
+    },
+    {
+      "op": "say",
+      "lines": ["私の甘～い魔力が染みついたこのマントで獲物を包み込んでじっくり犯すの♥　"],
+      "name": "リアラ",
+      "i18n": {
+        "en": { "lines": ["I wrap my prey in this cloak soaked with my sweet magic power and take my time with them♥"], "name": "Reala" },
+        "zh": { "lines": ["用这件渗透了我甜蜜魔力的斗篷将猎物包裹起来，慢慢地侵犯♥"], "name": "丽阿拉" },
+        "es": { "lines": ["Envuelvo a mi presa en esta capa impregnada de mi dulce poder mágico y me tomo mi tiempo con ellos♥"], "name": "Reala" }
+      }
+    },
+    {
+      "op": "say",
+      "lines": ["このマントの中でたっぷり魔力に付け込んで、\n全身の毛穴から溶けだした精気を吸い出すのよ！"],
+      "name": "リアラ",
+      "i18n": {
+        "en": { "lines": ["Letting my magic seep in thoroughly inside this cloak,\nI draw out the essence seeping from every pore of their body!"], "name": "Reala" },
+        "zh": { "lines": ["在这件斗篷中充分利用魔力，\n将从全身毛孔渗出的精气吸出来！"], "name": "丽阿拉" },
+        "es": { "lines": ["Dejando que mi magia penetre a fondo dentro de esta capa,\n¡extraigo la esencia que mana de cada poro de su cuerpo!"], "name": "Reala" }
+      }
+    },
+    {
+      "op": "say",
+      "lines": ["私くらいの魔力でやったら、肉も骨もドロッドロに溶けて・・・、\n最期はそこにあるようなスープになってしまうわ。"],
+      "name": "リアラ",
+      "portrait": "reala2.png",
+      "portraitX": 980,
+      "portraitY": 1210,
+      "portraitScale": 1.45,
+      "i18n": {
+        "en": { "lines": ["When done with my level of magic power, flesh and bone melt into liquid...\nUntil at the end they become a puddle like those over there."], "name": "Reala" },
+        "zh": { "lines": ["以我这种程度的魔力来做的话，肉和骨头都会溶化……\n最后就会变成像那边那样的汤水。"], "name": "丽阿拉" },
+        "es": { "lines": ["Cuando se hace con mi nivel de poder mágico, la carne y los huesos se derriten...\nHasta que al final se convierten en un charco como esos de allí."], "name": "Reala" }
+      }
+    },
+    {
+      "op": "say",
+      "lines": ["単に血を啜るより、獲物の生命を余すところなく味わえるし。 \n 栄養も満点で私の魔力も一気に高まるの。　ふふ・・・♥"],
+      "name": "リアラ",
+      "i18n": {
+        "en": { "lines": ["Rather than merely drinking blood, I can savor every last bit of my prey's life force.\nIt's perfectly nourishing and my magic power surges all at once. Fufu...♥"], "name": "Reala" },
+        "zh": { "lines": ["比起单纯地吸血，这样能品味猎物生命的每一分每一毫。\n营养满分，我的魔力也会一下子大幅提升。呵呵……♥"], "name": "丽阿拉" },
+        "es": { "lines": ["En lugar de simplemente beber sangre, puedo saborear hasta el último resquicio de la fuerza vital de mi presa.\nEs perfectamente nutritivo y mi poder mágico se dispara de golpe. Fufu...♥"], "name": "Reala" }
+      }
+    },
+    {
+      "op": "say",
+      "lines": ["わざわざ御講釈ありがとう。よ～く仕組みがわかった。　本当に反吐がでるわ！　"],
+      "portrait": "hunter_l.png",
+      "portraitScale": 0.65,
+      "portraitX": 935,
+      "portraitY": 1231,
+      "name": "ベルナデット",
+      "i18n": {
+        "en": { "lines": ["Thanks so much for the detailed explanation. I now understand perfectly. It's absolutely revolting!"], "name": "Bernadette" },
+        "zh": { "lines": ["特意给我讲解，谢谢你。我完全明白了其中的原理。真的让人作呕！"], "name": "贝尔纳黛特" },
+        "es": { "lines": ["Muchas gracias por la explicación detallada. Ahora lo entiendo perfectamente. ¡Es absolutamente repugnante!"], "name": "Bernadette" }
+      }
+    },
+    {
+      "op": "say",
+      "lines": ["吸血鬼がサキュバスの真似事とはね・・・！　どーりで最近の現場はイカ臭くてたまらないわけだわ！"],
+      "name": "ベルナデット",
+      "i18n": {
+        "en": { "lines": ["A vampire playing at being a succubus...! No wonder the recent scenes have been reeking so badly!"], "name": "Bernadette" },
+        "zh": { "lines": ["吸血鬼在模仿魅魔……！难怪最近的现场那么臭！"], "name": "贝尔纳黛特" },
+        "es": { "lines": ["¡Una vampira jugando a ser súcubo...! ¡Con razón las escenas recientes han estado apestando tanto!"], "name": "Bernadette" }
+      }
+    },
+    {
+      "op": "say",
+      "lines": ["ホント勘弁してくれない？　匂い消えるまで焼き払うの毎回大変なんだからさ・・・。"],
+      "name": "ベルナデット",
+      "i18n": {
+        "en": { "lines": ["Could you please stop? It's always such a hassle to burn everything until the smell is gone..."], "name": "Bernadette" },
+        "zh": { "lines": ["能不能别这样？每次都要烧到气味消散真的很麻烦……"], "name": "贝尔纳黛特" },
+        "es": { "lines": ["¿Podrías parar ya? Siempre es una molestia quemar todo hasta que el olor desaparezca..."], "name": "Bernadette" }
+      }
+    },
+    {
+      "op": "say",
+      "lines": ["それは無理なお話だわ！　こんな楽しいことやめるなんて出来ない！"],
+      "name": "リアラ",
+      "portrait": "reala2_2.png",
+      "portraitX": 971,
+      "portraitY": 904,
+      "portraitScale": 0.9,
+      "i18n": {
+        "en": { "lines": ["That's impossible! I can't stop something this enjoyable!"], "name": "Reala" },
+        "zh": { "lines": ["那是不可能的！这么有趣的事怎么可能停下来！"], "name": "丽阿拉" },
+        "es": { "lines": ["¡Eso es imposible! ¡No puedo parar algo tan placentero!"], "name": "Reala" }
+      }
+    },
+    {
+      "op": "say",
+      "lines": ["私の胸の中で、抗えぬ快楽と絶望のせめぎ合いに歪んでいく獲物の絶叫・・・、\n成す術もなく私に命を捧げるしかない哀れな姿、無様で可愛くて本当に素敵♥"],
+      "name": "リアラ",
+      "i18n": {
+        "en": { "lines": ["The screams of my prey as they are torn apart by irresistible pleasure and despair within my embrace...\nTheir helpless forms with no choice but to offer their lives to me — so pitiful, so adorable, so wonderful♥"], "name": "Reala" },
+        "zh": { "lines": ["在我的怀抱中，猎物被无法抗拒的快感与绝望撕裂的绝叫……\n无能为力只能献出生命的可悲姿态，狼狈又可爱，真是太棒了♥"], "name": "丽阿拉" },
+        "es": { "lines": ["Los gritos de mi presa mientras son desgarrados por el placer y la desesperación irresistibles en mi abrazo...\nSus formas indefensas sin más opción que ofrecerme sus vidas — tan patéticas, tan adorables, tan maravillosas♥"], "name": "Reala" }
+      }
+    },
+    {
+      "op": "say",
+      "lines": ["見ているだけで濡れてきちゃうわ♥　\n そんな獲物をじっくり犯して喰らうのは、気持ち良くてたまらないわよ！"],
+      "name": "リアラ",
+      "i18n": {
+        "en": { "lines": ["Just watching makes me tremble with excitement♥\nTaking my time to ravish and devour such prey — it feels absolutely incredible!"], "name": "Reala" },
+        "zh": { "lines": ["光是看着就让我兴奋不已♥\n慢慢地侵犯并吞噬这样的猎物，感觉好得难以言说！"], "name": "丽阿拉" },
+        "es": { "lines": ["Solo mirarlo me hace estremecer de emoción♥\n¡Tomarme mi tiempo para devorar a tal presa me hace sentir absolutamente increíble!"], "name": "Reala" }
+      }
+    },
+    {
+      "op": "say",
+      "lines": ["私に焦がれ狂ったオスほど、とびきり濃くて美味しい精気や血を出してくれるの♥　\n私が気持ちよくしてあげるほど・・・ね♥"],
+      "name": "リアラ",
+      "i18n": {
+        "en": { "lines": ["The more a male loses himself in desire for me, the richer and more delicious the essence and blood they yield♥\nThe more pleasure I give them... the more they give back♥"], "name": "Reala" },
+        "zh": { "lines": ["越是为我疯狂的雄性，给出的精气和血就越是浓郁美味♥\n我越是给他们快感……他们就给得越多♥"], "name": "丽阿拉" },
+        "es": { "lines": ["Cuanto más se pierde un macho en su deseo por mí, más rica y deliciosa es la esencia y la sangre que produce♥\nCuanto más placer les doy... más me devuelven♥"], "name": "Reala" }
+      }
+    },
+    {
+      "op": "say",
+      "lines": ["それはそうよね・・・、こんな美しいリアラ様にじっくり味わってもらえて\n", "じわじわと搾り取ってくれるんですもの・・・♥"],
+      "name": "リアラ",
+      "i18n": {
+        "en": { "lines": ["Of course it is... being slowly savored by the beautiful Lady Reala", "being gradually milked dry...♥"], "name": "Reala" },
+        "zh": { "lines": ["那当然……能被美丽的丽阿拉大人慢慢品味", "被一点一点地榨取……♥"], "name": "丽阿拉" },
+        "es": { "lines": ["Por supuesto... ser saboreado lentamente por la hermosa Señora Reala", "siendo gradualmente exprimido...♥"], "name": "Reala" }
+      }
+    },
+    {
+      "op": "say",
+      "lines": ["オス達はみんな私を女神様みたいに崇めながら死んでいくのよ！　\n全身の何万の穴から一斉に射精する絶大な快楽を死ぬ間際まで味わいながら溶けていくの！"],
+      "name": "リアラ",
+      "i18n": {
+        "en": { "lines": ["All the males worship me like a goddess as they die!\nThey melt away savoring supreme ecstasy right up until the very end!"], "name": "Reala" },
+        "zh": { "lines": ["所有雄性都像崇拜女神一样崇拜我，然后死去！\n他们一直品味着极致的快感，直到最后才溶化消逝！"], "name": "丽阿拉" },
+        "es": { "lines": ["¡Todos los machos me adoran como a una diosa mientras mueren!\n¡Se disuelven saboreando un éxtasis supremo hasta el último momento!"], "name": "Reala" }
+      }
+    },
+    {
+      "op": "say",
+      "lines": ["おとなしく聞いていれば、世迷言がポンポン飛び出すじゃない！　\n まさかバケモノの分際で神様気取り？　"],
+      "portrait": "hunter.png",
+      "portraitScale": 0.6,
+      "portraitX": 972,
+      "portraitY": 1095,
+      "name": "ベルナデット",
+      "i18n": {
+        "en": { "lines": ["If I listen quietly, the nonsense just keeps spilling out!\nA mere monster playing at being a god?"], "name": "Bernadette" },
+        "zh": { "lines": ["只要安静地听着，胡言乱语就一个接一个地冒出来！\n一个怪物居然妄想当神？"], "name": "贝尔纳黛特" },
+        "es": { "lines": ["Si escucho en silencio, los disparates no paran de salir!\n¿Un simple monstruo jugando a ser un dios?"], "name": "Bernadette" }
+      }
+    },
+    {
+      "op": "say",
+      "lines": ["アンタが生前どんな人間だったか知らないけど、\nよっぽど甘やかされてきたのかしらね？"],
+      "name": "ベルナデット",
+      "i18n": {
+        "en": { "lines": ["I don't know what kind of person you were in life, but\nyou must have been awfully spoiled, I'd say."], "name": "Bernadette" },
+        "zh": { "lines": ["不知道你生前是什么样的人，\n但一定被惯坏了吧？"], "name": "贝尔纳黛特" },
+        "es": { "lines": ["No sé qué tipo de persona eras en vida, pero\ndebías de estar muy consentida, diría yo."], "name": "Bernadette" }
+      }
+    },
+    {
+      "op": "say",
+      "lines": ["あら、私に興味を持ってくれたの？　嬉しいじゃない♥"],
+      "name": "リアラ",
+      "portrait": "reala2.png",
+      "portraitX": 994,
+      "portraitY": 1390,
+      "portraitScale": 1.55,
+      "i18n": {
+        "en": { "lines": ["Oh my, you're interested in me? How delightful♥"], "name": "Reala" },
+        "zh": { "lines": ["哎呀，你对我感兴趣了？真高兴♥"], "name": "丽阿拉" },
+        "es": { "lines": ["Vaya, ¿te interesa lo que era? Qué encantador♥"], "name": "Reala" }
+      }
+    },
+    {
+      "op": "say",
+      "lines": ["言っておくけど、これでも育ちはいいのよ？　\nこの神のごとき力と永遠の美しさを授かるのに十分な資格はあると思っているわ！"],
+      "name": "リアラ",
+      "i18n": {
+        "en": { "lines": ["I'll have you know, I come from good breeding.\nI believe I was more than worthy to be granted this godlike power and eternal beauty!"], "name": "Reala" },
+        "zh": { "lines": ["告诉你，我出身高贵？\n我认为我完全有资格被赋予这种神一般的力量和永恒的美丽！"], "name": "丽阿拉" },
+        "es": { "lines": ["Te diré que vengo de buena cuna.\n¡Creo que era más que digna de recibir este poder divino y esta belleza eterna!"], "name": "Reala" }
+      }
+    },
+    {
+      "op": "say",
+      "lines": ["この村を襲ったのは、いうなれば施しみたいなものよ！　昔もよくやっていたわ。　\n 貧乏人たちに私の糧になれる栄誉と、至上の快楽という祝福を与えてあげているの♥"],
+      "name": "リアラ",
+      "i18n": {
+        "en": { "lines": ["Attacking this village was, so to speak, an act of charity! I used to do it often in the old days.\nI'm granting these poor souls the honor of becoming my nourishment, and the blessing of supreme pleasure♥"], "name": "Reala" },
+        "zh": { "lines": ["袭击这个村子，说起来像是施舍！以前也经常这样做。\n我是在赐予穷人们成为我的食粮的荣誉，以及至上快感的祝福♥"], "name": "丽阿拉" },
+        "es": { "lines": ["Atacar este pueblo fue, por así decirlo, ¡un acto de caridad! Solía hacerlo a menudo en los viejos tiempos.\nEstoy otorgando a estos pobres el honor de convertirse en mi sustento, y la bendición del placer supremo♥"], "name": "Reala" }
+      }
+    },
+    {
+      "op": "say",
+      "lines": ["人間の短くくだらない一生で得られる幸せなど、私のキスとハグに比べたら無価値も同然よ！"],
+      "name": "リアラ",
+      "i18n": {
+        "en": { "lines": ["The happiness humans can gain in their short, meaningless lives is worthless compared to a kiss and embrace from me!"], "name": "Reala" },
+        "zh": { "lines": ["人类在短暂而无聊的一生中所能得到的幸福，与我的吻和拥抱相比简直一文不值！"], "name": "丽阿拉" },
+        "es": { "lines": ["¡La felicidad que los humanos pueden obtener en sus cortas y miserables vidas no vale nada comparada con un beso y un abrazo míos!"], "name": "Reala" }
+      }
+    },
+    {
+      "op": "say",
+      "lines": ["貴女もさっきの村で見たでしょう？　\n私の快楽を賜った幸せな獲物達を・・・♥"],
+      "name": "リアラ",
+      "i18n": {
+        "en": { "lines": ["You saw it in the village just now, didn't you?\nMy happy prey, blessed with my pleasure...♥"], "name": "Reala" },
+        "zh": { "lines": ["你在刚才的村子里也看到了吧？\n那些被赐予我的快感的幸福猎物们……♥"], "name": "丽阿拉" },
+        "es": { "lines": ["Lo viste en el pueblo hace un momento, ¿no?\nMis felices presas, bendecidas con mi placer...♥"], "name": "Reala" }
+      }
+    },
+    {
+      "op": "say",
+      "lines": ["私の口づけひとつで、命を引換えにしても御釣りがくるほどの幸せを得られるのよ。 \nこれ以上の祝福があるかしら？"],
+      "name": "リアラ",
+      "i18n": {
+        "en": { "lines": ["With just a single kiss from me, one can obtain happiness worth more than their life in return.\nIs there any greater blessing than that?"], "name": "Reala" },
+        "zh": { "lines": ["只需我的一个吻，就能获得价值超过生命的幸福。\n还有比这更伟大的祝福吗？"], "name": "丽阿拉" },
+        "es": { "lines": ["Con tan solo un beso mío, se puede obtener una felicidad que vale más que la propia vida.\n¿Hay alguna bendición mayor que esa?"], "name": "Reala" }
+      }
+    },
+    {
+      "op": "say",
+      "lines": ["貴女も私の眷属になればわかるわ！　そんな武器は下ろして私とキスを交わしましょう♥"],
+      "name": "リアラ",
+      "portrait": "reala2_2.png",
+      "portraitX": 995,
+      "portraitY": 1230,
+      "portraitScale": 1.35,
+      "i18n": {
+        "en": { "lines": ["You'd understand if you became my thrall! Put down that weapon and let's share a kiss♥"], "name": "Reala" },
+        "zh": { "lines": ["你成为我的眷属就会明白的！放下那武器，让我们交换一个吻♥"], "name": "丽阿拉" },
+        "es": { "lines": ["¡Lo entenderías si te convirtieras en mi súbdita! Suelta esa arma y compartamos un beso♥"], "name": "Reala" }
+      }
+    },
+    {
+      "op": "say",
+      "lines": ["そのあと、二人であのボウヤを襲いましょうよ♥　気持ち良くてトブわよ♥"],
+      "name": "リアラ",
+      "i18n": {
+        "en": { "lines": ["Afterwards, let's attack that little boy together♥ It'll feel absolutely amazing♥"], "name": "Reala" },
+        "zh": { "lines": ["之后，两个人一起去袭击那个小鬼头吧♥ 感觉好得要飞起来了♥"], "name": "丽阿拉" },
+        "es": { "lines": ["Después, ataquemos juntas a ese chico♥ ¡Se sentirá absolutamente increíble♥"], "name": "Reala" }
+      }
+    },
+    {
+      "op": "say",
+      "lines": ["・・・・・・。"],
+      "name": "ベルナデット",
+      "portrait": "hunter_l2.png",
+      "portraitScale": 0.65,
+      "portraitX": 957,
+      "portraitY": 1162,
+      "i18n": {
+        "en": { "lines": ["......"], "name": "Bernadette" },
+        "zh": { "lines": ["……"], "name": "贝尔纳黛特" },
+        "es": { "lines": ["......"], "name": "Bernadette" }
+      }
+    },
+    {
+      "op": "say",
+      "lines": ["よ～くわかった。　あんたとお友達とか死んでも無理。"],
+      "name": "ベルナデット",
+      "i18n": {
+        "en": { "lines": ["I understand perfectly. Friends with you? Not in a million years."], "name": "Bernadette" },
+        "zh": { "lines": ["我完全明白了。和你做朋友？就算死了也不行。"], "name": "贝尔纳黛特" },
+        "es": { "lines": ["Lo entiendo perfectamente. ¿Amiga tuya? Ni muerta."], "name": "Bernadette" }
+      }
+    },
+    {
+      "op": "say",
+      "lines": ["ここで死んで灰になれ、バケモノ。"],
+      "name": "ベルナデット",
+      "i18n": {
+        "en": { "lines": ["Die here and turn to ash, monster."], "name": "Bernadette" },
+        "zh": { "lines": ["就在这里死去化为灰烬吧，怪物。"], "name": "贝尔纳黛特" },
+        "es": { "lines": ["Muere aquí y conviértete en ceniza, monstruo."], "name": "Bernadette" }
+      }
+    },
+    {
+      "op": "say",
+      "lines": ["・・・あら、そう。 \n 私がせっかく生き残るチャンスをあげてるのにそういう態度とるんだ？"],
+      "name": "リアラ",
+      "portrait": "reala2_3.png",
+      "portraitX": 1002,
+      "portraitY": 1091,
+      "portraitScale": 1.15,
+      "i18n": {
+        "en": { "lines": ["...Oh? Is that so.\nYou're going to take that attitude when I'm giving you a chance to survive?"], "name": "Reala" },
+        "zh": { "lines": ["……哎，是吗。\n我好不容易给你一个活下来的机会，你却这种态度？"], "name": "丽阿拉" },
+        "es": { "lines": ["...¿Oh? ¿Es así?\n¿Vas a tomar esa actitud cuando te estoy dando una oportunidad de sobrevivir?"], "name": "Reala" }
+      }
+    },
+    {
+      "op": "say",
+      "lines": ["なら、その身体に直接刻んであげる！！ \n この私の生贄になれる幸福をね！！"],
+      "name": "リアラ",
+      "portrait": "reala4.png",
+      "portraitX": 941,
+      "portraitY": 1138,
+      "portraitScale": 1.25,
+      "i18n": {
+        "en": { "lines": ["Then I'll carve it directly into your body!!\nThe happiness of becoming my sacrifice!!"], "name": "Reala" },
+        "zh": { "lines": ["那就直接刻在你身上吧！！\n成为我的牺牲品的幸福！！"], "name": "丽阿拉" },
+        "es": { "lines": ["¡¡Entonces lo grabaré directamente en tu cuerpo!!\n¡¡La felicidad de convertirte en mi sacrificio!!"], "name": "Reala" }
+      }
+    },
+    {
+      "op": "end",
+      "returnTo": "game",
+      "lines": ["オス達だって私に襲われるオスだって"]
+    }
+  ]
+}

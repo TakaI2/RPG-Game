@@ -58,5 +58,208 @@
     "textureKey": "capet",
     "label": "capet",
     "color": "#2a3a2a"
+  },
+  {
+    "id": 9,
+    "role": "floor",
+    "textureKey": "oos",
+    "label": "oos",
+    "color": "#2a3a2a",
+    "animated": true,
+    "fps": 8
+  },
+  {
+    "id": 10,
+    "role": "wall",
+    "textureKey": "brick2",
+    "label": "brick2",
+    "color": "#3a3a4a"
+  },
+  {
+    "id": 11,
+    "role": "floor",
+    "textureKey": "oos_edge1",
+    "label": "oos_edge1",
+    "color": "#2a3a2a",
+    "animated": true,
+    "fps": 8
+  },
+  {
+    "id": 12,
+    "role": "floor",
+    "textureKey": "oos_edge2",
+    "label": "oos_edge2",
+    "color": "#2a3a2a",
+    "animated": true,
+    "fps": 8
+  },
+  {
+    "id": 14,
+    "role": "floor",
+    "textureKey": "tile_ooz",
+    "label": "tile_ooz",
+    "color": "#2a3a2a",
+    "animated": true,
+    "fps": 8
+  },
+  {
+    "id": 15,
+    "role": "floor",
+    "textureKey": "stone",
+    "label": "stone",
+    "color": "#2a3a2a"
+  },
+  {
+    "id": 16,
+    "role": "floor",
+    "textureKey": "land1",
+    "label": "land1",
+    "color": "#2a3a2a"
+  },
+  {
+    "id": 17,
+    "role": "wall",
+    "textureKey": "roof",
+    "label": "roof",
+    "color": "#3a3a4a"
+  },
+  {
+    "id": 18,
+    "role": "wall",
+    "textureKey": "window1",
+    "label": "window1",
+    "color": "#3a3a4a"
+  },
+  {
+    "id": 19,
+    "role": "wall",
+    "textureKey": "window2",
+    "label": "window2",
+    "color": "#3a3a4a"
+  },
+  {
+    "id": 20,
+    "role": "wall",
+    "textureKey": "window3",
+    "label": "window3",
+    "color": "#3a3a4a"
+  },
+  {
+    "id": 21,
+    "role": "wall",
+    "textureKey": "window4",
+    "label": "window4",
+    "color": "#3a3a4a"
+  },
+  {
+    "id": 22,
+    "role": "floor",
+    "textureKey": "bed1",
+    "label": "bed1",
+    "color": "#2a3a2a",
+    "layer": "object"
+  },
+  {
+    "id": 23,
+    "role": "floor",
+    "textureKey": "bed2",
+    "label": "bed2",
+    "color": "#2a3a2a",
+    "layer": "object"
+  },
+  {
+    "id": 24,
+    "role": "floor",
+    "textureKey": "bed3",
+    "label": "bed3",
+    "color": "#2a3a2a",
+    "layer": "object"
+  },
+  {
+    "id": 25,
+    "role": "floor",
+    "textureKey": "bed4",
+    "label": "bed4",
+    "color": "#2a3a2a",
+    "layer": "object"
+  },
+  {
+    "id": 26,
+    "role": "floor",
+    "textureKey": "chair_a",
+    "label": "chair_a",
+    "color": "#2a3a2a",
+    "layer": "object"
+  },
+  {
+    "id": 27,
+    "role": "floor",
+    "textureKey": "chair_b",
+    "label": "chair_b",
+    "color": "#2a3a2a",
+    "layer": "overlay"
+  },
+  {
+    "id": 28,
+    "role": "floor",
+    "textureKey": "table_1",
+    "label": "table_1",
+    "color": "#2a3a2a",
+    "layer": "overlay"
+  },
+  {
+    "id": 29,
+    "role": "floor",
+    "textureKey": "table_2",
+    "label": "table_2",
+    "color": "#2a3a2a",
+    "layer": "overlay"
+  },
+  {
+    "id": 30,
+    "role": "wall",
+    "textureKey": "table_3s",
+    "label": "bed3",
+    "color": "#3a3a4a",
+    "layer": "overlay"
+  },
+  {
+    "id": 31,
+    "role": "wall",
+    "textureKey": "table_4",
+    "label": "table_4",
+    "color": "#3a3a4a",
+    "layer": "overlay"
+  },
+  {
+    "id": 32,
+    "role": "wall",
+    "textureKey": "table_5",
+    "label": "table_5",
+    "color": "#3a3a4a"
+  },
+  {
+    "id": 33,
+    "role": "wall",
+    "textureKey": "table_6",
+    "label": "table_6",
+    "color": "#3a3a4a",
+    "layer": "overlay"
+  },
+  {
+    "id": 34,
+    "role": "floor",
+    "textureKey": "table_7",
+    "label": "table_7",
+    "color": "#2a3a2a",
+    "layer": "overlay"
+  },
+  {
+    "id": 35,
+    "role": "floor",
+    "textureKey": "table_8s",
+    "label": "table_8",
+    "color": "#2a3a2a",
+    "layer": "overlay"
   }
 ]

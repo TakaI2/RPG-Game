@@ -41,10 +41,41 @@ npm run dev
 - ESCキーでのポーズ／再開
 - タイトルに戻るボタン
 
-### ゲームフロー管理システム
-- `public/assets/gameflow.json` によるゲーム全体フローの一元管理
+### 操作システム
+
+#### PC
+- **移動**：矢印キー または WASD
+- **攻撃**：スペースキー または 左クリック
+- **特殊攻撃（火炎放射）**：右クリック長押し（照準はマウスカーソル方向）
+- **NPC会話**：NPC近くで攻撃キー（スペース / 左クリック）
+
+#### スマートフォン（横向き専用）
+- **移動**：画面左半分のバーチャルジョイスティック（指を置いた地点を中心に動作）
+- **攻撃**：画面右半分をタップ
+- **特殊攻撃（火炎放射）**：画面右半分を長押し（照準はドラッグ方向のジョイスティックで制御）
+- **NPC会話**：NPC近くで右側タップ
+- 横向き画面を自動検出・促進（縦向き時は回転案内を表示）
+
+### カメラ・画面
+- ゲームカメラ 1.5× ズーム（プレイヤー追従）
+- HPゲージ・ダイアログ・ボスHPバーなどのUI要素はズームなしで固定表示（専用UIカメラ）
+
+### ゲームフロー管理システム（章立て対応）
+- `public/assets/gameflows/gameflow.json` によるゲーム全体フローの一元管理
+- **章（Chapter）単位**でマップ・ストーリーをグループ管理
+  - `chapters[]` 配列で章を定義（id・label・start・stories）
+  - `goto_chapter` アクションで章遷移が可能
 - マップごとのBGM・ボス有無・イベントトリガーを宣言的に定義
 - **ゲームフローエディタ** (`tools/gameflow-editor/`) でGUI編集可能
+  - 「章管理」パネルで章ID・ラベル・ストーリーリスト・ロード画像を設定
+  - 保存時にグラフ上の全Storyノードを自動収集して `stories` に反映
+
+### チャプターローディング画面
+- Play ボタン押下 → `ChapterLoadingScene` → `MainScene` の流れ
+- `public/assets/images/loading_images/` に配置した画像をランダム表示
+- その間に章内の全ストーリーアセット（背景・立ち絵・BGM・SE）を事前ロード
+- プログレスバー＋パーセント表示（ゲーム起動時と同形式）
+- ロード完了後400ms表示してから遷移
 
 ### マップ移動システム（ポータルスプライト）
 - 複数のマップ間を移動可能（`demo_map` ⇔ `boss_map`）
@@ -58,6 +89,27 @@ npm run dev
 - イントロ、クリア、ゲームオーバー各種ストーリー
 - イベントトリガーによるストーリー再生
 - 立ち絵・背景・BGM・SEを使った演出
+- 右下スキップボタン（どのストーリーでも任意のタイミングで動作）
+- 背景・立ち絵はリニアフィルタで高画質表示（ゲームのピクセルアートモードと独立）
+- **多言語対応（i18n）**：`say` コマンドに `i18n: { en, zh, es }` フィールドを設定することで英語・中国語・スペイン語に自動切替
+
+#### ストーリースクリプトコマンド一覧
+
+| コマンド | 主なパラメータ | 説明 |
+|----------|--------------|------|
+| `say` | `name`, `lines`, `portrait`, `i18n` | セリフ表示（クリックで進む）。`i18n` で多言語対応 |
+| `bg` | `name`, `x`, `y`, `scaleX`, `scaleY`, `fade` | 背景画像を変更 |
+| `portrait.show` | `portrait`, `x`, `y`, `scale` | 立ち絵を表示 |
+| `portrait.hide` | — | 立ち絵を非表示 |
+| `bgm.play` | `name`, `loop`, `volume`, `fade` | BGMを再生 |
+| `bgm.stop` | `fade` | BGMを停止 |
+| `bgm.cross` | `from`, `to`, `time` | BGMをクロスフェード |
+| `se` | `name`, `loop` | 効果音を再生 |
+| `se.stop` | `name` | ループSEを停止 |
+| `fade.in` | `color`, `duration`, `alpha` | 指定色のオーバーレイをフェードイン |
+| `fade.out` | `duration` | オーバーレイをフェードアウト |
+| `delay` | `duration` | 指定ms待機してから次のコマンドへ |
+| `end` | `returnTo` | ストーリー終了・次のシーンへ遷移 |
 
 ### NPC会話システム
 - マップごとに配置されるNPC
@@ -75,9 +127,10 @@ npm run dev
 - 各敵の **ステータス**（HP・速度・視野距離など）を個別オーバーライド
 - 各敵の **スプライト**（`spriteKey`）を個別指定——def に合わせたアニメーションセットを自動生成
 - **セリフ吹き出しシステム**（`EnemySpeech`）
-  - ステート別にセリフ行を定義（patrol / aim / cooldown / return など）
-  - `intervalMs` 指定で定期発話、未指定でステート変化時に1回発話
-  - ランダム行選択・フェードアウト付き
+  - ステート別にセリフ行を定義（patrol / aim / windup / cooldown / return など）
+  - ステートに入るたびに**順番に異なるセリフ**を表示（循環）
+  - `intervalMs` 指定で長いステートでもループ発話
+  - フェードアウト付き吹き出し表示
 
 ### エネミーエディタ（`tools/enemy-editor/`）
 - Catppuccin Mochaテーマのブラウザ内GUIツール
@@ -91,6 +144,18 @@ npm run dev
 - **ポータル配置モード**：🚪ボタンで選択、クリックで配置、右クリックで削除
 - JSONエクスポートで `public/assets/maps/` に配置
 
+### ボスエディタ（`tools/boss-editor/`）
+- ボスごとの JSON（`public/assets/bosses/{id}.json`）を GUI 編集
+- **基本情報タブ**：スプライトプレビュー（idle / walk / atk アニメーション切替）
+- **カットインタブ**：カットイン画像のドラッグ配置・スケール調整プレビュー
+- **攻撃パターンタブ**：
+  - 弾テクスチャキーをボス固有フォルダ（`assets/images/boss/{id}/`）からドロップダウン選択
+  - 弾テクスチャプレビュー：128×64px（横2コマ）アニメ自動再生・FPS調整・停止切替
+  - SEキーを `assets/sounds/se/` から datalist で選択、▶ ボタンでテスト再生
+- **テストタブ**：マップ・出現位置を指定してエディタ内でボス戦を直接プレイ可能
+- ボス画像はボスIDごとのサブフォルダ（`assets/images/boss/{bossId}/`）で管理
+- 「ゲームに保存」でイメージフォルダも自動生成
+
 ### アニメーションシステム
 - 64×64px スプライトシート対応（16列×4行）
 - 歩行・攻撃・ひんし・死亡アニメーション（4方向）
@@ -100,6 +165,7 @@ npm run dev
 ### BGMシステム
 - `AudioBus` による統合音声管理
 - マップ遷移時の自動BGM切替・フェードイン
+- **iOS Safari対応**：OGGと同名のM4Aファイルを同フォルダに配置することで自動フォールバック再生
 
 ## プロジェクト構造
 
@@ -111,7 +177,12 @@ RPGGame/
 │       ├── maps/             # マップデータ（JSON）
 │       ├── npcs/             # NPC設定（JSON）
 │       ├── bosses/           # ボス設定（JSON）
-│       ├── images/           # スプライト画像
+│       ├── gameflows/        # ゲームフロー設定（gameflow.json）
+│       ├── images/
+│       │   ├── boss/         # ボス関連画像（ボスIDごとにサブフォルダ）
+│       │   │   └── {bossId}/ # カットイン画像・弾テクスチャ
+│       │   ├── loading_images/ # チャプターロード画面の背景画像
+│       │   └── ...           # その他スプライト
 │       └── story/            # ストーリーアセット
 │           ├── scripts/      # ストーリースクリプト（Git管理）
 │           ├── bg/           # 背景画像（Git除外）
@@ -120,9 +191,11 @@ RPGGame/
 │           └── se/           # SE（Git除外）
 ├── src/
 │   ├── scenes/               # Phaserシーン
-│   │   ├── LoadingScene.ts   # アセット読み込み・chroma key処理
-│   │   ├── MainScene.ts      # メインゲームループ
-│   │   └── TitleScene.ts     # タイトル画面
+│   │   ├── LoadingScene.ts      # アセット読み込み・chroma key処理
+│   │   ├── TitleScene.ts        # タイトル画面
+│   │   ├── ChapterLoadingScene.ts # 章切り替えロード画面
+│   │   ├── MainScene.ts         # メインゲームループ
+│   │   └── StoryScene.ts        # ストーリーシーン
 │   ├── systems/              # ゲームシステム
 │   │   ├── AnimationManager.ts
 │   │   ├── AudioBus.ts
@@ -136,37 +209,53 @@ RPGGame/
 │   │   └── PortalManager.ts  # ポータルスプライト管理・物理オーバーラップ
 │   └── story/                # ストーリー管理
 └── tools/                    # 開発支援ツール（ブラウザGUI）
+    ├── boss-editor/          # ボスエディタ（テストプレイ機能付き）
     ├── enemy-editor/         # 敵キャラ定義エディタ
     ├── gameflow-editor/      # ゲームフローエディタ
-    └── map-editor/           # マップエディタ
+    ├── map-editor/           # マップエディタ
+    ├── npc-editor/           # NPCエディタ
+    ├── portal-editor/        # ポータルエディタ
+    ├── story-editor/         # ストーリーエディタ
+    └── tileset-editor/       # タイルセットエディタ
 ```
 
 ## 開発ツールの使い方
 
-**エディタツール（マップ・エネミー）はサーバー不要**。`index.html` をブラウザで直接開けばOK。
-ゲームフローエディタは fetch API を使うため `npm run dev` 起動が必要。
+すべてのエディタは `npm run dev` 起動後、ブラウザでアクセスして使用します。
 
-| ツール | 起動方法 |
-|--------|----------|
-| ゲーム本体 | `npm run dev` → `http://localhost:5173/Game_RPG/` |
-| マップエディタ | `tools/map-editor/index.html` をブラウザで直接開く |
-| エネミーエディタ | `tools/enemy-editor/index.html` をブラウザで直接開く |
-| ゲームフローエディタ | `npm run dev` → `http://localhost:5173/tools/gameflow-editor/` |
+| ツール | URL |
+|--------|-----|
+| ゲーム本体 | `http://localhost:5173/htdocs/Game_RPG/` |
+| ハブ（エディタ一覧） | `http://localhost:5173/tools/` |
+| ボスエディタ | `http://localhost:5173/tools/boss-editor/` |
+| マップエディタ | `http://localhost:5173/tools/map-editor/` |
+| エネミーエディタ | `http://localhost:5173/tools/enemy-editor/` |
+| NPCエディタ | `http://localhost:5173/tools/npc-editor/` |
+| ゲームフローエディタ | `http://localhost:5173/tools/gameflow-editor/` |
+| ストーリーエディタ | `http://localhost:5173/tools/story-editor/` |
+| タイルセットエディタ | `http://localhost:5173/tools/tileset-editor/` |
+| ポータルエディタ | `http://localhost:5173/tools/portal-editor/` |
 
-> マップエディタとエネミーエディタは LocalStorage でデータを共有します。
-> 同じブラウザ・同じ起動方法（どちらもファイル直開き）で使用してください。
+> すべてのエディタは `/api/save-asset` 経由でゲームアセットに直接書き込みます。`npm run dev` が必要です。
 
 ### 敵キャラ追加の流れ
 
-1. **エネミーエディタ** でキャラを作成 → Export → `public/assets/enemies/enemy-defs.json` に配置
-2. **マップエディタ** で敵スポーンを配置 → キャラ選択モーダルで対象キャラを選択 → Export → `public/assets/maps/` に配置
+1. **エネミーエディタ** でキャラを作成 → 「ゲームに保存」
+2. **マップエディタ** で敵スポーンを配置 → キャラ選択モーダルで対象キャラを選択 → 「ゲームに保存」
 3. ゲームをリロードすると指定キャラが固定位置にスポーン
+
+### ボス追加の流れ
+
+1. **ボスエディタ** で「+ 新規」→ ID・ステータス・スプライトキー・攻撃パターンを設定
+2. ボス画像（スプライト・カットイン・弾テクスチャ）を `public/assets/images/boss/{bossId}/` に配置
+3. 「ゲームに保存」→ `public/assets/bosses/{id}.json` が生成、イメージフォルダも自動作成
+4. **ゲームフローエディタ** でマップノードにボスを設定（`boss.configKey` を指定）
+5. **テストタブ** でマップ・出現位置を選んで即テストプレイ
 
 ### ポータル追加の流れ
 
-1. **マップエディタ** で 🚪 ポータルを配置 → Export → `public/assets/maps/xxx.json` に配置
-2. **ゲームフローエディタ** でマップノードの `portal_N` ピンを接続先マップの `in` へ接続 → Save
-   - `gameflow.json` の `maps.xxx.portals[N]` に目的地情報が書き出される
+1. **マップエディタ** で 🚪 ポータルを配置 → 「ゲームに保存」
+2. **ゲームフローエディタ** でマップノードの `portal_N` ピンを接続先マップの `in` へ接続 → 「ゲームに保存」
 3. ゲームをリロードするとポータルスプライトが表示され、踏むとテレポート
 
 ## ビルド

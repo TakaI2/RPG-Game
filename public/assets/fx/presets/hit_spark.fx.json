@@ -1,0 +1,82 @@
+{
+  "format": "fx2d-preset",
+  "version": 1,
+  "id": "hit_spark",
+  "name": "命中の火花",
+  "scale": 1,
+  "speed": 1,
+  "follow": false,
+  "layers": [
+    {
+      "name": "閃光",
+      "enabled": true,
+      "delay": 0,
+      "duration": 140,
+      "offsetX": 0,
+      "offsetY": 0,
+      "blend": "normal",
+      "depth": 0,
+      "type": "shape",
+      "shape": "flash",
+      "copies": 1,
+      "size": {
+        "start": 20,
+        "end": 70
+      },
+      "alpha": {
+        "start": 1,
+        "end": 0
+      },
+      "color": {
+        "start": "#ffffff",
+        "end": "#fff2a8"
+      },
+      "angle": 0,
+      "angleRandom": false,
+      "spin": 0,
+      "ease": "Quad.easeOut"
+    },
+    {
+      "name": "火花",
+      "enabled": true,
+      "delay": 0,
+      "duration": 0,
+      "offsetX": 0,
+      "offsetY": 0,
+      "blend": "normal",
+      "depth": 0,
+      "type": "particle",
+      "sheet": "",
+      "frameStart": 0,
+      "frameEnd": -1,
+      "fps": 16,
+      "count": 7,
+      "rate": 0,
+      "speed": {
+        "min": 80,
+        "max": 260
+      },
+      "angleMin": 0,
+      "angleMax": 360,
+      "lifespan": {
+        "min": 190,
+        "max": 380
+      },
+      "gravityY": 0,
+      "spawnRadius": 0,
+      "size": {
+        "start": 14,
+        "end": 0
+      },
+      "alpha": {
+        "start": 1,
+        "end": 0
+      },
+      "color": {
+        "start": "#fff2a8",
+        "end": "#ffb040"
+      },
+      "rotate": false
+    }
+  ]
+}

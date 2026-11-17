@@ -8,25 +8,41 @@
     "damage": 1
   },
   "sprite": {
-    "key": "brute",
+    "key": "vamp1",
     "tint": "0xff6666"
   },
   "cutin": {
     "image": "boss_face",
-    "position": "right"
+    "position": "right",
+    "scale": 1.1
   },
   "phases": [
     {
       "phase": 1,
-      "hpRange": [13, 25],
-      "attackCooldown": 1.0,
-      "patterns": ["radial", "circle", "teleport_dash"]
+      "hpRange": [
+        13,
+        25
+      ],
+      "attackCooldown": 1,
+      "patterns": [
+        "radial",
+        "circle",
+        "teleport_dash"
+      ]
     },
     {
       "phase": 2,
-      "hpRange": [0, 12],
+      "hpRange": [
+        0,
+        12
+      ],
       "attackCooldown": 0.66,
-      "patterns": ["radial", "circle", "teleport_dash", "ultimate"]
+      "patterns": [
+        "radial",
+        "circle",
+        "teleport_dash",
+        "ultimate"
+      ]
     }
   ],
   "attacks": [
@@ -113,7 +129,18 @@
       "speech": {
         "text": "混沌に飲まれろ！",
         "duration": 1500,
-        "color": "#ff6666"
+        "color": "#ff6666",
+        "i18n": {
+          "en": {
+            "text": "Be consumed by chaos!"
+          },
+          "zh": {
+            "text": "堕入混沌之中吧！"
+          },
+          "es": {
+            "text": "¡Sé consumido por el caos!"
+          }
+        }
       },
       "cameraEffects": {
         "darken": {
@@ -124,7 +151,11 @@
         "flash": {
           "enabled": true,
           "duration": 200,
-          "color": [255, 100, 100]
+          "color": [
+            255,
+            100,
+            100
+          ]
         }
       },
       "bgmControl": {
@@ -137,7 +168,27 @@
     "intro": "我が名はヴォルグ...貴様を滅ぼす者だ",
     "phase2": "フハハハ！まだまだだ！",
     "lowHp": "ぐぬぬ...小癪な！",
-    "defeat": "バカな...この私が..."
+    "defeat": "バカな...この私が...",
+    "i18n": {
+      "en": {
+        "intro": "My name is Volg... I am your destroyer.",
+        "phase2": "Bwahaha! You haven't seen anything yet!",
+        "lowHp": "Grr... Insolent pest!",
+        "defeat": "Impossible... that I could be..."
+      },
+      "zh": {
+        "intro": "吾乃沃格……汝之终结者也。",
+        "phase2": "哈哈哈！还远着呢！",
+        "lowHp": "哼……小东西！",
+        "defeat": "不可能……我竟然……"
+      },
+      "es": {
+        "intro": "Me llamo Volg... soy quien te destruirá.",
+        "phase2": "¡Bwajaja! ¡Aún no has visto nada!",
+        "lowHp": "Grr... ¡Insolente!",
+        "defeat": "Imposible... que yo pueda..."
+      }
+    }
   },
   "se": {
     "damage": "boss_damage",

@@ -1,0 +1,16 @@
+[
+  {
+    "key": "door",
+    "label": "扉",
+    "animated": false,
+    "frameCount": 4,
+    "frameRate": 8
+  },
+  {
+    "key": "vector",
+    "label": "新ポータル",
+    "animated": true,
+    "frameCount": 4,
+    "frameRate": 4
+  }
+]

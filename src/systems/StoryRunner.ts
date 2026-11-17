@@ -1,5 +1,6 @@
 import Phaser from 'phaser'
 import { AudioBus } from './AudioBus'
+import { resolveText } from '../utils/LocaleManager'
 
 /**
  * ストーリースクリプト実行エンジン（M2: 完全版）
@@ -29,6 +30,13 @@ type BgPayload = {
   fade?: number
 }
 
+type PortraitPayload = {
+  portrait: string
+  x?: number
+  y?: number
+  scale?: number
+}
+
 export class StoryRunner {
   private scene: Phaser.Scene
   private audio: AudioBus
@@ -36,7 +44,11 @@ export class StoryRunner {
   private pc = 0 // Program Counter
   private onSay!: (payload: SayPayload) => Promise<void>
   private onBg!: (payload: BgPayload) => Promise<void>
+  private onPortraitShow!: (payload: PortraitPayload) => Promise<void>
+  private onPortraitHide!: () => Promise<void>
   private onEnd!: (returnTo: string) => void
+  private onFadeIn!: (color: string, duration: number, alpha: number) => Promise<void>
+  private onFadeOut!: (duration: number) => Promise<void>
 
   constructor(scene: Phaser.Scene, audio: AudioBus) {
     this.scene = scene
@@ -57,11 +69,19 @@ export class StoryRunner {
   hooks(h: {
     onSay: (p: SayPayload) => Promise<void>
     onBg: (p: BgPayload) => Promise<void>
+    onPortraitShow: (p: PortraitPayload) => Promise<void>
+    onPortraitHide: () => Promise<void>
     onEnd: (rtn: string) => void
+    onFadeIn: (color: string, duration: number, alpha: number) => Promise<void>
+    onFadeOut: (duration: number) => Promise<void>
   }) {
     this.onSay = h.onSay
     this.onBg = h.onBg
+    this.onPortraitShow = h.onPortraitShow
+    this.onPortraitHide = h.onPortraitHide
     this.onEnd = h.onEnd
+    this.onFadeIn = h.onFadeIn
+    this.onFadeOut = h.onFadeOut
   }
 
   /**
@@ -89,10 +109,12 @@ export class StoryRunner {
 
         case 'say': {
           // セリフ表示（一時停止）
-          console.log('[StoryRunner] Executing say:', { name: op.name, lines: op.lines })
+          const i18n = op.i18n as Record<string, { name?: string; lines?: string[] }> | undefined
+          const resolved = resolveText({ name: op.name as string, lines: op.lines as string[] }, i18n)
+          console.log('[StoryRunner] Executing say:', { name: resolved.name, lines: resolved.lines })
           await this.onSay({
-            name: op.name as string,
-            lines: op.lines as string[],
+            name: resolved.name,
+            lines: resolved.lines,
             portrait: op.portrait as string | undefined,
             portraitX: op.portraitX as number | undefined,
             portraitY: op.portraitY as number | undefined,
@@ -100,6 +122,21 @@ export class StoryRunner {
           })
           console.log('[StoryRunner] say completed, returning to wait for next step()')
           return // 次のSpaceキーまで待機
+        }
+
+        case 'portrait.show': {
+          await this.onPortraitShow({
+            portrait: op.portrait as string,
+            x: op.x as number | undefined,
+            y: op.y as number | undefined,
+            scale: op.scale as number | undefined
+          })
+          break
+        }
+
+        case 'portrait.hide': {
+          await this.onPortraitHide()
+          break
         }
 
         case 'bgm.play': {
@@ -129,7 +166,37 @@ export class StoryRunner {
         }
 
         case 'se': {
-          this.audio.se(op.name as string)
+          if (op.loop) {
+            this.audio.playStorySeLoop(op.name as string)
+          } else {
+            this.audio.playStorySe(op.name as string)
+          }
+          break
+        }
+
+        case 'se.stop': {
+          this.audio.stopSeLoop(op.name as string)
+          break
+        }
+
+        case 'delay': {
+          await new Promise<void>(resolve => {
+            this.scene.time.delayedCall(op.duration as number ?? 1000, () => resolve())
+          })
+          break
+        }
+
+        case 'fade.in': {
+          await this.onFadeIn(
+            op.color as string ?? '#000000',
+            op.duration as number ?? 500,
+            op.alpha as number ?? 1.0
+          )
+          break
+        }
+
+        case 'fade.out': {
+          await this.onFadeOut(op.duration as number ?? 500)
           break
         }
 

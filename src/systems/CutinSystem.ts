@@ -16,6 +16,8 @@ export class CutinSystem {
     this.container.setVisible(false)
   }
 
+  getContainer(): Phaser.GameObjects.Container { return this.container }
+
   /**
    * カットイン表示
    * @param imageKey ボスの顔グラフィックキー
@@ -23,7 +25,13 @@ export class CutinSystem {
    * @param duration 表示時間（ms）
    * @param onComplete 完了コールバック
    */
-  show(imageKey: string, skillName: string, duration: number, onComplete: () => void) {
+  show(
+    imageKey: string,
+    skillName: string,
+    duration: number,
+    onComplete: () => void,
+    imageConfig?: { position?: 'left' | 'right'; x?: number; y?: number; scale?: number }
+  ) {
     if (this.isPlaying) {
       console.warn('[CutinSystem] Already playing cutin')
       return
@@ -43,20 +51,23 @@ export class CutinSystem {
     // スピードライン（横線）
     const speedLines = this.createSpeedLines()
 
-    // ボスの顔グラフィック（画面右端から）
+    // カットイン画像の位置・スケール設定
+    const pos = imageConfig?.position ?? 'right'
+    const portraitScale = imageConfig?.scale ?? 2.5
+    const portraitY = imageConfig?.y ?? GAME_H / 2
+    const portraitFinalX = imageConfig?.x ?? (pos === 'left' ? 250 : GAME_W - 250)
+    const portraitStartX = pos === 'left' ? -300 : GAME_W + 300
+
+    // ボスの顔グラフィック
     let portrait: Phaser.GameObjects.Image | Phaser.GameObjects.Rectangle
     if (this.scene.textures.exists(imageKey)) {
-      portrait = this.scene.add.image(GAME_W + 300, GAME_H / 2, imageKey).setScale(2.5)
+      portrait = this.scene.add.image(portraitStartX, portraitY, imageKey).setScale(portraitScale)
     } else {
-      // 画像がない場合はダミーの赤い四角（より派手に）
       console.warn(`[CutinSystem] Image not found: ${imageKey}, using placeholder`)
-      portrait = this.scene.add.rectangle(GAME_W + 300, GAME_H / 2, 256, 256, 0xff3333)
-      // 枠を追加
-      const border = this.scene.add.rectangle(GAME_W + 300, GAME_H / 2, 256, 256)
-        .setStrokeStyle(8, 0xffff00)
+      portrait = this.scene.add.rectangle(portraitStartX, portraitY, 256, 256, 0xff3333)
+      const border = this.scene.add.rectangle(portraitStartX, portraitY, 256, 256).setStrokeStyle(8, 0xffff00)
       this.container.add(border)
-      // 影を追加
-      const shadow = this.scene.add.rectangle(GAME_W + 310, GAME_H / 2 + 10, 256, 256, 0x000000, 0.5)
+      const shadow = this.scene.add.rectangle(portraitStartX + 10, portraitY + 10, 256, 256, 0x000000, 0.5)
       this.container.add(shadow)
     }
 
@@ -104,10 +115,10 @@ export class CutinSystem {
       ease: 'Power2'
     })
 
-    // 2. 顔グラフィックがスライドイン（0.4秒、より速く）
+    // 2. 顔グラフィックがスライドイン
     this.scene.tweens.add({
       targets: portrait,
-      x: GAME_W - 250,
+      x: portraitFinalX,
       duration: 400,
       ease: 'Back.easeOut'
     })

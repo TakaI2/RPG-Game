@@ -1,0 +1,178 @@
+{
+  "id": "reala_boss",
+  "name": "吸血鬼リアラ",
+  "stats": {
+    "hp": 30,
+    "speed": 100,
+    "scale": 1,
+    "damage": 3
+  },
+  "sprite": {
+    "key": "vamp1",
+    "animKey": "vamp1"
+  },
+  "cutin": {
+    "image": "",
+    "position": "right"
+  },
+  "phases": [
+    {
+      "phase": 1,
+      "hpRange": [
+        11,
+        30
+      ],
+      "attackCooldown": 0.7,
+      "patterns": [
+        "temptation",
+        "vampire_kiss",
+        "bat_attack"
+      ]
+    },
+    {
+      "phase": 2,
+      "hpRange": [
+        0,
+        10
+      ],
+      "attackCooldown": 0.3,
+      "patterns": [
+        "temptation",
+        "vampire_kiss",
+        "bat_attack"
+      ]
+    }
+  ],
+  "attacks": [
+    {
+      "id": "bat_attack",
+      "name": "蝙蝠",
+      "type": "ultimate",
+      "config": {
+        "projectileCount": 16,
+        "projectileType": "orb",
+        "projectileTexture": "bat",
+        "projectileFrames": 2,
+        "spiralAngleStep": 22,
+        "spiralRadiusStep": 12,
+        "spiralRadiusStart": 80,
+        "spawnInterval": 60,
+        "projectileSpeed": 180,
+        "damage": 4,
+        "tint": ""
+      },
+      "se": {
+        "ultimate": "boss_belladonna_ultimate"
+      },
+      "speech": {
+        "text": "コウモリ達！　干乾びさせておやり！",
+        "i18n": {
+          "en": {
+            "text": "My bats! Drain them dry!"
+          },
+          "zh": {
+            "text": "蝙蝠们！把他们吸干！"
+          },
+          "es": {
+            "text": "¡Mis murciélagos! ¡Drenadles hasta el hueso!"
+          }
+        }
+      }
+    },
+    {
+      "id": "temptation",
+      "name": "テンプテーション",
+      "type": "projectile_radial",
+      "config": {
+        "windupDuration": 700,
+        "windupEffect": "blink_red",
+        "projectileCount": 6,
+        "projectileType": "orb",
+        "projectileTexture": "hert",
+        "projectileSpeed": 220,
+        "damage": 4,
+        "angleOffset": 30
+      },
+      "se": {
+        "windup": "charm",
+        "fire": "charm"
+      },
+      "speech": {
+        "text": "私に酔いなさい！",
+        "i18n": {
+          "en": {
+            "text": "Intoxicate yourself in me!"
+          },
+          "zh": {
+            "text": "为我而沉醉吧！"
+          },
+          "es": {
+            "text": "¡Embriágate en mí!"
+          }
+        }
+      }
+    },
+    {
+      "id": "vampire_kiss",
+      "name": "支配のキス",
+      "type": "teleport_dash",
+      "config": {
+        "fadeOutDuration": 300,
+        "fadeInDuration": 300,
+        "teleportDistance": 250,
+        "windupDuration": 300,
+        "dashSpeed": 350,
+        "dashDuration": 800,
+        "damage": 4
+      },
+      "se": {
+        "dash": "chu2",
+        "teleport": "boss_belladonna_teleport"
+      },
+      "speech": {
+        "text": "ふふ、仲良くしましょうよ！",
+        "i18n": {
+          "en": {
+            "text": "Hehe, let's be mine~!"
+          },
+          "zh": {
+            "text": "呵呵，我们好好相处吧！"
+          },
+          "es": {
+            "text": "Jeje, ¡llevémonos bien~!"
+          }
+        }
+      }
+    }
+  ],
+  "speeches": {
+    "intro": "あんたの血も美味しそうだね。",
+    "phase2": "痛た・・・、もう許さないからね・・・。　",
+    "lowHp": "あんたもボウヤも、吸い尽くしてやるから・・・！！",
+    "defeat": "きゃあぁぁ！！",
+    "i18n": {
+      "en": {
+        "intro": "Your blood looks delicious too.",
+        "phase2": "Ouch... I won't forgive you for this...",
+        "lowHp": "I'll drain you and that brat dry...!!",
+        "defeat": "Kyaaah!!"
+      },
+      "zh": {
+        "intro": "你的血看起来也很美味呢。",
+        "phase2": "好痛・・・、我不会放过你的・・・。",
+        "lowHp": "你和那小鬼，我要把你们都吸干・・・！！",
+        "defeat": "啊啊啊！！"
+      },
+      "es": {
+        "intro": "Tu sangre también parece deliciosa.",
+        "phase2": "Ay... No te lo voy a perdonar...",
+        "lowHp": "¡A ti y a ese mocoso os voy a dejar secos...!!",
+        "defeat": "¡¡Kyaaah!!"
+      }
+    }
+  },
+  "se": {
+    "damage": "boss_belladonna_damage",
+    "defeat": "boss_belladonna_defeat"
+  }
+}

@@ -16,18 +16,23 @@
     {
       "op": "say",
       "name": "ナレーション",
-      "lines": [
-        "魔女は倒れ、世界に光が戻った。"
-      ]
+      "lines": ["魔女は倒れ、世界に光が戻った。"],
+      "i18n": {
+        "en": { "lines": ["The witch fell, and light returned to the world."], "name": "Narrator" },
+        "zh": { "lines": ["魔女倒下了，世界重新迎来了光明。"], "name": "旁白" },
+        "es": { "lines": ["La bruja cayó y la luz volvió al mundo."], "name": "Narrador" }
+      }
     },
     {
       "op": "say",
       "name": "魔女",
       "portrait": "witch.png",
-      "lines": [
-        "く...まさか...私が負けるなんて...",
-        "くっ...!"
-      ]
+      "lines": ["く...まさか...私が負けるなんて...", "くっ...!"],
+      "i18n": {
+        "en": { "lines": ["Ku... impossible... that I would lose...", "Kuh...!"], "name": "Witch" },
+        "zh": { "lines": ["呃……没想到……我居然会输……", "唔……！"], "name": "魔女" },
+        "es": { "lines": ["Ku... imposible... que yo perdiera...", "¡Ku...!"], "name": "Bruja" }
+      }
     },
     {
       "op": "bg",
@@ -37,61 +42,75 @@
     {
       "op": "say",
       "name": "ナレーション",
-      "lines": [
-        "闇は晴れ、空には太陽が輝き始めた。",
-        "世界は再び平和を取り戻したのだ。"
-      ]
+      "lines": ["闇は晴れ、空には太陽が輝き始めた。", "世界は再び平和を取り戻したのだ。"],
+      "i18n": {
+        "en": { "lines": ["The darkness cleared, and the sun began to shine in the sky.", "The world had reclaimed its peace once more."], "name": "Narrator" },
+        "zh": { "lines": ["黑暗散去，太阳开始在天空中闪耀。", "世界再次恢复了和平。"], "name": "旁白" },
+        "es": { "lines": ["La oscuridad se despejó y el sol comenzó a brillar en el cielo.", "El mundo había recuperado su paz una vez más."], "name": "Narrador" }
+      }
     },
     {
       "op": "say",
       "name": "神父",
       "portrait": "priest.png",
-      "lines": [
-        "勇者よ、よくぞ魔女を倒してくれた！",
-        "これで世界は救われた。"
-      ]
+      "lines": ["勇者よ、よくぞ魔女を倒してくれた！", "これで世界は救われた。"],
+      "i18n": {
+        "en": { "lines": ["Hero, you have defeated the witch!", "The world is saved."], "name": "Priest" },
+        "zh": { "lines": ["勇者啊，你击败了魔女！", "这下世界得救了。"], "name": "神父" },
+        "es": { "lines": ["¡Héroe, has derrotado a la bruja!", "El mundo está salvado."], "name": "Sacerdote" }
+      }
     },
     {
       "op": "say",
       "name": "神父",
       "portrait": "priest.png",
-      "lines": [
-        "あなたの勇気と強さがあったからこそ、",
-        "この世界は絶望から解放されたのです。"
-      ]
+      "lines": ["あなたの勇気と強さがあったからこそ、", "この世界は絶望から解放されたのです。"],
+      "i18n": {
+        "en": { "lines": ["It is because of your courage and strength", "that this world has been freed from despair."], "name": "Priest" },
+        "zh": { "lines": ["正是因为你的勇气和力量，", "这个世界才从绝望中解放出来。"], "name": "神父" },
+        "es": { "lines": ["Gracias a tu valentía y fortaleza,", "este mundo ha sido liberado de la desesperación."], "name": "Sacerdote" }
+      }
     },
     {
       "op": "say",
       "name": "主人公",
-      "lines": [
-        "...ありがとう。",
-        "これで皆が笑って暮らせるんだな。"
-      ]
+      "lines": ["...ありがとう。", "これで皆が笑って暮らせるんだな。"],
+      "i18n": {
+        "en": { "lines": ["...Thank you.", "Now everyone can live with a smile."], "name": "Hero" },
+        "zh": { "lines": ["……谢谢你。", "这样大家就都能开心地生活了。"], "name": "勇者" },
+        "es": { "lines": ["...Gracias.", "Ahora todos podrán vivir con una sonrisa."], "name": "Héroe" }
+      }
     },
     {
       "op": "say",
       "name": "神父",
       "portrait": "priest.png",
-      "lines": [
-        "ええ。あなたの名は永遠に語り継がれるでしょう。",
-        "本当に、ありがとうございました。"
-      ]
+      "lines": ["ええ。あなたの名は永遠に語り継がれるでしょう。", "本当に、ありがとうございました。"],
+      "i18n": {
+        "en": { "lines": ["Yes. Your name will be passed down forever.", "Truly, thank you so much."], "name": "Priest" },
+        "zh": { "lines": ["是的。您的名字将永远流传。", "真的，非常感谢您。"], "name": "神父" },
+        "es": { "lines": ["Sí. Tu nombre se recordará por siempre.", "De verdad, muchas gracias."], "name": "Sacerdote" }
+      }
     },
     {
       "op": "say",
       "name": "ナレーション",
-      "lines": [
-        "こうして、勇者の冒険は幕を閉じた。",
-        "世界に平和が訪れ、人々は再び笑顔を取り戻した。"
-      ]
+      "lines": ["こうして、勇者の冒険は幕を閉じた。", "世界に平和が訪れ、人々は再び笑顔を取り戻した。"],
+      "i18n": {
+        "en": { "lines": ["And so, the hero's adventure came to a close.", "Peace came to the world, and people regained their smiles."], "name": "Narrator" },
+        "zh": { "lines": ["就这样，勇者的冒险落下了帷幕。", "世界迎来了和平，人们再次找回了笑容。"], "name": "旁白" },
+        "es": { "lines": ["Y así, la aventura del héroe llegó a su fin.", "La paz llegó al mundo y la gente recuperó sus sonrisas."], "name": "Narrador" }
+      }
     },
     {
       "op": "say",
       "name": "ナレーション",
-      "lines": [
-        "GAME CLEAR",
-        "ありがとうございました！"
-      ]
+      "lines": ["GAME CLEAR", "ありがとうございました！"],
+      "i18n": {
+        "en": { "lines": ["GAME CLEAR", "Thank you for playing!"], "name": "Narrator" },
+        "zh": { "lines": ["GAME CLEAR", "感谢游玩！"], "name": "旁白" },
+        "es": { "lines": ["GAME CLEAR", "¡Gracias por jugar!"], "name": "Narrador" }
+      }
     },
     {
       "op": "end"

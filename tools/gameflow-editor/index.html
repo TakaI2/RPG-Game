@@ -10,16 +10,22 @@
   <div id="app">
     <!-- Header -->
     <header class="header">
-      <h1>Gameflow Editor</h1>
+      <h1><a href="../" style="color:inherit; text-decoration:none; font-size:0.75rem; opacity:0.6; margin-right:10px;">← ハブ</a>Gameflow Editor</h1>
       <div class="header-actions">
-        <button id="btn-open" title="JSONを読み込み">Open JSON</button>
-        <button id="btn-save" title="JSONを保存">Save JSON</button>
-        <input type="file" id="file-input" accept=".json" hidden>
+        <button type="button" id="btn-new" class="btn-new-file">新規</button>
+        <div class="file-name-wrap">
+          <span class="file-prefix">gameflows/</span>
+          <input id="file-name-input" type="text" value="gameflow.json" spellcheck="false">
+        </div>
+        <button type="button" id="btn-browse" title="gameflows/ フォルダから選択">📂</button>
+        <button type="button" id="btn-open" title="gameflows/ から読み込み">開く</button>
+        <button type="button" id="btn-save" title="ローカルにダウンロード">DL</button>
+        <button type="button" id="btn-save-to-game" title="assets/gameflows/{ファイル名} に直接書き込む">ゲームに保存</button>
         <div class="separator"></div>
-        <button id="btn-add-map" class="btn-node-map">+ Map</button>
-        <button id="btn-add-story" class="btn-node-story">+ Story</button>
-        <button id="btn-add-bgm" class="btn-node-bgm">+ BGM</button>
-        <button id="btn-add-exit" class="btn-node-exit">+ Exit</button>
+        <button type="button" id="btn-add-map" class="btn-node-map">+ Map</button>
+        <button type="button" id="btn-add-story" class="btn-node-story">+ Story</button>
+        <button type="button" id="btn-add-bgm" class="btn-node-bgm">+ BGM</button>
+        <button type="button" id="btn-add-exit" class="btn-node-exit">+ Exit</button>
       </div>
     </header>
 
@@ -41,6 +47,11 @@
         <div id="properties-content" class="properties-content">
           <p class="placeholder">ノードを選択してください</p>
         </div>
+        <div class="panel-header" style="margin-top:8px;">
+          <span>章管理</span>
+        </div>
+        <div id="chapters-content" class="properties-content">
+        </div>
       </aside>
     </main>
 
@@ -56,6 +67,7 @@
     </footer>
   </div>
 
+  <script src="../shared/save-api.js"></script>
   <script src="editor.js"></script>
 </body>
 </html>

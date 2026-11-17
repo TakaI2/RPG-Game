@@ -1,0 +1,233 @@
+{
+  "id": "survivor_boss",
+  "name": "真祖リアラ",
+  "assetDir": "reala_boss",
+  "stats": {
+    "hp": 200,
+    "speed": 150,
+    "scale": 1.6,
+    "damage": 6
+  },
+  "sprite": {
+    "key": "vamp1",
+    "animKey": "vamp1"
+  },
+  "cutin": {
+    "image": "",
+    "position": "right"
+  },
+  "phases": [
+    {
+      "phase": 1,
+      "hpRange": [
+        81,
+        200
+      ],
+      "attackCooldown": 1.6,
+      "patterns": [
+        "temptation",
+        "blood_circle",
+        "vampire_kiss"
+      ]
+    },
+    {
+      "phase": 2,
+      "hpRange": [
+        0,
+        80
+      ],
+      "attackCooldown": 3.2,
+      "patterns": [
+        "temptation_storm",
+        "blood_circle",
+        "vampire_kiss",
+        "bat_attack",
+        "bat_attack"
+      ]
+    }
+  ],
+  "attacks": [
+    {
+      "id": "temptation",
+      "name": "テンプテーション",
+      "type": "projectile_radial",
+      "config": {
+        "windupDuration": 450,
+        "windupEffect": "blink_red",
+        "projectileCount": 12,
+        "projectileType": "orb",
+        "projectileTexture": "hert",
+        "projectileSpeed": 260,
+        "damage": 6,
+        "angleOffset": 15
+      },
+      "se": {
+        "windup": "charm",
+        "fire": "charm"
+      },
+      "speech": {
+        "text": "私に酔いなさい！",
+        "i18n": {
+          "en": {
+            "text": "Intoxicate yourself in me!"
+          },
+          "zh": {
+            "text": "为我而沉醉吧！"
+          },
+          "es": {
+            "text": "¡Embriágate en mí!"
+          }
+        }
+      }
+    },
+    {
+      "id": "temptation_storm",
+      "name": "魅了の嵐",
+      "type": "projectile_radial",
+      "config": {
+        "windupDuration": 300,
+        "windupEffect": "blink_red",
+        "projectileCount": 24,
+        "projectileType": "orb",
+        "projectileTexture": "hert",
+        "projectileSpeed": 310,
+        "damage": 6,
+        "angleOffset": 7
+      },
+      "se": {
+        "windup": "charm",
+        "fire": "charm"
+      },
+      "speech": {
+        "text": "もっと、もっと酔いなさい！",
+        "i18n": {
+          "en": {
+            "text": "More! Drown yourself in me!"
+          },
+          "zh": {
+            "text": "再多一点，再沉醉一点！"
+          },
+          "es": {
+            "text": "¡Más! ¡Ahógate en mí!"
+          }
+        }
+      }
+    },
+    {
+      "id": "blood_circle",
+      "name": "血の円環",
+      "type": "projectile_circle",
+      "config": {
+        "projectileCount": 16,
+        "projectileType": "orb",
+        "projectileTexture": "hert",
+        "radius": 150,
+        "waitDuration": 600,
+        "projectileSpeed": 300,
+        "damage": 6,
+        "tint": "ff3344"
+      },
+      "se": {
+        "setup": "boss_belladonna_circle_setup",
+        "fire": "boss_belladonna_circle_fire"
+      }
+    },
+    {
+      "id": "vampire_kiss",
+      "name": "支配のキス",
+      "type": "teleport_dash",
+      "config": {
+        "fadeOutDuration": 220,
+        "fadeInDuration": 220,
+        "teleportDistance": 230,
+        "windupDuration": 200,
+        "dashSpeed": 540,
+        "dashDuration": 700,
+        "damage": 8
+      },
+      "se": {
+        "dash": "chu2",
+        "teleport": "boss_belladonna_teleport"
+      },
+      "speech": {
+        "text": "ふふ、仲良くしましょうよ！",
+        "i18n": {
+          "en": {
+            "text": "Hehe, let's be mine~!"
+          },
+          "zh": {
+            "text": "呵呵，我们好好相处吧！"
+          },
+          "es": {
+            "text": "Jeje, ¡llevémonos bien~!"
+          }
+        }
+      }
+    },
+    {
+      "id": "bat_attack",
+      "name": "蝙蝠の夜",
+      "type": "ultimate",
+      "config": {
+        "projectileCount": 28,
+        "projectileType": "orb",
+        "projectileTexture": "bat",
+        "projectileFrames": 2,
+        "spiralAngleStep": 26,
+        "spiralRadiusStep": 10,
+        "spiralRadiusStart": 70,
+        "spawnInterval": 40,
+        "projectileSpeed": 230,
+        "damage": 6,
+        "tint": ""
+      },
+      "se": {
+        "ultimate": "boss_belladonna_ultimate"
+      },
+      "speech": {
+        "text": "コウモリ達！　干乾びさせておやり！",
+        "i18n": {
+          "en": {
+            "text": "My bats! Drain them dry!"
+          },
+          "zh": {
+            "text": "蝙蝠们！把他们吸干！"
+          },
+          "es": {
+            "text": "¡Mis murciélagos! ¡Drenadles hasta el hueso!"
+          }
+        }
+      }
+    }
+  ],
+  "speeches": {
+    "intro": "ここまで来たの？　いいわ、遊んであげる。",
+    "phase2": "よくも・・・！　本気で吸い尽くしてあげる！！",
+    "lowHp": "まだ・・・まだ終わらないわ・・・！！",
+    "defeat": "そんな・・・この私が・・・！！",
+    "i18n": {
+      "en": {
+        "intro": "You made it this far? Fine, I'll play with you.",
+        "phase2": "How dare you...! Now I'll drain you for real!!",
+        "lowHp": "Not yet... it's not over yet...!!",
+        "defeat": "No... not me...!!"
+      },
+      "zh": {
+        "intro": "你居然来到这里了？好啊，我陪你玩玩。",
+        "phase2": "竟敢……！我要真正把你吸干！！",
+        "lowHp": "还没……还没结束……！！",
+        "defeat": "怎么会……我竟然……！！"
+      },
+      "es": {
+        "intro": "¿Has llegado hasta aquí? Bien, jugaré contigo.",
+        "phase2": "¡¿Cómo te atreves...?! ¡¡Ahora te drenaré de verdad!!",
+        "lowHp": "Aún no... esto no ha terminado...!!",
+        "defeat": "No... no puede ser...!!"
+      }
+    }
+  },
+  "se": {
+    "damage": "boss_belladonna_damage",
+    "defeat": "boss_belladonna_defeat"
+  }
+}

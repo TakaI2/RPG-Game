@@ -3,6 +3,22 @@ import Phaser from 'phaser'
 // MainScene の projectiles グループへのアクセス用インターフェース
 interface SceneWithProjectiles extends Phaser.Scene {
   projectiles?: Phaser.Physics.Arcade.Group
+  addWorldObject?: (go: Phaser.GameObjects.GameObject) => void
+}
+
+// アニメーション+回転飛び道具の型（SpriteWithDynamicBody ベース）
+export type RotatingProjectile = Phaser.Types.Physics.Arcade.SpriteWithDynamicBody & {
+  damage: number
+  bornAt: number
+  life: number
+  target: Phaser.GameObjects.Sprite | null
+  speed: number
+  turnRate: number
+}
+
+interface SceneWithRotatingProjectiles extends Phaser.Scene {
+  rotatingProjectiles?: RotatingProjectile[]
+  addWorldObject?: (go: Phaser.GameObjects.GameObject) => void
 }
 
 // 飛び道具の基本型
@@ -61,6 +77,7 @@ export function fireArrow(
     scene.sound.play('sfx_arrow', { volume: 0.7 })
   }
 
+  ;(scene as SceneWithProjectiles).addWorldObject?.(proj)
   return proj
 }
 
@@ -73,12 +90,13 @@ export function fireHomingOrb(
   target: Phaser.GameObjects.Sprite,
   speed = 220,
   turnRate = 6.0,
-  life = 3000
+  life = 3000,
+  textureKey = 'hert'
 ): HomingOrb {
   const group = (scene as SceneWithProjectiles).projectiles
   const orb = (group
-    ? group.create(from.x, from.y, 'orb')
-    : scene.physics.add.image(from.x, from.y, 'orb')) as HomingOrb
+    ? group.create(from.x, from.y, textureKey)
+    : scene.physics.add.image(from.x, from.y, textureKey)) as HomingOrb
 
   orb.target = target
   orb.speed = speed
@@ -111,11 +129,12 @@ export function fireHomingOrb(
   }
   (scene as any).homingOrbs.push(orb)
 
+  ;(scene as SceneWithProjectiles).addWorldObject?.(orb)
   return orb
 }
 
 /**
- * すべての誘導魔法弾を更新する（シーンのupdateで呼ぶ）
+ * 矢を角度指定で発射（ボス用）
  */
 export function updateHomingOrbs(scene: Phaser.Scene) {
   const list: HomingOrb[] = (scene as any).homingOrbs ?? []
@@ -196,6 +215,7 @@ export function fireArrowAngle(
     if (proj.active) proj.destroy()
   })
 
+  ;(scene as SceneWithProjectiles).addWorldObject?.(proj)
   return proj
 }
 
@@ -242,5 +262,118 @@ export function fireOrbAt(
   }
   (scene as any).homingOrbs.push(orb)
 
+  ;(scene as SceneWithProjectiles).addWorldObject?.(orb)
   return orb
+}
+
+/**
+ * アニメーション付き・回転追従する飛び道具を生成（ボスultimate用）
+ * textureKey は spritesheet でロード済みであること
+ */
+export function createAnimatedOrbAt(
+  scene: Phaser.Scene,
+  projectiles: Phaser.Physics.Arcade.Group,
+  x: number,
+  y: number,
+  target: Phaser.GameObjects.Sprite,
+  speed: number,
+  textureKey: string,
+  frames: number
+): RotatingProjectile {
+  const sprite = scene.physics.add.sprite(x, y, textureKey) as RotatingProjectile
+
+  // アニメーション登録（未登録のときのみ）
+  const animKey = `${textureKey}-fly`
+  if (!scene.anims.exists(animKey)) {
+    scene.anims.create({
+      key: animKey,
+      frames: scene.anims.generateFrameNumbers(textureKey, { start: 0, end: frames - 1 }),
+      frameRate: 8,
+      repeat: -1
+    })
+  }
+  sprite.anims.play(animKey, true)
+
+  // 追尾プロパティ
+  sprite.target = target
+  sprite.speed = speed
+  sprite.turnRate = 6.0
+  sprite.bornAt = scene.time.now
+  sprite.life = 3000
+  sprite.damage = 1
+  sprite.setScale(0.8)
+
+  // projectiles グループに追加（先にグループ追加してからvelocity設定）
+  // ※ group.add() が body をリセットする場合があるため、velocity は後で設定する
+  projectiles.add(sprite)
+
+  // 初速度とプレイヤー方向への回転（group.add 後に設定）
+  const dir = new Phaser.Math.Vector2(target.x - x, target.y - y).normalize()
+  sprite.setVelocity(dir.x * speed, dir.y * speed)
+  sprite.setRotation(Math.atan2(dir.y, dir.x))
+
+  // 回転追従リストに登録
+  const sceneExt = scene as SceneWithRotatingProjectiles
+  if (!sceneExt.rotatingProjectiles) sceneExt.rotatingProjectiles = []
+  sceneExt.rotatingProjectiles.push(sprite)
+
+  // 寿命で自動消滅
+  scene.time.delayedCall(sprite.life, () => {
+    if (sprite.active) sprite.destroy()
+  })
+
+  sceneExt.addWorldObject?.(sprite)
+  return sprite
+}
+
+/**
+ * アニメーション付き飛び道具を毎フレーム更新（MainScene.update から呼ぶ）
+ * 追尾 + 進行方向への回転を更新する
+ */
+export function updateRotatingProjectiles(scene: Phaser.Scene) {
+  const sceneExt = scene as SceneWithRotatingProjectiles
+  const list = sceneExt.rotatingProjectiles
+  if (!list) return
+
+  const now = scene.time.now
+
+  for (let i = list.length - 1; i >= 0; i--) {
+    const proj = list[i]
+
+    if (!proj.active) {
+      list.splice(i, 1)
+      continue
+    }
+
+    if (now - proj.bornAt > proj.life) {
+      proj.destroy()
+      list.splice(i, 1)
+      continue
+    }
+
+    if (!proj.target || !proj.target.active) continue
+
+    const desired = new Phaser.Math.Vector2(proj.target.x - proj.x, proj.target.y - proj.y).normalize()
+
+    const vel = proj.body.velocity
+    const cur = new Phaser.Math.Vector2(vel.x, vel.y)
+
+    // 速度がゼロの場合はターゲット方向に直接発射
+    if (cur.lengthSq() === 0) {
+      proj.setVelocity(desired.x * proj.speed, desired.y * proj.speed)
+      proj.setRotation(Math.atan2(desired.y, desired.x))
+      continue
+    }
+    cur.normalize()
+
+    const maxTurn = proj.turnRate * (scene.game.loop.delta / 1000)
+    const currentAngle = Phaser.Math.Angle.BetweenPoints({ x: 0, y: 0 }, cur)
+    const desiredAngle = Phaser.Math.Angle.BetweenPoints({ x: 0, y: 0 }, desired)
+    const angleDiff = Phaser.Math.Angle.Wrap(desiredAngle - currentAngle)
+    const clampedAngle = Phaser.Math.Clamp(angleDiff, -maxTurn, maxTurn)
+    const newDir = cur.clone().rotate(clampedAngle).normalize()
+
+    proj.setVelocity(newDir.x * proj.speed, newDir.y * proj.speed)
+    proj.setRotation(Math.atan2(newDir.y, newDir.x))
+  }
 }

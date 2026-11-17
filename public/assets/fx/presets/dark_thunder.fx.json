@@ -1,0 +1,101 @@
+{
+  "format": "fx2d-preset",
+  "version": 1,
+  "id": "dark_thunder",
+  "name": "ボス起動の落雷",
+  "scale": 1,
+  "speed": 1,
+  "follow": false,
+  "layers": [
+    {
+      "name": "落雷",
+      "enabled": true,
+      "delay": 0,
+      "duration": 500,
+      "offsetX": 0,
+      "offsetY": -250,
+      "blend": "normal",
+      "depth": 0,
+      "type": "sprite",
+      "sheet": "thunder",
+      "frameStart": 0,
+      "frameEnd": -1,
+      "fps": 16,
+      "loop": true,
+      "size": {
+        "start": 140,
+        "end": 140
+      },
+      "alpha": {
+        "start": 1,
+        "end": 0.2
+      },
+      "color": {
+        "start": "#e0b0ff",
+        "end": "#8a2be2"
+      },
+      "angle": 0,
+      "angleRandom": false,
+      "spin": 0,
+      "ease": "Linear"
+    },
+    {
+      "name": "閃光",
+      "enabled": true,
+      "delay": 0,
+      "duration": 500,
+      "offsetX": 0,
+      "offsetY": 0,
+      "blend": "normal",
+      "depth": 0,
+      "type": "shape",
+      "shape": "flash",
+      "copies": 1,
+      "size": {
+        "start": 100,
+        "end": 400
+      },
+      "alpha": {
+        "start": 0.9,
+        "end": 0
+      },
+      "color": {
+        "start": "#d080ff",
+        "end": "#6020a0"
+      },
+      "angle": 0,
+      "angleRandom": false,
+      "spin": 0,
+      "ease": "Quad.easeOut"
+    },
+    {
+      "name": "リング",
+      "enabled": true,
+      "delay": 100,
+      "duration": 600,
+      "offsetX": 0,
+      "offsetY": 0,
+      "blend": "normal",
+      "depth": 0,
+      "type": "shape",
+      "shape": "ring",
+      "copies": 1,
+      "size": {
+        "start": 50,
+        "end": 500
+      },
+      "alpha": {
+        "start": 1,
+        "end": 0
+      },
+      "color": {
+        "start": "#b060ff",
+        "end": "#6020a0"
+      },
+      "angle": 0,
+      "angleRandom": false,
+      "spin": 0,
+      "ease": "Quad.easeOut"
+    }
+  ]
+}

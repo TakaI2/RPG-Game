@@ -9,13 +9,14 @@
 <body>
   <div id="app">
     <header class="header">
-      <h1>Enemy Editor</h1>
+      <h1><a href="../" style="color:inherit; text-decoration:none; font-size:0.75rem; opacity:0.6; margin-right:10px;">← ハブ</a>Enemy Editor</h1>
       <div class="header-actions">
         <button id="btnImport" class="btn-primary" title="enemy-defs.json を読み込む">Import JSON</button>
         <input type="file" id="fileInput" accept=".json" style="display:none">
         <button id="btnExport" title="enemy-defs.json としてダウンロード（public/assets/enemies/ に配置してください）">Export JSON</button>
         <div class="separator"></div>
         <button id="btnSave" class="btn-success">Save (LocalStorage)</button>
+        <button id="btnSaveToGame" class="btn-primary" title="public/assets/enemies/enemy-defs.json に直接書き込む">ゲームに保存</button>
       </div>
     </header>
 
@@ -145,6 +146,8 @@
           <div class="section-card">
             <div class="section-title">ダイアログ設定</div>
             <div class="section-body">
+              <div id="langTabs" style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px;"></div>
+              <div style="font-size:0.72rem;color:#6c7086;margin-bottom:10px;">JA 以外を選択すると、その言語の翻訳データを編集できます（lines のみ。intervalMs は JA の値を共有）</div>
               <div class="dialog-states" id="dialogStates"></div>
             </div>
           </div>
@@ -157,6 +160,7 @@
     </div>
   </div>
 
+  <script src="../shared/save-api.js"></script>
   <script src="editor.js"></script>
 </body>
 </html>

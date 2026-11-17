@@ -1,0 +1,844 @@
+{
+  "id": "badend",
+  "script": [
+    {
+      "op": "bgm.play",
+      "name": "bgm1.ogg",
+      "loop": true,
+      "volume": 0.6,
+      "fade": 1000
+    },
+    {
+      "op": "bg",
+      "name": "forest.png",
+      "fade": 500,
+      "x": 42,
+      "y": -34,
+      "scaleX": 1.45,
+      "scaleY": 1.45
+    },
+    {
+      "op": "say",
+      "lines": ["うぅ・・・！！"],
+      "name": "ベルナデット",
+      "i18n": {
+        "en": { "lines": ["Ugh...!!"], "name": "Bernadette" },
+        "zh": { "lines": ["呜……！！"], "name": "贝尔纳黛特" },
+        "es": { "lines": ["¡Ugh...!!"], "name": "Bernadette" }
+      }
+    },
+    {
+      "op": "bgm.play",
+      "name": "drawn.ogg",
+      "loop": true,
+      "volume": 0.6,
+      "fade": 1000
+    },
+    {
+      "op": "say",
+      "lines": ["ベルナデットさん！　"],
+      "name": "ルーネ",
+      "i18n": {
+        "en": { "lines": ["Bernadette!"], "name": "Rune" },
+        "zh": { "lines": ["贝尔纳黛特小姐！"], "name": "卢尼" },
+        "es": { "lines": ["¡Bernadette!"], "name": "Rune" }
+      }
+    },
+    {
+      "op": "say",
+      "lines": ["くっ・・・、貴方・・・、どうしてここに・・・。　\n 早く逃げないと・・・。　うぅ・・・！！"],
+      "name": "ベルナデット",
+      "i18n": {
+        "en": { "lines": ["Ngh... you... why are you here...\nYou have to run quickly... ugh...!!"], "name": "Bernadette" },
+        "zh": { "lines": ["唔……你……为什么来这里……\n快逃……呜……！！"], "name": "贝尔纳黛特" },
+        "es": { "lines": ["Ngh... tú... por qué estás aquí...\nTienes que huir rápido... ugh...!!"], "name": "Bernadette" }
+      }
+    },
+    {
+      "op": "say",
+      "lines": ["で・・・でも・・・僕一人じゃ"],
+      "name": "ルーネ",
+      "i18n": {
+        "en": { "lines": ["B... but... I can't do it alone..."], "name": "Rune" },
+        "zh": { "lines": ["可……可是……我一个人……"], "name": "卢尼" },
+        "es": { "lines": ["P... pero... yo solo no puedo..."], "name": "Rune" }
+      }
+    },
+    {
+      "op": "say",
+      "lines": ["ふふふ・・・♥　思い知ったでしょう？　私に勝てるわけがないの。"],
+      "name": "リアラ",
+      "i18n": {
+        "en": { "lines": ["Fufu...♥ You understand now, don't you? There's no way anyone can beat me."], "name": "Reala" },
+        "zh": { "lines": ["呵呵呵……♥ 明白了吗？不可能有人能打败我的。"], "name": "丽阿拉" },
+        "es": { "lines": ["Jaja...♥ Lo entiendes ahora, ¿verdad? No hay forma de que nadie pueda vencerme."], "name": "Reala" }
+      }
+    },
+    {
+      "op": "say",
+      "lines": ["同じ女なら私の魔毒の呪いが効かないとでも思った？　\n舐めないでもらいたいわね。"],
+      "name": "リアラ",
+      "portrait": "reala2.png",
+      "portraitX": 951,
+      "portraitY": 1011,
+      "portraitScale": 1.05,
+      "i18n": {
+        "en": { "lines": ["Did you think my cursed venom wouldn't work on a fellow woman?\nDon't underestimate me."], "name": "Reala" },
+        "zh": { "lines": ["以为同样是女人就对我的魔毒咒语免疫了？\n请不要小瞧我。"], "name": "丽阿拉" },
+        "es": { "lines": ["¿Pensabas que mi veneno maldito no funcionaría en una mujer?\nNo me subestimes."], "name": "Reala" }
+      }
+    },
+    {
+      "op": "say",
+      "lines": ["私の魔力はサキュバス達ですら酔わすのよ！　\n貴女みたいな人間を可愛いネコちゃんにするなんて造作もないこと♥"],
+      "name": "リアラ",
+      "i18n": {
+        "en": { "lines": ["My magic power can even intoxicate succubi!\nTurning a mere human like you into a cute little kitten is nothing♥"], "name": "Reala" },
+        "zh": { "lines": ["我的魔力连魅魔都能迷倒！\n把像你这样的人类变成可爱的小猫咪轻而易举♥"], "name": "丽阿拉" },
+        "es": { "lines": ["¡Mi poder mágico puede incluso intoxicar a las súcubos!\nConvertir a una simple humana como tú en un adorable gatito es pan comido♥"], "name": "Reala" }
+      }
+    },
+    {
+      "op": "say",
+      "lines": ["さっきの戦闘で、たっぷり私の魔力も喰らわせてあげたし、たくさんキス痕もつけてあげた。 \nもう手遅れよ・・・、貴女の運命は決まったわ♥"],
+      "name": "リアラ",
+      "i18n": {
+        "en": { "lines": ["During our fight, I fed you plenty of my magic power and left many kiss marks too.\nIt's already too late... your fate is sealed♥"], "name": "Reala" },
+        "zh": { "lines": ["刚才的战斗中，我让你吸收了大量我的魔力，也给你留了很多吻痕。\n已经太晚了……你的命运已经注定了♥"], "name": "丽阿拉" },
+        "es": { "lines": ["Durante nuestra pelea, te alimenté con bastante de mi poder mágico y te dejé muchas marcas de beso también.\nYa es demasiado tarde... tu destino está sellado♥"], "name": "Reala" }
+      }
+    },
+    {
+      "op": "fade.in",
+      "color": "#ff8a8a",
+      "duration": 300,
+      "alpha": 1,
+      "undefined": "#ff8a8a"
+    },
+    {
+      "op": "say",
+      "lines": ["あぁぁ・・・、何・・・、あつい・・・熱い！！　た・・・たすけて・・・！！　"],
+      "name": "ベルナデット",
+      "i18n": {
+        "en": { "lines": ["Ahhh... what... it's hot... burning hot!! H... help me...!!"], "name": "Bernadette" },
+        "zh": { "lines": ["啊啊……什么……热……好热！！救……救命……！！"], "name": "贝尔纳黛特" },
+        "es": { "lines": ["¡Ahhh... qué... está caliente... quemando!! A... ayúdame...!!"], "name": "Bernadette" }
+      }
+    },
+    {
+      "op": "fade.out",
+      "duration": 300
+    },
+    {
+      "op": "say",
+      "lines": ["ふふ・・・っ、まずは私の甘ぁい魔毒をたっぷり味わうがいいわ♥"],
+      "portrait": "reala2_2.png",
+      "portraitX": 1000,
+      "portraitY": 1200,
+      "portraitScale": 1.3,
+      "name": "リアラ",
+      "i18n": {
+        "en": { "lines": ["Fufu...♥ First, savor plenty of my sweet venom♥"], "name": "Reala" },
+        "zh": { "lines": ["呵呵……♥ 先好好品味我甜蜜的魔毒吧♥"], "name": "丽阿拉" },
+        "es": { "lines": ["Jeje...♥ Primero, saborea bien mi dulce veneno♥"], "name": "Reala" }
+      }
+    },
+    {
+      "op": "say",
+      "lines": ["あの村の生贄達がどうしてあんなふうになっちゃったのか興味があるんでしょ？　\n だから身をもってわからせてあげる♥"],
+      "name": "リアラ",
+      "i18n": {
+        "en": { "lines": ["You're curious about why the sacrifices in that village ended up that way, aren't you?\nSo I'll let you experience it firsthand♥"], "name": "Reala" },
+        "zh": { "lines": ["你对那个村子里的牺牲品为什么会变成那样感兴趣吧？\n那就让你亲身体验一下♥"], "name": "丽阿拉" },
+        "es": { "lines": ["Tienes curiosidad sobre por qué los sacrificios de ese pueblo acabaron así, ¿no?\nAsí que te dejaré experimentarlo en carne propia♥"], "name": "Reala" }
+      }
+    },
+    {
+      "op": "say",
+      "lines": ["今貴女が感じている熱さは、私の呪い♥  \nこんなのは、まだ序の口に過ぎないわ。"],
+      "name": "リアラ",
+      "i18n": {
+        "en": { "lines": ["The heat you feel now is my curse♥\nThis is still just the beginning."], "name": "Reala" },
+        "zh": { "lines": ["你现在感受到的热度，是我的诅咒♥\n这只不过是个开始。"], "name": "丽阿拉" },
+        "es": { "lines": ["El calor que sientes ahora es mi maldición♥\nEsto es solo el principio."], "name": "Reala" }
+      }
+    },
+    {
+      "op": "say",
+      "lines": ["ほどなくして、その小さな快楽の炎が全身に燃え広がり、貴女を内側から蝕むことでしょうね♥ \nふふふ、これを受けたオス達の醜態は散々見たと思うけど、貴女はどんなふうに乱れ狂うのか、見ものだわ♥"],
+      "name": "リアラ",
+      "i18n": {
+        "en": { "lines": ["Soon, that small flame of pleasure will spread through your whole body and consume you from within♥\nFufu, you've seen plenty of males debase themselves under this, but I wonder how you'll writhe and go wild♥"], "name": "Reala" },
+        "zh": { "lines": ["不一会儿，那小小的快感之火将蔓延全身，从内部侵蚀你♥\n呵呵，你一定见过很多雄性在这影响下的丑态，我倒想看看你会怎样发狂♥"], "name": "丽阿拉" },
+        "es": { "lines": ["Pronto, esa pequeña llama de placer se extenderá por todo tu cuerpo y te consumirá desde dentro♥\nFufu, habrás visto a muchos machos degradarse bajo esto, pero me pregunto cómo te retorcerás tú♥"], "name": "Reala" }
+      }
+    },
+    {
+      "op": "say",
+      "lines": ["いやぁぁぁ・・・！！　あつい・・・ああぁん！！　\nああぁぁ・・・♥　はぁあぁぁ・・・・・・♥♥"],
+      "name": "ベルナデット",
+      "i18n": {
+        "en": { "lines": ["Nooo...!! It's hot... ahhhn!!\nAhhh...♥ Haaah...♥♥"], "name": "Bernadette" },
+        "zh": { "lines": ["不要啊……！！好热……啊啊！！\n啊啊……♥ 哈啊……♥♥"], "name": "贝尔纳黛特" },
+        "es": { "lines": ["¡Noooo...!! Está caliente... ¡ahhhn!!\nAhhh...♥ Haah...♥♥"], "name": "Bernadette" }
+      }
+    },
+    {
+      "op": "say",
+      "lines": ["ふふふ、来た来た♥　理性を消し飛ばす甘い毒が回りはじめたわ♥　\nもう自分では抑えられない。自ら慰めても無駄よ♥　"],
+      "name": "リアラ",
+      "portrait": "reala2.png",
+      "portraitX": 963,
+      "portraitY": 937,
+      "i18n": {
+        "en": { "lines": ["Fufu, here it comes♥ The sweet venom that erases reason has started to take effect♥\nYou can't hold it back anymore. Trying to soothe yourself is useless♥"], "name": "Reala" },
+        "zh": { "lines": ["呵呵，来了来了♥ 消除理性的甜蜜毒素开始发作了♥\n已经无法自己克制了。自己安慰自己也没有用的♥"], "name": "丽阿拉" },
+        "es": { "lines": ["Jeje, ahí viene♥ El dulce veneno que borra la razón ha empezado a hacer efecto♥\nYa no puedes contenerte. Intentar calmarte sola es inútil♥"], "name": "Reala" }
+      }
+    },
+    {
+      "op": "say",
+      "lines": ["まぁ、この私なら、その熱い炎を鎮めてあげられるんだ、け・れ・ど・・・、　\nさっき生意気な態度とられちゃったしな～♪"],
+      "name": "リアラ",
+      "i18n": {
+        "en": { "lines": ["Well, I could extinguish that burning flame, but...\nyou were awfully insolent to me earlier~♪"], "name": "Reala" },
+        "zh": { "lines": ["嗯，如果是我的话，可以平息那团热烈的火焰，但……\n刚才你对我那么无礼呢～♪"], "name": "丽阿拉" },
+        "es": { "lines": ["Bueno, yo podría extinguir esa ardiente llama, pero...\nfuiste muy insolente conmigo hace un momento~♪"], "name": "Reala" }
+      }
+    },
+    {
+      "op": "say",
+      "lines": ["まだまだ慰めてなんか、あげない♥ \nしばらくのあいだ、そこで一人で悶えているがいいわ♥　ふふふ・・・。"],
+      "name": "リアラ",
+      "i18n": {
+        "en": { "lines": ["I won't comfort you yet♥\nFor a while, you can just writhe there alone♥ Fufu..."], "name": "Reala" },
+        "zh": { "lines": ["还不打算安慰你♥\n暂时就在那里一个人痛苦地挣扎吧♥ 呵呵呵……"], "name": "丽阿拉" },
+        "es": { "lines": ["Aún no voy a consolarte♥\nPor un tiempo, puedes retorcerte sola ahí♥ Jeje..."], "name": "Reala" }
+      }
+    },
+    {
+      "op": "say",
+      "lines": ["いやぁぁぁ・・・♥　あぁぁ・・・♥　　た・・・たすけてぇ・・・♥♥　　\n とける・・・、あつい・・・♥　あつい～～♥"],
+      "name": "ベルナデット",
+      "i18n": {
+        "en": { "lines": ["Nooo...♥ Ahhh...♥ H... help me...♥♥\nI'm melting... it's hot...♥ So hot~~♥"], "name": "Bernadette" },
+        "zh": { "lines": ["不要啊……♥ 啊啊……♥ 救……救命……♥♥\n要融化了……好热……♥ 好热~~♥"], "name": "贝尔纳黛特" },
+        "es": { "lines": ["¡Noooo...♥ Ahhh...♥ A... ayúdame...♥♥\nMe estoy derritiendo... está caliente...♥ ¡Tan caliente~~♥!"], "name": "Bernadette" }
+      }
+    },
+    {
+      "op": "say",
+      "lines": ["あぁ・・・、ベルナデットさん・・・。"],
+      "name": "ルーネ",
+      "i18n": {
+        "en": { "lines": ["Ah... Bernadette..."], "name": "Rune" },
+        "zh": { "lines": ["啊……贝尔纳黛特小姐……"], "name": "卢尼" },
+        "es": { "lines": ["Ah... Bernadette..."], "name": "Rune" }
+      }
+    },
+    {
+      "op": "say",
+      "lines": ["ボウヤ・・・、うらやましい？　\n君も気持ちよくしてほしくなってきた・・・？"],
+      "name": "リアラ",
+      "i18n": {
+        "en": { "lines": ["Little boy... are you envious?\nDo you want me to make you feel good too...?"], "name": "Reala" },
+        "zh": { "lines": ["小鬼头……羡慕吗？\n你也想让我让你感觉好起来……？"], "name": "丽阿拉" },
+        "es": { "lines": ["Niñito... ¿tienes envidia?\n¿Tú también quieres que te haga sentir bien...?"], "name": "Reala" }
+      }
+    },
+    {
+      "op": "say",
+      "lines": ["ひぃ・・・！！"],
+      "name": "ルーネ",
+      "i18n": {
+        "en": { "lines": ["Eek...!!"], "name": "Rune" },
+        "zh": { "lines": ["啊……！！"], "name": "卢尼" },
+        "es": { "lines": ["¡Eek...!!"], "name": "Rune" }
+      }
+    },
+    {
+      "op": "say",
+      "lines": ["もう誰も貴方を守ってくれないね？　　\nだからおとなしく私の物になればよかったのに・・・♪"],
+      "name": "リアラ",
+      "portrait": "reala2.png",
+      "portraitScale": 1.5,
+      "portraitX": 999,
+      "portraitY": 1411,
+      "i18n": {
+        "en": { "lines": ["Nobody's going to protect you anymore, are they?\nYou should have just quietly become mine...♪"], "name": "Reala" },
+        "zh": { "lines": ["已经没有人会保护你了吧？\n所以你应该乖乖成为我的东西的……♪"], "name": "丽阿拉" },
+        "es": { "lines": ["Ya nadie va a protegerte, ¿verdad?\nDeberías haberte convertido en mía tranquilamente...♪"], "name": "Reala" }
+      }
+    },
+    {
+      "op": "say",
+      "lines": ["やさしくしてあげるつもりだったんだけどな～。　君が抵抗するから気が変わっちゃった♥"],
+      "name": "リアラ",
+      "i18n": {
+        "en": { "lines": ["I was planning to be gentle with you~. But since you resisted, I changed my mind♥"], "name": "Reala" },
+        "zh": { "lines": ["本来打算对你温柔一点的～。因为你反抗，我改变主意了♥"], "name": "丽阿拉" },
+        "es": { "lines": ["Iba a ser amable contigo~. Pero como te resististe, cambié de opinión♥"], "name": "Reala" }
+      }
+    },
+    {
+      "op": "say",
+      "lines": ["お姉さん、動いたからお腹が減ってるの♥ \n若くて新鮮なオスをたぁ～っぷり襲って、た～っぷり味わいたい気分だわ～♥"],
+      "portrait": "reala2.png",
+      "portraitX": 1020,
+      "portraitY": 1567,
+      "portraitScale": 1.75,
+      "name": "リアラ",
+      "i18n": {
+        "en": { "lines": ["Big sis worked up an appetite♥\nI'm in the mood to thoroughly attack and savor a young, fresh male~~♥"], "name": "Reala" },
+        "zh": { "lines": ["大姐姐动了动，肚子饿了♥\n好想彻底袭击并品味一个年轻新鲜的雄性～♥"], "name": "丽阿拉" },
+        "es": { "lines": ["La señorita trabajó duro y tiene hambre♥\nTengo ganas de atacar y saborear a fondo a un macho joven y fresco~~♥"], "name": "Reala" }
+      }
+    },
+    {
+      "op": "se",
+      "name": "basa3.ogg"
+    },
+    {
+      "op": "say",
+      "lines": ["私に逆らった罰を受けなさい！　\n簡単に楽にはしてあげないわよ♥"],
+      "portrait": "reala3.png",
+      "portraitX": 934,
+      "portraitY": 762,
+      "portraitScale": 1.1,
+      "name": "リアラ",
+      "i18n": {
+        "en": { "lines": ["Receive your punishment for defying me!\nI won't let you off easy♥"], "name": "Reala" },
+        "zh": { "lines": ["接受对抗我的惩罚吧！\n不会让你轻松解脱的♥"], "name": "丽阿拉" },
+        "es": { "lines": ["¡Recibe tu castigo por desafiarme!\nNo te dejaré escapar fácilmente♥"], "name": "Reala" }
+      }
+    },
+    {
+      "op": "say",
+      "lines": ["さぁ、こっちへおいで！　貴方も私の虜にしてあげる！！　\nこの快楽の坩堝の中でドロドロに溶かしてあげる・・・♥"],
+      "portrait": "reala3.png",
+      "portraitX": 937,
+      "portraitY": 377,
+      "portraitScale": 1.1,
+      "name": "リアラ",
+      "i18n": {
+        "en": { "lines": ["Now, come here! I'll make you my captive too!!\nI'll melt you into a puddle inside this crucible of pleasure...♥"], "name": "Reala" },
+        "zh": { "lines": ["来，过来这里！我也要让你成为我的俘虏！！\n在这快感的熔炉中将你彻底溶化……♥"], "name": "丽阿拉" },
+        "es": { "lines": ["¡Ahora, ven aquí! ¡También te haré mi cautivo!!\nTe derretiré dentro de este crisol de placer...♥"], "name": "Reala" }
+      }
+    },
+    {
+      "op": "fade.in",
+      "color": "#fd7272",
+      "duration": 300,
+      "alpha": 1,
+      "undefined": "#fd7272"
+    },
+    {
+      "op": "say",
+      "lines": ["・・・っ！！　あぁ・・・あぁぁ！！！"],
+      "name": "ルーネ",
+      "i18n": {
+        "en": { "lines": ["...!! Ahh... ahhh!!!"], "name": "Rune" },
+        "zh": { "lines": ["……！！啊……啊啊！！！"], "name": "卢尼" },
+        "es": { "lines": ["...!! ¡Ah... ahh!!!"], "name": "Rune" }
+      }
+    },
+    {
+      "op": "fade.out",
+      "duration": 300
+    },
+    {
+      "op": "say",
+      "lines": ["ふふふ・・・♥　あっという間に堕ちるわね。　そんなにズボンのなかをいきらせて・・・。　\n 私の魔力が満ちるこの輝きを目にしただけで、貴方の魂は囚われていくの♥"],
+      "name": "リアラ",
+      "i18n": {
+        "en": { "lines": ["Fufu...♥ You fall so quickly. Getting so worked up like that...\nJust by laying eyes on my radiance filled with magic power, your soul becomes ensnared♥"], "name": "Reala" },
+        "zh": { "lines": ["呵呵呵……♥ 真是一下子就堕落了。那么激动……\n只是看到我充满魔力的光辉，你的灵魂就被俘虏了♥"], "name": "丽阿拉" },
+        "es": { "lines": ["Jeje...♥ Caes tan rápido. Excitándote tanto así...\nCon solo ver mi resplandor lleno de poder mágico, tu alma queda atrapada♥"], "name": "Reala" }
+      }
+    },
+    {
+      "op": "say",
+      "lines": ["あ・・・ああぁ・・・！！"],
+      "name": "ルーネ",
+      "i18n": {
+        "en": { "lines": ["Ah... ahhhh...!!"], "name": "Rune" },
+        "zh": { "lines": ["啊……啊啊……！！"], "name": "卢尼" },
+        "es": { "lines": ["Ah... ahhhh...!!"], "name": "Rune" }
+      }
+    },
+    {
+      "op": "say",
+      "lines": ["良い子だわ！　そのまま歩いておいで・・・。　そして私の胸に身を預けなさい♥"],
+      "name": "リアラ",
+      "portrait": "reala3.png",
+      "portraitX": 948,
+      "portraitY": 1311,
+      "portraitScale": 1.35,
+      "i18n": {
+        "en": { "lines": ["Good boy! Just keep walking like that... and let yourself fall into my arms♥"], "name": "Reala" },
+        "zh": { "lines": ["真乖！就这样走过来……然后把自己交到我怀里♥"], "name": "丽阿拉" },
+        "es": { "lines": ["¡Buen chico! Sigue caminando así... y déjate caer en mis brazos♥"], "name": "Reala" }
+      }
+    },
+    {
+      "op": "say",
+      "lines": ["永遠に消えることのない私の呪縛を！！　\n貴方の身体に刻み付けてあげるわ！！"],
+      "name": "リアラ",
+      "portrait": "reala4.png",
+      "portraitX": 910,
+      "portraitY": 1979,
+      "portraitScale": 2.15,
+      "i18n": {
+        "en": { "lines": ["My eternal, unbreakable curse!!\nI'll carve it into your very body!!"], "name": "Reala" },
+        "zh": { "lines": ["我永远无法消除的束缚！！\n要刻印在你的身体上！！"], "name": "丽阿拉" },
+        "es": { "lines": ["¡¡Mi maldición eterna e irrompible!!\n¡¡La grabaré en tu propio cuerpo!!"], "name": "Reala" }
+      }
+    },
+    {
+      "op": "say",
+      "lines": ["私の物になりなさい！　ボウヤ！！"],
+      "name": "リアラ",
+      "i18n": {
+        "en": { "lines": ["Become mine! Little boy!!"], "name": "Reala" },
+        "zh": { "lines": ["成为我的东西！小鬼头！！"], "name": "丽阿拉" },
+        "es": { "lines": ["¡¡Vuélvete mío! ¡Niñito!!"], "name": "Reala" }
+      }
+    },
+    {
+      "op": "fade.in",
+      "color": "#ff1a1a",
+      "duration": 300,
+      "alpha": 1,
+      "undefined": "#ff1a1a"
+    },
+    {
+      "op": "se",
+      "name": "chuchu2.ogg",
+      "loop": true
+    },
+    {
+      "op": "portrait.hide"
+    },
+    {
+      "op": "say",
+      "lines": ["ああぁぁっ！！　　あ・・・ああぁぁ・・・・・・っ！！"],
+      "name": "ルーネ",
+      "i18n": {
+        "en": { "lines": ["Ahhh!! A... ahhhh...!!"], "name": "Rune" },
+        "zh": { "lines": ["啊啊！！啊……啊啊……！！"], "name": "卢尼" },
+        "es": { "lines": ["¡Ahhh!! A... ahhhh...!!"], "name": "Rune" }
+      }
+    },
+    {
+      "op": "say",
+      "lines": ["ひぅ・・・ひぃぃっ！！　あ・・・あぁぁ・・・！！！"],
+      "name": "ルーネ",
+      "i18n": {
+        "en": { "lines": ["Hiu... hieee!! A... ahhh...!!!"], "name": "Rune" },
+        "zh": { "lines": ["呜……啊啊！！啊……啊啊……！！！"], "name": "卢尼" },
+        "es": { "lines": ["¡Hiu... eeek!! A... ahhh...!!!"], "name": "Rune" }
+      }
+    },
+    {
+      "op": "say",
+      "lines": ["ああぁ・・・♥　美味しい・・・美味しいわ・・・♥♥"],
+      "name": "リアラ",
+      "i18n": {
+        "en": { "lines": ["Ahhh...♥ Delicious... so delicious...♥♥"], "name": "Reala" },
+        "zh": { "lines": ["啊啊……♥ 好美味……好美味……♥♥"], "name": "丽阿拉" },
+        "es": { "lines": ["Ahhh...♥ Delicioso... tan delicioso...♥♥"], "name": "Reala" }
+      }
+    },
+    {
+      "op": "say",
+      "lines": ["全て食べ尽くしてあげる・・・♥　貴方の身体も・・・魂も・・・♥"],
+      "name": "リアラ",
+      "i18n": {
+        "en": { "lines": ["I'll devour every last bit of you...♥ Your body... and your soul...♥"], "name": "Reala" },
+        "zh": { "lines": ["我会把你吃得一点不剩……♥ 你的身体……还有灵魂……♥"], "name": "丽阿拉" },
+        "es": { "lines": ["Te devoraré por completo...♥ Tu cuerpo... y tu alma...♥"], "name": "Reala" }
+      }
+    },
+    {
+      "op": "se.stop",
+      "name": "chuchu2.ogg"
+    },
+    {
+      "op": "se",
+      "name": "grind1.ogg",
+      "loop": true
+    },
+    {
+      "op": "bg",
+      "name": "reala1.png",
+      "fade": 500,
+      "x": -306,
+      "scaleX": 0.9,
+      "scaleY": 0.9,
+      "y": -1014
+    },
+    {
+      "op": "fade.out",
+      "duration": 300
+    },
+    {
+      "op": "say",
+      "lines": ["あぁ・・・♥　はぁぁん♥"],
+      "name": "リアラ",
+      "i18n": {
+        "en": { "lines": ["Ahh...♥ Haaan♥"], "name": "Reala" },
+        "zh": { "lines": ["啊……♥ 哈……♥"], "name": "丽阿拉" },
+        "es": { "lines": ["Ahh...♥ Haaan♥"], "name": "Reala" }
+      }
+    },
+    {
+      "op": "say",
+      "lines": ["はあぁ・・・！！　ああぁ・・・！！"],
+      "name": "ルーネ",
+      "i18n": {
+        "en": { "lines": ["Haah...!! Ahhh...!!"], "name": "Rune" },
+        "zh": { "lines": ["哈啊……！！啊啊……！！"], "name": "卢尼" },
+        "es": { "lines": ["¡Haah...!! ¡Ahhh...!!"], "name": "Rune" }
+      }
+    },
+    {
+      "op": "say",
+      "lines": ["ああぁぁん・・・♥  \nいいわぁ、こってりとした濃い血と精の味・・・♥　　クセになる・・・♥"],
+      "name": "リアラ",
+      "i18n": {
+        "en": { "lines": ["Ahhhnn...♥\nSo good, the rich, thick taste of blood and essence...♥ Addicting...♥"], "name": "Reala" },
+        "zh": { "lines": ["啊啊……♥\n真好，浓厚的血液和精气的味道……♥ 让人上瘾……♥"], "name": "丽阿拉" },
+        "es": { "lines": ["Ahhhnn...♥\nQué bueno, el rico y espeso sabor de sangre y esencia...♥ Adictivo...♥"], "name": "Reala" }
+      }
+    },
+    {
+      "op": "say",
+      "lines": ["やぁ・・・、やめ・・・て・・・、　もう・・・無理・・・、たす・・・け・・・！！"],
+      "name": "ルーネ",
+      "i18n": {
+        "en": { "lines": ["No... stop... it... no more... can't take it... help...!!"], "name": "Rune" },
+        "zh": { "lines": ["不……停……下来……已经……不行了……救……命……！！"], "name": "卢尼" },
+        "es": { "lines": ["No... para... ya no... puedo más... ayú...da...!!"], "name": "Rune" }
+      }
+    },
+    {
+      "op": "se",
+      "name": "eject.ogg"
+    },
+    {
+      "op": "say",
+      "lines": ["ああぁぁぁ・・・・・・！！！"],
+      "name": "ルーネ",
+      "i18n": {
+        "en": { "lines": ["Ahhhhhh......!!!"], "name": "Rune" },
+        "zh": { "lines": ["啊啊啊……！！！"], "name": "卢尼" },
+        "es": { "lines": ["¡Ahhhhhh......!!!"], "name": "Rune" }
+      }
+    },
+    {
+      "op": "bg",
+      "name": "reala1.png",
+      "fade": 500,
+      "scaleX": 1.2,
+      "scaleY": 1.2,
+      "x": -536,
+      "y": -228
+    },
+    {
+      "op": "say",
+      "lines": ["あはぁ♥　あははは・・・・・・！！　　", "　やっぱり襲うなら女よりもオスだわぁ・・・♥"],
+      "name": "リアラ",
+      "i18n": {
+        "en": { "lines": ["Ahaha♥ Ahahaha......!!", "After all, males are so much better to prey on than females...♥"], "name": "Reala" },
+        "zh": { "lines": ["啊哈♥ 啊哈哈哈……！！", "果然袭击的话还是雄性比女性好……♥"], "name": "丽阿拉" },
+        "es": { "lines": ["¡Ajaja♥ Ahahaha......!!", "Después de todo, los machos son mucho mejores de cazar que las hembras...♥"], "name": "Reala" }
+      }
+    },
+    {
+      "op": "say",
+      "lines": ["ビクビクと震えちゃって、か～わいぃ♥"],
+      "name": "リアラ",
+      "i18n": {
+        "en": { "lines": ["Trembling and shaking, so cu~te♥"], "name": "Reala" },
+        "zh": { "lines": ["颤抖着，好～可爱♥"], "name": "丽阿拉" },
+        "es": { "lines": ["Temblando así, qué mo~no♥"], "name": "Reala" }
+      }
+    },
+    {
+      "op": "bg",
+      "name": "reala1.png",
+      "fade": 500,
+      "x": -1335,
+      "y": -2044,
+      "scaleX": 1.25,
+      "scaleY": 1.25
+    },
+    {
+      "op": "se",
+      "name": "eject.ogg",
+      "loop": true
+    },
+    {
+      "op": "say",
+      "lines": ["ああ・・・、ああぁぁ！！　\n溶けるぅ・・・、身体が溶けちゃうよぉ・・・！！"],
+      "name": "ルーネ",
+      "i18n": {
+        "en": { "lines": ["Ahh... ahhh!!\nI'm melting... my body is melting...!!"], "name": "Rune" },
+        "zh": { "lines": ["啊……啊啊！！\n在融化……身体在融化……！！"], "name": "卢尼" },
+        "es": { "lines": ["Ahh... ¡ahhh!!\n¡Me estoy derritiendo... mi cuerpo se está derritiendo...!!"], "name": "Rune" }
+      }
+    },
+    {
+      "op": "say",
+      "lines": ["ふふ・・・、そうよ～♥　君が隠れたり逃げ回っている間に、\nお姉さん、沢山のおじさんやお兄さんをこうやって溶かしちゃったわ～♥"],
+      "name": "リアラ",
+      "i18n": {
+        "en": { "lines": ["Fufu... that's right~♥ While you were hiding and running away,\nbig sis dissolved lots of older and younger men just like this~♥"], "name": "Reala" },
+        "zh": { "lines": ["呵呵……就是这样～♥ 趁你躲藏和逃跑的时候，\n大姐姐就这样溶化了好多叔叔和哥哥们～♥"], "name": "丽阿拉" },
+        "es": { "lines": ["Jeje... así es~♥ Mientras tú te escondías y huías,\nla señorita disolvió a muchos hombres así~♥"], "name": "Reala" }
+      }
+    },
+    {
+      "op": "say",
+      "lines": ["オスの精気はドロッと濃厚で、味も濃くて、クセになるわぁ♪"],
+      "name": "リアラ",
+      "i18n": {
+        "en": { "lines": ["The life essence of males is thick and rich, full of flavor, and absolutely addicting♪"], "name": "Reala" },
+        "zh": { "lines": ["雄性的精气浓稠醇厚，味道也很浓，让人上瘾呢♪"], "name": "丽阿拉" },
+        "es": { "lines": ["La esencia vital de los machos es espesa y rica, llena de sabor, ¡y absolutamente adictiva♪!"], "name": "Reala" }
+      }
+    },
+    {
+      "op": "bg",
+      "name": "reala1.png",
+      "fade": 500,
+      "scaleX": 1,
+      "scaleY": 1,
+      "x": -362,
+      "y": -298
+    },
+    {
+      "op": "say",
+      "lines": ["ああぁん、ボウヤのザーメンおいしぃぃ♥　ドクドク溢れてくるぅ♥"],
+      "name": "リアラ",
+      "i18n": {
+        "en": { "lines": ["Ahhhnn, little boy's essence is so delicious♥ It keeps overflowing♥"], "name": "Reala" },
+        "zh": { "lines": ["啊啊，小鬼头的精气好好喝♥ 不断涌出来♥"], "name": "丽阿拉" },
+        "es": { "lines": ["Ahhhnn, la esencia del niñito es tan deliciosa♥ ¡Sigue desbordando♥"], "name": "Reala" }
+      }
+    },
+    {
+      "op": "say",
+      "lines": ["もう止まることは無いわぁ・・・、ボウヤには他のオスよりもたぁっぷり、私の唾液を飲ませてあげたし、\n噛み痕もキス痕も沢山つけちゃったし、全身ドロドロのザーメンになるまで溶け切っちゃうわぁ♥"],
+      "name": "リアラ",
+      "i18n": {
+        "en": { "lines": ["It won't stop anymore... I had you drink plenty of my saliva, more than any other male,\nand left many bite marks and kiss marks too, so you'll melt completely until you're all gooey♥"], "name": "Reala" },
+        "zh": { "lines": ["已经停不下来了……我让你喝了比其他雄性更多的我的唾液，\n也留下了很多咬痕和吻痕，会一直融化直到全身变成稀烂的♥"], "name": "丽阿拉" },
+        "es": { "lines": ["Ya no se detendrá... te hice beber mucha de mi saliva, más que a cualquier otro macho,\ny dejé muchas marcas de mordida y beso también, así que te derretirás completamente♥"], "name": "Reala" }
+      }
+    },
+    {
+      "op": "say",
+      "lines": ["ああぁぁ・・・・・・っ！！！　\nす・・・すわないでぇ・・・、た・・・たすけてぇ・・・・・・"],
+      "name": "ルーネ",
+      "i18n": {
+        "en": { "lines": ["Ahhhh......!!!\nDon't... suck... h... help me......"], "name": "Rune" },
+        "zh": { "lines": ["啊啊啊……！！！\n不……不要吸……救……救命……"], "name": "卢尼" },
+        "es": { "lines": ["¡Ahhhh......!!!\nNo... chupes... ay...údame......"], "name": "Rune" }
+      }
+    },
+    {
+      "op": "bg",
+      "name": "reala1.png",
+      "fade": 500,
+      "x": 6,
+      "y": -840,
+      "scaleX": 0.75,
+      "scaleY": 0.75
+    },
+    {
+      "op": "say",
+      "lines": ["だめよ～、ほらぁもっと頑張らないと♥\nお姉さん全然満足できないわぁ！！"],
+      "name": "リアラ",
+      "i18n": {
+        "en": { "lines": ["No no~, come on, you have to try harder♥\nBig sis can't be satisfied at all like this!!"], "name": "Reala" },
+        "zh": { "lines": ["不行哦～，加油，要更努力才行♥\n大姐姐完全不满足啊！！"], "name": "丽阿拉" },
+        "es": { "lines": ["No no~, ¡vamos, tienes que esforzarte más♥\nLa señorita no puede satisfacerse nada así!!"], "name": "Reala" }
+      }
+    },
+    {
+      "op": "bg",
+      "name": "reala1_1.png",
+      "fade": 500,
+      "x": -23,
+      "y": -821,
+      "scaleX": 0.75,
+      "scaleY": 0.75
+    },
+    {
+      "op": "se",
+      "name": "magic_2.ogg"
+    },
+    {
+      "op": "say",
+      "lines": ["あっ！！　ああぁぁぁ・・・・・・あぁぁぁ！！！"],
+      "name": "ルーネ",
+      "i18n": {
+        "en": { "lines": ["Ah!! Ahhhh...... ahhh!!!"], "name": "Rune" },
+        "zh": { "lines": ["啊！！啊啊啊……啊啊！！！"], "name": "卢尼" },
+        "es": { "lines": ["¡Ah!! Ahhhh...... ¡ahh!!!"], "name": "Rune" }
+      }
+    },
+    {
+      "op": "say",
+      "lines": ["ふふふ・・・♥　気持ちいいでしょう？　このマントは私の魔力が濃厚に染みついているの。\n私の臓器でもあり、ひとつの魔物も同然。"],
+      "name": "リアラ",
+      "i18n": {
+        "en": { "lines": ["Fufu...♥ Feels good, doesn't it? This cloak is thoroughly steeped in my magic power.\nIt's practically an organ of mine, no different from a monster in its own right."], "name": "Reala" },
+        "zh": { "lines": ["呵呵呵……♥ 感觉很好吧？这件斗篷深深渗透了我的魔力。\n既是我的器官，也同样是一只魔物。"], "name": "丽阿拉" },
+        "es": { "lines": ["Jeje...♥ Se siente bien, ¿verdad? Esta capa está completamente empapada de mi poder mágico.\nEs prácticamente un órgano mío, no muy diferente de un monstruo por derecho propio."], "name": "Reala" }
+      }
+    },
+    {
+      "op": "say",
+      "lines": ["君みたいな男の子を包み込むと、ひとりでに蠢いて、魔力で痺れさせ、溶けるまで舐めつくすの♥ \n私はいままでこのマントで何百ものオス達を悦楽に包み込み喰らって来たのよ♥"],
+      "name": "リアラ",
+      "i18n": {
+        "en": { "lines": ["When it wraps around a boy like you, it moves on its own, numbs you with magic, and licks you until you melt♥\nI've used this cloak to wrap hundreds of males in pleasure and devour them♥"], "name": "Reala" },
+        "zh": { "lines": ["当它包裹像你这样的男孩时，会自己蠕动，用魔力麻痹你，然后舔噬你直到你融化♥\n我已经用这件斗篷将数百名雄性包裹在悦乐中并将他们吞噬♥"], "name": "丽阿拉" },
+        "es": { "lines": ["Cuando envuelve a un chico como tú, se mueve sola, te adormece con magia y te lame hasta que te derritas♥\nHe usado esta capa para envolver a cientos de machos en placer y devorarlos♥"], "name": "Reala" }
+      }
+    },
+    {
+      "op": "bg",
+      "name": "reala1_1.png",
+      "fade": 500,
+      "x": -811,
+      "y": -336,
+      "scaleX": 1.3,
+      "scaleY": 1.3
+    },
+    {
+      "op": "say",
+      "lines": ["でもねぇ・・・、残念だけど貴方は他の奴みたくこのまま楽には溶け死ねないわよ～？"],
+      "name": "リアラ",
+      "i18n": {
+        "en": { "lines": ["But you see... unfortunately, you can't just melt and die peacefully like the others~?"], "name": "Reala" },
+        "zh": { "lines": ["但是……遗憾的是，你不像其他人那样可以就这样轻松地溶化死去哦～？"], "name": "丽阿拉" },
+        "es": { "lines": ["Pero mira... desafortunadamente, tú no puedes simplemente derretirte y morir en paz como los demás~?"], "name": "Reala" }
+      }
+    },
+    {
+      "op": "say",
+      "lines": ["貴方の生命はこの村で一番美味しくて濃厚♥　そういう子はお姉様に献上しなければならないの！　\nこれから貴方は私たちの眷属となって、私達の慰み者になるの♥"],
+      "name": "リアラ",
+      "i18n": {
+        "en": { "lines": ["Your life essence is the most delicious and rich in this village♥ Someone like you must be offered to Onee-sama!\nFrom now on you'll become our thrall, and our plaything♥"], "name": "Reala" },
+        "zh": { "lines": ["你的生命力是这个村子里最美味最浓厚的♥ 这样的孩子必须献给大姐姐！\n从今以后你将成为我们的眷属，成为我们的玩物♥"], "name": "丽阿拉" },
+        "es": { "lines": ["Tu esencia vital es la más deliciosa y rica del pueblo♥ ¡Alguien como tú debe ser ofrecido a Onee-sama!\nDesde ahora te convertirás en nuestra súbdita, y en nuestro juguete♥"], "name": "Reala" }
+      }
+    },
+    {
+      "op": "say",
+      "lines": ["お姉様に気に入られれば、百年でも二百年でも性奴隷として毎日私達が可愛がってあげるわぁ♥"],
+      "name": "リアラ",
+      "i18n": {
+        "en": { "lines": ["If Onee-sama takes a liking to you, we'll pamper you as our slave every day for a hundred, two hundred years♥"], "name": "Reala" },
+        "zh": { "lines": ["如果大姐姐喜欢你，我们会每天宠爱你作为奴隶一百年、两百年♥"], "name": "丽阿拉" },
+        "es": { "lines": ["Si Onee-sama te aprecia, te mimaremos como nuestro esclavo cada día durante cien, doscientos años♥"], "name": "Reala" }
+      }
+    },
+    {
+      "op": "say",
+      "lines": ["気に入られなくても大丈夫！ その時は私が100年くらいは楽しんでから溶かしてあげるからねっ♥　\nいずれにしろ永遠に私の物になれるわ！"],
+      "name": "リアラ",
+      "i18n": {
+        "en": { "lines": ["Even if she doesn't like you, it's fine! In that case I'll enjoy you for about 100 years before dissolving you♥\nEither way you get to be mine forever!"], "name": "Reala" },
+        "zh": { "lines": ["就算大姐姐不喜欢也没关系！那时候我会先享用你大约100年再溶化你♥\n无论如何你都能永远成为我的东西！"], "name": "丽阿拉" },
+        "es": { "lines": ["¡Incluso si no le gustas, está bien! En ese caso disfrutaré contigo unos 100 años antes de disolverme♥\n¡De cualquier manera puedes ser mío para siempre!"], "name": "Reala" }
+      }
+    },
+    {
+      "op": "bg",
+      "name": "reala1_1.png",
+      "fade": 500,
+      "x": -98,
+      "y": -820,
+      "scaleX": 0.75,
+      "scaleY": 0.75,
+      "lines": ["私に溶かされたオス達は、み～んなこのマントの染みになったあとは、あの世に行かず永遠に魂を囚われるの。"]
+    },
+    {
+      "op": "say",
+      "lines": ["私に溶かされた後も、オス達はこのマントの染みになって永遠に魂を囚われるの。\nそして、私の魔力の一部になっていつまでも私の美を彩り続けるわ！"],
+      "name": "リアラ",
+      "i18n": {
+        "en": { "lines": ["Even after being dissolved by me, the males become stains on this cloak with their souls imprisoned forever.\nAnd they become part of my magic power, adorning my beauty for eternity!"], "name": "Reala" },
+        "zh": { "lines": ["被我溶化之后，雄性们化为这件斗篷上的染渍，灵魂永远被囚禁。\n然后成为我魔力的一部分，永远装点着我的美丽！"], "name": "丽阿拉" },
+        "es": { "lines": ["Incluso después de ser disueltos por mí, los machos se convierten en manchas en esta capa con sus almas aprisionadas para siempre.\n¡Y se convierten en parte de mi poder mágico, adornando mi belleza por la eternidad!"], "name": "Reala" }
+      }
+    },
+    {
+      "op": "say",
+      "lines": ["今もこうして新しい獲物を襲うたびに快楽で悲鳴を上げているわ！　\n私が生き続ける限り永遠の快楽に囚われ続けるの、あははは！！"],
+      "name": "リアラ",
+      "i18n": {
+        "en": { "lines": ["Even now, every time I attack new prey, they scream with pleasure!\nAs long as I live, they remain trapped in eternal pleasure — ahahaha!!"], "name": "Reala" },
+        "zh": { "lines": ["就连现在，每次我袭击新的猎物，他们都在用快感尖叫！\n只要我还活着，他们就永远被囚禁在永恒的快感中，啊哈哈哈！！"], "name": "丽阿拉" },
+        "es": { "lines": ["Incluso ahora, cada vez que ataco nuevas presas, ¡gritan de placer!\nMientras yo viva, permanecen atrapados en un placer eterno — ¡ahahaha!!"], "name": "Reala" }
+      }
+    },
+    {
+      "op": "say",
+      "lines": ["貴方はどうなるでしょうね？　まぁ、どちらにしても天国だから幸せよね～♥ \nあっははは！！　あ～っはっはっは！！！"],
+      "name": "リアラ",
+      "i18n": {
+        "en": { "lines": ["I wonder what will happen to you? Well, either way it's heaven so you'll be happy~♥\nAhahaha!! Ahahahaha!!!"], "name": "Reala" },
+        "zh": { "lines": ["不知道你会怎样呢？嗯，无论如何都是天堂，所以很幸福吧～♥\n啊哈哈哈！！啊哈哈哈哈！！！"], "name": "丽阿拉" },
+        "es": { "lines": ["¿Me pregunto qué te pasará? Bueno, de cualquier manera es el paraíso así que serás feliz~♥\n¡Ahahaha!! ¡Ahahahaha!!!"], "name": "Reala" }
+      }
+    },
+    {
+      "op": "say",
+      "lines": ["あぁ・・・・・・ああああぁぁぁ・・・！！！！ \nたすけ・・・て・・・、　た・・・しゅ・・・・・・け・・・て・・・・・・！！"],
+      "name": "ルーネ",
+      "i18n": {
+        "en": { "lines": ["Ahh...... ahhhhhh...!!!!\nHelp... me... h... hel......p... me......!!"], "name": "Rune" },
+        "zh": { "lines": ["啊……啊啊啊啊……！！！！\n救……我……救……救……我……！！"], "name": "卢尼" },
+        "es": { "lines": ["Ahh...... ahhhhhh...!!!!\nAyú...da...me... ay......úd......ame......!!"], "name": "Rune" }
+      }
+    },
+    {
+      "op": "se",
+      "name": "eject.ogg"
+    },
+    {
+      "op": "say",
+      "lines": ["・・・・・・・・・"],
+      "name": "ルーネ",
+      "i18n": {
+        "en": { "lines": ["..........."], "name": "Rune" },
+        "zh": { "lines": ["…………"], "name": "卢尼" },
+        "es": { "lines": ["..........."], "name": "Rune" }
+      }
+    },
+    {
+      "op": "bg",
+      "name": "endcard.png",
+      "fade": 500,
+      "scaleX": 1.3,
+      "scaleY": 1.3,
+      "x": 162,
+      "y": 17
+    },
+    {
+      "op": "delay",
+      "duration": 4000
+    },
+    {
+      "op": "end",
+      "returnTo": "MainScene"
+    }
+  ]
+}
