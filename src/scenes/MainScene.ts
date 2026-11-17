@@ -50,7 +50,8 @@ import { setDangerLevel, resetWorldState } from '../systems/WorldState'
 import { addWanted, resetWanted, onWantedChange, getWantedLevel } from '../systems/WantedSystem'
 import { resolveText } from '../utils/LocaleManager'
 import { createSurvivorController, type SurvivorController } from '../systems/survivor/SurvivorController'
-import { BGM as SURVIVOR_BGM, BOSS as SURVIVOR_BOSS, RESULT_DISPLAY_MS } from '../systems/survivor/SurvivorConfig'
+import { createFxManager } from '../systems/fx/FxManager'
+import { BGM as SURVIVOR_BGM, BOSS as SURVIVOR_BOSS, PLAYER as SURVIVOR_PLAYER, RESULT_DISPLAY_MS } from '../systems/survivor/SurvivorConfig'
 
 export default class MainScene extends Phaser.Scene {
   private cursors!: Phaser.Types.Input.Keyboard.CursorKeys
@@ -208,6 +209,9 @@ export default class MainScene extends Phaser.Scene {
     this.createHPDisplay()
     this.createWantedHUD()
 
+    // エフェクトプリセット再生（assets/fx。シーン shutdown で自動破棄）
+    const fx = createFxManager(this, { addWorldObject: (go) => this.addWorldObject(go), loadFromCache: true })
+
     // サバイバーモード制御（HUD は setupCameras より前に生成しておく）
     this.survivor = createSurvivorController({
       scene: this,
@@ -218,6 +222,9 @@ export default class MainScene extends Phaser.Scene {
       addWorldObject: (go) => this.addWorldObject(go),
       damagePlayer: (amount) => this.damagePlayer(amount),
       damageBoss: (amount) => this.damageBoss(amount),
+      healPlayer: (amount) => this.healPlayer(amount),
+      getPlayerHpRatio: () => this.getPlayerHp() / SURVIVOR_PLAYER.maxHp,
+      fx,
       getBoss: () => this.boss,
       onBossEngage: (boss) => this.onSurvivorBossEngage(boss),
     })
@@ -1264,6 +1271,21 @@ export default class MainScene extends Phaser.Scene {
     this.time.delayedCall(500, () => this.player.setData('hitCool', false))
     if (newHP <= 0) this.triggerGameOver()
     return true
+  }
+
+  private getPlayerHp(): number {
+    type PlayerWithHp = Phaser.Types.Physics.Arcade.SpriteWithDynamicBody & { hp: number }
+    return (this.player as PlayerWithHp).hp
+  }
+
+  /**
+   * プレイヤーの回復（サバイバーモード用）。最大HPを超えない
+   */
+  private healPlayer(amount: number): void {
+    if (this.isGameOver) return
+    type PlayerWithHp = Phaser.Types.Physics.Arcade.SpriteWithDynamicBody & { hp: number }
+    ;(this.player as PlayerWithHp).hp = Math.min(SURVIVOR_PLAYER.maxHp, this.getPlayerHp() + amount)
+    this.updateHPDisplay()
   }
 
   /**

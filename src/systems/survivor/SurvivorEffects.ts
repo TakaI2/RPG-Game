@@ -1,19 +1,41 @@
 import Phaser from 'phaser'
 import { COLORS } from './SurvivorConfig'
+import { ensureFxTextures, FX_SHAPE_TEXTURES } from '../fx/FxTextures'
+import type { FxManager } from '../fx/FxManager'
+import type { FxEvent } from '../fx/FxTypes'
 
 /**
  * サバイバーモードの戦闘エフェクト（ワールド座標側）。
- * 画像素材を増やさないよう、斬撃・火花のテクスチャはここでプロシージャル生成する。
+ * 場面ごとのメソッド（onSlash など）は、fx-bindings.json に割り当てたプリセットがあればそれを再生し、
+ * 無ければ下のプロシージャル演出（従来の見た目）にフォールバックする。
  */
 
 const TEX_SPARK = 'sv_spark'
-const TEX_CRESCENT = 'sv_crescent'
-const CRESCENT_SIZE = 256
-const CRESCENT_RADIUS = 110
+const TEX_CRESCENT = FX_SHAPE_TEXTURES.crescent.key
+const TEX_RING = FX_SHAPE_TEXTURES.ring_thin.key
+const RING_RADIUS = FX_SHAPE_TEXTURES.ring_thin.radius
+const PICKUP_RING_RADIUS = 60
+const PICKUP_RING_MS = 380
+const CRESCENT_RADIUS = FX_SHAPE_TEXTURES.crescent.radius
 const MAX_DAMAGE_NUMBERS = 30
 const DEPTH_FX = 12
 
+type FollowTarget = Phaser.GameObjects.Components.Transform & { active: boolean }
+
 export interface SurvivorEffects {
+  // ── 場面ごと（割り当て優先） ──
+  onSlash(target: FollowTarget, radius: number): void
+  onEnemyHit(x: number, y: number): void
+  onEnemyKill(x: number, y: number): void
+  onBossHit(x: number, y: number): void
+  onBurstStart(target: FollowTarget): void
+  onFlameHit(x: number, y: number): void
+  onBossEngage(x: number, y: number): void
+  onBossDefeat(x: number, y: number): void
+  onPlayerHit(x: number, y: number): void
+  onPickupUpgrade(target: FollowTarget, color: number): void
+  onPickupHeal(target: FollowTarget): void
+  // ── 汎用 ──
   /** プレイヤーを中心とした全方位斬撃 */
   slash(target: Phaser.GameObjects.Components.Transform, radius: number): void
   sparks(x: number, y: number, count: number): void
@@ -37,23 +59,8 @@ function ensureTextures(scene: Phaser.Scene): void {
     g.destroy()
   }
 
-  if (!scene.textures.exists(TEX_CRESCENT)) {
-    // 中央が太く両端が細い三日月形の斬撃軌跡
-    const g = scene.make.graphics({}, false)
-    const c = CRESCENT_SIZE / 2
-    const layers = 7
-    for (let k = 0; k < layers; k++) {
-      const span = Phaser.Math.DegToRad(150 - k * 18)
-      const width = 3 + k * 2.2
-      const alpha = 0.18 + k * 0.12
-      g.lineStyle(width, 0xffffff, Math.min(1, alpha))
-      g.beginPath()
-      g.arc(c, c, CRESCENT_RADIUS - k * 2.5, -span / 2, span / 2, false)
-      g.strokePath()
-    }
-    g.generateTexture(TEX_CRESCENT, CRESCENT_SIZE, CRESCENT_SIZE)
-    g.destroy()
-  }
+  // 三日月は FxTextures と共有
+  ensureFxTextures(scene)
 }
 
 function makeEmitter(
@@ -81,6 +88,7 @@ function makeEmitter(
 export function createSurvivorEffects(
   scene: Phaser.Scene,
   addWorldObject: (go: Phaser.GameObjects.GameObject) => void,
+  fx: FxManager | null,
 ): SurvivorEffects {
   ensureTextures(scene)
 
@@ -168,11 +176,52 @@ export function createSurvivorEffects(
     })
   }
 
+  /** 取得演出（割り当てが無いとき）: プレイヤーに追従して広がるリング */
+  const pickupRing = (target: FollowTarget, color: number): void => {
+    const img = scene.add.image(target.x, target.y, TEX_RING)
+      .setTint(color).setDepth(DEPTH_FX).setScale(0.2)
+    addWorldObject(img)
+    scene.tweens.add({
+      targets: img,
+      scale: PICKUP_RING_RADIUS / RING_RADIUS,
+      alpha: { from: 1, to: 0 },
+      duration: PICKUP_RING_MS,
+      ease: 'Quad.easeOut',
+      onUpdate: () => { if (target.active) img.setPosition(target.x, target.y) },
+      onComplete: () => img.destroy(),
+    })
+  }
+
+  const sparks = (x: number, y: number, count: number): void => { sparkEmitter.explode(count, x, y) }
+  const blood = (x: number, y: number, count: number): void => { bloodEmitter.explode(count, x, y) }
+  const fire = (x: number, y: number, count: number): void => { fireEmitter.explode(count, x, y) }
+  const bound = (event: FxEvent, x: number, y: number, follow?: FollowTarget): boolean =>
+    fx !== null && fx.playBinding(event, x, y, follow ? { follow } : {})
+
   return {
+    onSlash: (target, radius) => { if (!bound('slash', target.x, target.y, target)) slash(target, radius) },
+    onEnemyHit: (x, y) => { if (!bound('enemyHit', x, y)) sparks(x, y, 7) },
+    onEnemyKill: (x, y) => {
+      if (bound('enemyKill', x, y)) return
+      blood(x, y, 14)
+      sparks(x, y, 6)
+    },
+    onBossHit: (x, y) => { if (!bound('bossHit', x, y)) sparks(x, y, 12) },
+    onBurstStart: (target) => { if (!bound('burstStart', target.x, target.y, target)) fire(target.x, target.y, 40) },
+    onFlameHit: (x, y) => { if (!bound('flameHit', x, y)) fire(x, y, 4) },
+    onBossEngage: (x, y) => { bound('bossEngage', x, y) },
+    onBossDefeat: (x, y) => { if (!bound('bossDefeat', x, y)) fire(x, y, 60) },
+    onPlayerHit: (x, y) => { if (!bound('playerHit', x, y)) blood(x, y, 6) },
+    onPickupUpgrade: (target, color) => {
+      if (bound('pickupUpgrade', target.x, target.y, target)) return
+      pickupRing(target, color)
+      sparks(target.x, target.y, 10)
+    },
+    onPickupHeal: (target) => { if (!bound('pickupHeal', target.x, target.y, target)) pickupRing(target, COLORS.heal) },
     slash,
-    sparks: (x, y, count) => { sparkEmitter.explode(count, x, y) },
-    blood: (x, y, count) => { bloodEmitter.explode(count, x, y) },
-    fire: (x, y, count) => { fireEmitter.explode(count, x, y) },
+    sparks,
+    blood,
+    fire,
     damageNumber,
     shake: (duration, intensity) => { scene.cameras.main.shake(duration, intensity) },
     flash: (duration, color) => {

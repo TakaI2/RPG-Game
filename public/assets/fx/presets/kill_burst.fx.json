@@ -1,0 +1,117 @@
+{
+  "format": "fx2d-preset",
+  "version": 1,
+  "id": "kill_burst",
+  "name": "撃破の爆発",
+  "scale": 1,
+  "speed": 1,
+  "follow": false,
+  "layers": [
+    {
+      "name": "爆発",
+      "enabled": true,
+      "delay": 0,
+      "duration": 0,
+      "offsetX": 0,
+      "offsetY": 0,
+      "blend": "normal",
+      "depth": 0,
+      "type": "sprite",
+      "sheet": "explosion2",
+      "frameStart": 0,
+      "frameEnd": -1,
+      "fps": 32,
+      "loop": false,
+      "size": {
+        "start": 70,
+        "end": 96
+      },
+      "alpha": {
+        "start": 1,
+        "end": 0.5
+      },
+      "color": {
+        "start": "#ffffff",
+        "end": "#ffffff"
+      },
+      "angle": 0,
+      "angleRandom": false,
+      "spin": 0,
+      "ease": "Linear"
+    },
+    {
+      "name": "血しぶき",
+      "enabled": true,
+      "delay": 0,
+      "duration": 0,
+      "offsetX": 0,
+      "offsetY": 0,
+      "blend": "normal",
+      "depth": 0,
+      "type": "particle",
+      "sheet": "",
+      "frameStart": 0,
+      "frameEnd": -1,
+      "fps": 16,
+      "count": 12,
+      "rate": 0,
+      "speed": {
+        "min": 60,
+        "max": 220
+      },
+      "angleMin": 0,
+      "angleMax": 360,
+      "lifespan": {
+        "min": 300,
+        "max": 600
+      },
+      "gravityY": 0,
+      "spawnRadius": 0,
+      "size": {
+        "start": 22,
+        "end": 0
+      },
+      "alpha": {
+        "start": 1,
+        "end": 0
+      },
+      "color": {
+        "start": "#e0103a",
+        "end": "#600010"
+      },
+      "rotate": false
+    },
+    {
+      "name": "煙",
+      "enabled": true,
+      "delay": 120,
+      "duration": 0,
+      "offsetX": 0,
+      "offsetY": 0,
+      "blend": "normal",
+      "depth": -1,
+      "type": "sprite",
+      "sheet": "smoke",
+      "frameStart": 0,
+      "frameEnd": -1,
+      "fps": 24,
+      "loop": false,
+      "size": {
+        "start": 60,
+        "end": 120
+      },
+      "alpha": {
+        "start": 0.7,
+        "end": 0
+      },
+      "color": {
+        "start": "#9a9a9a",
+        "end": "#555555"
+      },
+      "angle": 0,
+      "angleRandom": false,
+      "spin": 0,
+      "ease": "Linear"
+    }
+  ]
+}

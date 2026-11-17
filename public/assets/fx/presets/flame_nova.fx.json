@@ -1,0 +1,143 @@
+{
+  "format": "fx2d-preset",
+  "version": 1,
+  "id": "flame_nova",
+  "name": "火炎バースト発動",
+  "scale": 1,
+  "speed": 1,
+  "follow": true,
+  "layers": [
+    {
+      "name": "爆炎",
+      "enabled": true,
+      "delay": 0,
+      "duration": 0,
+      "offsetX": 0,
+      "offsetY": 0,
+      "blend": "normal",
+      "depth": 0,
+      "type": "sprite",
+      "sheet": "explosion1",
+      "frameStart": 0,
+      "frameEnd": -1,
+      "fps": 24,
+      "loop": false,
+      "size": {
+        "start": 160,
+        "end": 320
+      },
+      "alpha": {
+        "start": 1,
+        "end": 0
+      },
+      "color": {
+        "start": "#fff0b0",
+        "end": "#ff4a10"
+      },
+      "angle": 0,
+      "angleRandom": false,
+      "spin": 0,
+      "ease": "Linear"
+    },
+    {
+      "name": "リング",
+      "enabled": true,
+      "delay": 0,
+      "duration": 500,
+      "offsetX": 0,
+      "offsetY": 0,
+      "blend": "normal",
+      "depth": 0,
+      "type": "shape",
+      "shape": "ring",
+      "copies": 1,
+      "size": {
+        "start": 60,
+        "end": 520
+      },
+      "alpha": {
+        "start": 1,
+        "end": 0
+      },
+      "color": {
+        "start": "#ffd23f",
+        "end": "#ff7a1a"
+      },
+      "angle": 0,
+      "angleRandom": false,
+      "spin": 0,
+      "ease": "Quad.easeOut"
+    },
+    {
+      "name": "外リング",
+      "enabled": true,
+      "delay": 120,
+      "duration": 600,
+      "offsetX": 0,
+      "offsetY": 0,
+      "blend": "normal",
+      "depth": 0,
+      "type": "shape",
+      "shape": "ring_thin",
+      "copies": 1,
+      "size": {
+        "start": 40,
+        "end": 600
+      },
+      "alpha": {
+        "start": 1,
+        "end": 0
+      },
+      "color": {
+        "start": "#fff2a8",
+        "end": "#ff7a1a"
+      },
+      "angle": 0,
+      "angleRandom": false,
+      "spin": 0,
+      "ease": "Quad.easeOut"
+    },
+    {
+      "name": "火の粉",
+      "enabled": true,
+      "delay": 0,
+      "duration": 0,
+      "offsetX": 0,
+      "offsetY": 0,
+      "blend": "normal",
+      "depth": 0,
+      "type": "particle",
+      "sheet": "",
+      "frameStart": 0,
+      "frameEnd": -1,
+      "fps": 16,
+      "count": 40,
+      "rate": 0,
+      "speed": {
+        "min": 150,
+        "max": 450
+      },
+      "angleMin": 0,
+      "angleMax": 360,
+      "lifespan": {
+        "min": 400,
+        "max": 900
+      },
+      "gravityY": -100,
+      "spawnRadius": 0,
+      "size": {
+        "start": 18,
+        "end": 0
+      },
+      "alpha": {
+        "start": 1,
+        "end": 0
+      },
+      "color": {
+        "start": "#fff2a8",
+        "end": "#ff5a1a"
+      },
+      "rotate": false
+    }
+  ]
+}

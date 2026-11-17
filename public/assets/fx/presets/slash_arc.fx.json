@@ -1,0 +1,69 @@
+{
+  "format": "fx2d-preset",
+  "version": 1,
+  "id": "slash_arc",
+  "name": "斬撃（2枚刃）",
+  "scale": 1,
+  "speed": 1,
+  "follow": true,
+  "layers": [
+    {
+      "name": "刃",
+      "enabled": true,
+      "delay": 0,
+      "duration": 230,
+      "offsetX": 0,
+      "offsetY": 0,
+      "blend": "add",
+      "depth": 0,
+      "type": "shape",
+      "shape": "crescent",
+      "copies": 2,
+      "size": {
+        "start": 168,
+        "end": 227
+      },
+      "alpha": {
+        "start": 1,
+        "end": 0
+      },
+      "color": {
+        "start": "#ffffff",
+        "end": "#d8f4ff"
+      },
+      "angle": 0,
+      "angleRandom": true,
+      "spin": 1250,
+      "ease": "Cubic.easeOut"
+    },
+    {
+      "name": "衝撃リング",
+      "enabled": true,
+      "delay": 0,
+      "duration": 260,
+      "offsetX": 0,
+      "offsetY": 0,
+      "blend": "add",
+      "depth": 0,
+      "type": "shape",
+      "shape": "ring_thin",
+      "copies": 1,
+      "size": {
+        "start": 115,
+        "end": 231
+      },
+      "alpha": {
+        "start": 0.9,
+        "end": 0
+      },
+      "color": {
+        "start": "#d8f4ff",
+        "end": "#d8f4ff"
+      },
+      "angle": 0,
+      "angleRandom": false,
+      "spin": 0,
+      "ease": "Quad.easeOut"
+    }
+  ]
+}

@@ -4,6 +4,7 @@ import type { GameFlowConfig } from '../types/GameFlowTypes'
 import type { TileDef } from '../types/tileset'
 import type { BossConfig } from '../types/BossTypes'
 import type { NPCDef } from '../types/NPCTypes'
+import { queueFxAssets, applyFxSheetGrids } from '../systems/fx/FxLoader'
 
 /** M4AをOGGより優先して返す（iOS SafariはOGG非対応のため） */
 function audioUrls(url: string): string[] {
@@ -211,8 +212,13 @@ export default class LoadingScene extends Phaser.Scene {
       console.warn('[LoadingScene] Could not sync-load portal-defs.json:', e)
     }
 
+    // エフェクト素材（assets/fx/fx-manifest.json に載っているシート・プリセット・割り当て）
+    queueFxAssets(this)
+
     // 飛び道具（プレイヤー用）
     this.load.image('magic_fire', 'assets/images/magic_fire.png')
+    // サバイバーモードのブーメラン刃
+    this.load.image('magic_slash', 'assets/images/magic_slash.png')
 
     // UIボタン
     this.load.image('btn_config', 'assets/images/ui/Se_config_Button.png')
@@ -335,6 +341,9 @@ export default class LoadingScene extends Phaser.Scene {
     this.applyChromaKey('succubus_raw', 'succubus', 0, 254, 0, 64, 64)
     this.applyChromaKey('mage_raw',     'mage',     0, 254, 0, 64, 64)
     this.applyChromaKey('belladonna_raw', 'belladonna', 0, 254, 0, 64, 64)
+
+    // エフェクトシートをマニフェストのコマ割りで切り分ける
+    applyFxSheetGrids(this)
 
     // タイル用のテクスチャを生成
     // これらはMainSceneのpreloadで生成されていたものをここに移動

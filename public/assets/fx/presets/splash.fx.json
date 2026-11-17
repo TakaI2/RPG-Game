@@ -1,0 +1,43 @@
+{
+  "format": "fx2d-preset",
+  "version": 1,
+  "id": "splash",
+  "name": "被弾の血しぶき",
+  "scale": 1,
+  "speed": 1,
+  "follow": false,
+  "layers": [
+    {
+      "name": "しぶき",
+      "enabled": true,
+      "delay": 0,
+      "duration": 0,
+      "offsetX": 0,
+      "offsetY": 0,
+      "blend": "normal",
+      "depth": 0,
+      "type": "sprite",
+      "sheet": "riquid",
+      "frameStart": 0,
+      "frameEnd": -1,
+      "fps": 30,
+      "loop": false,
+      "size": {
+        "start": 70,
+        "end": 100
+      },
+      "alpha": {
+        "start": 1,
+        "end": 0.2
+      },
+      "color": {
+        "start": "#d01030",
+        "end": "#700010"
+      },
+      "angle": 0,
+      "angleRandom": true,
+      "spin": 0,
+      "ease": "Linear"
+    }
+  ]
+}

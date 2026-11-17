@@ -1,6 +1,8 @@
 import Phaser from 'phaser'
 import { GAME_W, GAME_H } from '../../config'
 import { COLORS, GAUGE } from './SurvivorConfig'
+import { gemTextureKey } from './SurvivorPickups'
+import type { UpgradeStatus } from './SurvivorUpgrades'
 
 /**
  * サバイバーモードの UI（UIカメラ側に描画）。
@@ -13,9 +15,13 @@ export interface SurvivorHud {
   readonly container: Phaser.GameObjects.Container
   setVisible(visible: boolean): void
   update(clockMs: number, kills: number, gauge: number, gaugeMax: number, burstRatio: number): void
+  setMoney(money: number): void
+  setUpgrades(list: readonly UpgradeStatus[]): void
+  /** 取得したものを画面上部に小さく表示 */
+  toast(text: string, color: number): void
   setButtonVisible(visible: boolean): void
   banner(text: string, color: number, holdMs: number): void
-  showResult(kind: SurvivorResultKind, clockMs: number, kills: number): void
+  showResult(kind: SurvivorResultKind, clockMs: number, kills: number, money: number): void
   reset(): void
 }
 
@@ -28,6 +34,14 @@ const BUTTON_X = GAME_W - 220
 const BUTTON_Y = GAME_H - 190
 const BUTTON_R = 92
 const HUD_DEPTH = 9000
+const MONEY_Y = GAUGE_Y + 66
+const UPGRADE_Y = GAUGE_Y + 112
+const UPGRADE_ROW_H = 34
+const UPGRADE_ICON_SCALE = 0.85
+const TOAST_Y = GAME_H * 0.18
+const TOAST_ROW_H = 44
+const TOAST_MAX = 4
+const TOAST_HOLD_MS = 1100
 
 const textStyle = (size: number, color: string): Phaser.Types.GameObjects.Text.TextStyle => ({
   fontSize: `${size}px`,
@@ -60,6 +74,14 @@ export function createSurvivorHud(scene: Phaser.Scene, onBurstPressed: () => voi
   gaugeFill.scaleX = 0
 
   const killsText = scene.add.text(GAUGE_X, GAUGE_Y + 34, '', textStyle(24, '#ffffff'))
+  const moneyText = scene.add.text(GAUGE_X, MONEY_Y, '', textStyle(24, toCss(COLORS.coin)))
+
+  // ── 強化一覧（Lv1 以上のみ） ──
+  const upgradeRows = scene.add.container(0, 0)
+  const upgradeRowCache = new Map<string, { icon: Phaser.GameObjects.Image; label: Phaser.GameObjects.Text }>()
+
+  // ── 取得トースト（同時に出たら下へずらす） ──
+  const toasts: Phaser.GameObjects.Text[] = []
   // 上中央はボスHPバーが使うため右上に置く（開発時の LOG DL ボタンの下）
   const timerText = scene.add.text(GAME_W - 40, 80, '00:00', textStyle(40, '#ffffff')).setOrigin(1, 0)
 
@@ -96,7 +118,7 @@ export function createSurvivorHud(scene: Phaser.Scene, onBurstPressed: () => voi
   // リザルトなど後から生成するもの
   const transient: Phaser.GameObjects.GameObject[] = []
 
-  container.add([gaugeLabel, gaugeBg, gaugeFill, killsText, timerText, button])
+  container.add([gaugeLabel, gaugeBg, gaugeFill, killsText, moneyText, upgradeRows, timerText, button])
   container.setVisible(false)
 
   const setButtonVisible = (visible: boolean): void => {
@@ -126,7 +148,64 @@ export function createSurvivorHud(scene: Phaser.Scene, onBurstPressed: () => voi
     })
   }
 
-  const showResult = (kind: SurvivorResultKind, clockMs: number, kills: number): void => {
+  const setUpgrades = (list: readonly UpgradeStatus[]): void => {
+    let row = 0
+    list.forEach(u => {
+      let entry = upgradeRowCache.get(u.id)
+      if (u.level <= 0) {
+        entry?.icon.setVisible(false)
+        entry?.label.setVisible(false)
+        return
+      }
+      if (!entry) {
+        const icon = scene.add.image(0, 0, gemTextureKey(u.id)).setScale(UPGRADE_ICON_SCALE)
+        const label = scene.add.text(0, 0, '', textStyle(20, toCss(u.color))).setOrigin(0, 0.5)
+        upgradeRows.add([icon, label])
+        entry = { icon, label }
+        upgradeRowCache.set(u.id, entry)
+      }
+      const y = UPGRADE_Y + row * UPGRADE_ROW_H
+      entry.icon.setPosition(GAUGE_X + 14, y).setVisible(true)
+      entry.label.setPosition(GAUGE_X + 36, y).setVisible(true)
+        .setText(`${u.label} ${u.level >= u.max ? 'MAX' : `Lv${u.level}`}`)
+      row++
+    })
+  }
+
+  const layoutToasts = (): void => {
+    toasts.forEach((t, i) => {
+      scene.tweens.add({ targets: t, y: TOAST_Y + i * TOAST_ROW_H, duration: 120 })
+    })
+  }
+
+  const toast = (text: string, color: number): void => {
+    while (toasts.length >= TOAST_MAX) {
+      const old = toasts.shift()
+      if (old) {
+        scene.tweens.killTweensOf(old)
+        old.destroy()
+      }
+    }
+    const t = scene.add.text(GAME_W / 2, TOAST_Y + toasts.length * TOAST_ROW_H, text, textStyle(34, toCss(color)))
+      .setOrigin(0.5).setAlpha(0).setScale(1.4)
+    container.add(t)
+    toasts.push(t)
+    scene.tweens.chain({
+      targets: t,
+      tweens: [
+        { scale: 1, alpha: 1, duration: 160, ease: 'Back.easeOut' },
+        { alpha: 0, delay: TOAST_HOLD_MS, duration: 260 },
+      ],
+      onComplete: () => {
+        const i = toasts.indexOf(t)
+        if (i >= 0) toasts.splice(i, 1)
+        t.destroy()
+        layoutToasts()
+      },
+    })
+  }
+
+  const showResult = (kind: SurvivorResultKind, clockMs: number, kills: number, money: number): void => {
     setButtonVisible(false)
     const shade = scene.add.rectangle(0, 0, GAME_W, GAME_H, 0x000000, 0).setOrigin(0, 0)
     const title = scene.add.text(
@@ -136,7 +215,7 @@ export function createSurvivorHud(scene: Phaser.Scene, onBurstPressed: () => voi
     ).setOrigin(0.5).setAlpha(0)
     const stats = scene.add.text(
       GAME_W / 2, GAME_H / 2 + 50,
-      `TIME ${formatTime(clockMs)}    撃破 ${kills}`,
+      `TIME ${formatTime(clockMs)}    撃破 ${kills}    所持金 ${money}`,
       textStyle(40, '#ffffff'),
     ).setOrigin(0.5).setAlpha(0)
     container.add([shade, title, stats])
@@ -156,12 +235,23 @@ export function createSurvivorHud(scene: Phaser.Scene, onBurstPressed: () => voi
       gaugeFill.scaleX = ratio
       gaugeFill.fillColor = burstRatio > 0 || ratio >= 1 ? COLORS.gaugeFull : COLORS.gaugeFill
     },
+    setMoney: (money) => { moneyText.setText(`所持金 ${money}`) },
+    setUpgrades,
+    toast,
     setButtonVisible,
     banner,
     showResult,
     reset: () => {
       transient.forEach(go => go.destroy())
       transient.length = 0
+      toasts.forEach(t => {
+        scene.tweens.killTweensOf(t)
+        t.destroy()
+      })
+      toasts.length = 0
+      upgradeRowCache.forEach(e => { e.icon.setVisible(false); e.label.setVisible(false) })
+      // シーン終了時はテキストが先に破棄されているため触らない
+      if (moneyText.scene) moneyText.setText('所持金 0')
       setButtonVisible(false)
       gaugeFill.scaleX = 0
     },

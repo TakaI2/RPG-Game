@@ -31,7 +31,7 @@ export interface EnemyFieldContext {
   worldW: number
   worldH: number
   /** 撃破時（explodeAll による一掃では呼ばない） */
-  onKill: (x: number, y: number) => void
+  onKill: (x: number, y: number, kind: SurvivorEnemyKind) => void
 }
 
 export interface EnemyFieldUpdateOptions {
@@ -138,11 +138,10 @@ export function createEnemyField(ctx: EnemyFieldContext): EnemyField {
     sp.setVelocity(0, 0)
     ;(sp.body as Phaser.Physics.Arcade.Body).enable = false
     sp.clearTint()
-    ctx.effects.blood(sp.x, sp.y, 14)
-    ctx.effects.sparks(sp.x, sp.y, 6)
+    ctx.effects.onEnemyKill(sp.x, sp.y)
     const deadAnim = `${st.kind.animPrefix}-dead`
     if (scene.anims.exists(deadAnim)) sp.play(deadAnim)
-    if (notify) ctx.onKill(sp.x, sp.y)
+    if (notify) ctx.onKill(sp.x, sp.y, st.kind)
     scene.tweens.add({
       targets: sp,
       alpha: 0,

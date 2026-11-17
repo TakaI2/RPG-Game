@@ -1,0 +1,59 @@
+{
+  "format": "fx2d-manifest",
+  "version": 1,
+  "sheets": [
+    {
+      "key": "explosion1",
+      "file": "explosion1.png",
+      "cols": 4,
+      "rows": 4
+    },
+    {
+      "key": "explosion2",
+      "file": "explosion2.png",
+      "cols": 4,
+      "rows": 4
+    },
+    {
+      "key": "thunder",
+      "file": "thunder.png",
+      "cols": 4,
+      "rows": 1
+    },
+    {
+      "key": "electric",
+      "file": "electric.png",
+      "cols": 4,
+      "rows": 4
+    },
+    {
+      "key": "laser",
+      "file": "laser.png",
+      "cols": 4,
+      "rows": 1
+    },
+    {
+      "key": "smoke",
+      "file": "smoke.png",
+      "cols": 4,
+      "rows": 4
+    },
+    {
+      "key": "riquid",
+      "file": "riquid.png",
+      "cols": 4,
+      "rows": 4
+    }
+  ],
+  "presets": [
+    "slash_arc",
+    "hit_spark",
+    "kill_burst",
+    "fire_pop",
+    "flame_nova",
+    "dark_thunder",
+    "explosion_big",
+    "electric_shock",
+    "splash"
+  ]
+}

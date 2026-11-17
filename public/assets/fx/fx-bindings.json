@@ -1,0 +1,15 @@
+{
+  "format": "fx2d-bindings",
+  "version": 1,
+  "bindings": {
+    "slash": "slash_arc",
+    "enemyHit": "hit_spark",
+    "enemyKill": "kill_burst",
+    "flameHit": "fire_pop",
+    "burstStart": "flame_nova",
+    "bossEngage": "dark_thunder",
+    "bossDefeat": "explosion_big",
+    "playerHit": "splash",
+    "pickupUpgrade": "electric_shock"
+  }
+}

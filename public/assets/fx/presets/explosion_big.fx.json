@@ -1,0 +1,178 @@
+{
+  "format": "fx2d-preset",
+  "version": 1,
+  "id": "explosion_big",
+  "name": "ボス撃破の大爆発",
+  "scale": 1,
+  "speed": 1,
+  "follow": false,
+  "layers": [
+    {
+      "name": "爆発",
+      "enabled": true,
+      "delay": 0,
+      "duration": 0,
+      "offsetX": 0,
+      "offsetY": 0,
+      "blend": "normal",
+      "depth": 0,
+      "type": "sprite",
+      "sheet": "explosion2",
+      "frameStart": 0,
+      "frameEnd": -1,
+      "fps": 20,
+      "loop": false,
+      "size": {
+        "start": 220,
+        "end": 300
+      },
+      "alpha": {
+        "start": 1,
+        "end": 0.4
+      },
+      "color": {
+        "start": "#ffffff",
+        "end": "#ffffff"
+      },
+      "angle": 0,
+      "angleRandom": false,
+      "spin": 0,
+      "ease": "Linear"
+    },
+    {
+      "name": "追い爆発",
+      "enabled": true,
+      "delay": 150,
+      "duration": 0,
+      "offsetX": 40,
+      "offsetY": -30,
+      "blend": "normal",
+      "depth": 0,
+      "type": "sprite",
+      "sheet": "explosion1",
+      "frameStart": 0,
+      "frameEnd": -1,
+      "fps": 24,
+      "loop": false,
+      "size": {
+        "start": 140,
+        "end": 200
+      },
+      "alpha": {
+        "start": 1,
+        "end": 0
+      },
+      "color": {
+        "start": "#ffcc80",
+        "end": "#ff4010"
+      },
+      "angle": 0,
+      "angleRandom": false,
+      "spin": 0,
+      "ease": "Linear"
+    },
+    {
+      "name": "煙",
+      "enabled": true,
+      "delay": 300,
+      "duration": 1200,
+      "offsetX": 0,
+      "offsetY": 0,
+      "blend": "normal",
+      "depth": -1,
+      "type": "sprite",
+      "sheet": "smoke",
+      "frameStart": 0,
+      "frameEnd": -1,
+      "fps": 12,
+      "loop": false,
+      "size": {
+        "start": 200,
+        "end": 360
+      },
+      "alpha": {
+        "start": 0.7,
+        "end": 0
+      },
+      "color": {
+        "start": "#666666",
+        "end": "#333333"
+      },
+      "angle": 0,
+      "angleRandom": false,
+      "spin": 0,
+      "ease": "Linear"
+    },
+    {
+      "name": "衝撃波",
+      "enabled": true,
+      "delay": 0,
+      "duration": 700,
+      "offsetX": 0,
+      "offsetY": 0,
+      "blend": "normal",
+      "depth": 0,
+      "type": "shape",
+      "shape": "ring",
+      "copies": 1,
+      "size": {
+        "start": 80,
+        "end": 700
+      },
+      "alpha": {
+        "start": 1,
+        "end": 0
+      },
+      "color": {
+        "start": "#ffe0a0",
+        "end": "#ff8040"
+      },
+      "angle": 0,
+      "angleRandom": false,
+      "spin": 0,
+      "ease": "Quad.easeOut"
+    },
+    {
+      "name": "火花",
+      "enabled": true,
+      "delay": 0,
+      "duration": 0,
+      "offsetX": 0,
+      "offsetY": 0,
+      "blend": "normal",
+      "depth": 0,
+      "type": "particle",
+      "sheet": "",
+      "frameStart": 0,
+      "frameEnd": -1,
+      "fps": 16,
+      "count": 50,
+      "rate": 0,
+      "speed": {
+        "min": 200,
+        "max": 600
+      },
+      "angleMin": 0,
+      "angleMax": 360,
+      "lifespan": {
+        "min": 400,
+        "max": 1000
+      },
+      "gravityY": 300,
+      "spawnRadius": 0,
+      "size": {
+        "start": 16,
+        "end": 0
+      },
+      "alpha": {
+        "start": 1,
+        "end": 0
+      },
+      "color": {
+        "start": "#fff2a8",
+        "end": "#ff6020"
+      },
+      "rotate": false
+    }
+  ]
+}

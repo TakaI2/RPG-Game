@@ -1,0 +1,43 @@
+{
+  "format": "fx2d-preset",
+  "version": 1,
+  "id": "fire_pop",
+  "name": "炎の着弾",
+  "scale": 1,
+  "speed": 1,
+  "follow": false,
+  "layers": [
+    {
+      "name": "炎",
+      "enabled": true,
+      "delay": 0,
+      "duration": 0,
+      "offsetX": 0,
+      "offsetY": 0,
+      "blend": "normal",
+      "depth": 0,
+      "type": "sprite",
+      "sheet": "explosion1",
+      "frameStart": 0,
+      "frameEnd": -1,
+      "fps": 40,
+      "loop": false,
+      "size": {
+        "start": 40,
+        "end": 72
+      },
+      "alpha": {
+        "start": 1,
+        "end": 0.3
+      },
+      "color": {
+        "start": "#ffd27a",
+        "end": "#ff5a1a"
+      },
+      "angle": 0,
+      "angleRandom": false,
+      "spin": 0,
+      "ease": "Linear"
+    }
+  ]
+}

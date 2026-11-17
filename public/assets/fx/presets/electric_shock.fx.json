@@ -1,0 +1,72 @@
+{
+  "format": "fx2d-preset",
+  "version": 1,
+  "id": "electric_shock",
+  "name": "電撃（見本）",
+  "scale": 1,
+  "speed": 1,
+  "follow": false,
+  "layers": [
+    {
+      "name": "電撃",
+      "enabled": true,
+      "delay": 0,
+      "duration": 0,
+      "offsetX": 0,
+      "offsetY": 0,
+      "blend": "add",
+      "depth": 0,
+      "type": "sprite",
+      "sheet": "electric",
+      "frameStart": 0,
+      "frameEnd": -1,
+      "fps": 24,
+      "loop": false,
+      "size": {
+        "start": 120,
+        "end": 140
+      },
+      "alpha": {
+        "start": 1,
+        "end": 1
+      },
+      "color": {
+        "start": "#c0f0ff",
+        "end": "#4080ff"
+      },
+      "angle": 0,
+      "angleRandom": false,
+      "spin": 0,
+      "ease": "Linear"
+    },
+    {
+      "name": "閃光",
+      "enabled": true,
+      "delay": 0,
+      "duration": 200,
+      "offsetX": 0,
+      "offsetY": 0,
+      "blend": "normal",
+      "depth": 0,
+      "type": "shape",
+      "shape": "flash",
+      "copies": 1,
+      "size": {
+        "start": 60,
+        "end": 160
+      },
+      "alpha": {
+        "start": 0.8,
+        "end": 0
+      },
+      "color": {
+        "start": "#a0e0ff",
+        "end": "#4080ff"
+      },
+      "angle": 0,
+      "angleRandom": false,
+      "spin": 0,
+      "ease": "Quad.easeOut"
+    }
+  ]
+}
