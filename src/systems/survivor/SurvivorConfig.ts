@@ -179,6 +179,22 @@ export const BLADE = {
   depth: 11,
 } as const
 
+/** 斬撃で敵弾を弾き返す */
+export const REFLECT = {
+  speed: 620,
+  turnRate: 7,               // rad/s
+  life: 1800,
+  seekRange: 800,            // ボスがいないとき、この距離以内の最寄りの敵を狙う
+  hitRadius: 22,
+  damageScale: 1.0,          // 斬撃威力 × これ
+  bossDamageScale: 0.7,
+  max: 80,
+  tint: 0x8ff0ff,
+  reachBonus: 10,            // 斬撃半径にこれを足した範囲の弾を弾く
+  fxPerSlash: 6,             // 1回の斬撃で出す弾き演出の上限
+  depth: 11,
+} as const
+
 export const SE = {
   slash: 'se_player_attack',
   hit: 'se_enemy_hit',
@@ -197,6 +213,8 @@ export const SE = {
   upgradeRate: 1.3,
   blade: 'se_player_attack',
   bladeRate: 1.6,
+  reflect: 'se_enemy_hit',
+  reflectRate: 1.6,
 } as const
 
 export const BGM = {

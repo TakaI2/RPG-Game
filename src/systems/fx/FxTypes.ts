@@ -122,7 +122,7 @@ export interface FxManifest {
 export const FX_EVENTS = [
   'slash', 'enemyHit', 'enemyKill', 'bossHit', 'burstStart',
   'flameHit', 'bossEngage', 'bossDefeat', 'playerHit',
-  'pickupUpgrade', 'pickupHeal',
+  'pickupUpgrade', 'pickupHeal', 'reflect',
 ] as const
 export type FxEvent = typeof FX_EVENTS[number]
 
@@ -138,6 +138,7 @@ export const FX_EVENT_LABELS: Record<FxEvent, string> = {
   playerHit: 'プレイヤー被弾',
   pickupUpgrade: '強化アイテム取得',
   pickupHeal: '回復アイテム取得',
+  reflect: '弾き返し',
 }
 
 /**
@@ -156,6 +157,7 @@ export const FX_EVENT_PRIORITY: Record<FxEvent, number> = {
   playerHit: 1,
   pickupUpgrade: 1,
   pickupHeal: 1,
+  reflect: 0,
 }
 
 export interface FxBindings {

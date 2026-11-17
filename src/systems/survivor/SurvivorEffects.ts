@@ -35,6 +35,7 @@ export interface SurvivorEffects {
   onPlayerHit(x: number, y: number): void
   onPickupUpgrade(target: FollowTarget, color: number): void
   onPickupHeal(target: FollowTarget): void
+  onReflect(x: number, y: number): void
   // ── 汎用 ──
   /** プレイヤーを中心とした全方位斬撃 */
   slash(target: Phaser.GameObjects.Components.Transform, radius: number): void
@@ -217,6 +218,7 @@ export function createSurvivorEffects(
       pickupRing(target, color)
       sparks(target.x, target.y, 10)
     },
+    onReflect: (x, y) => { if (!bound('reflect', x, y)) sparks(x, y, 8) },
     onPickupHeal: (target) => { if (!bound('pickupHeal', target.x, target.y, target)) pickupRing(target, COLORS.heal) },
     slash,
     sparks,

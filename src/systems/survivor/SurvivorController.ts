@@ -3,9 +3,10 @@ import type { AudioBus } from '../AudioBus'
 import type { Boss } from '../../types/BossTypes'
 import { getDirectionFromVelocity } from '../AnimationManager'
 import type { FxManager } from '../fx/FxManager'
-import { BOSS, BURST, COLORS, DROP, GAUGE, MELEE, PICKUP, SE, UPGRADE_VALUES, type SurvivorEnemyKind } from './SurvivorConfig'
+import { BOSS, BURST, COLORS, DROP, GAUGE, MELEE, PICKUP, REFLECT, SE, UPGRADE_VALUES, type SurvivorEnemyKind } from './SurvivorConfig'
 import { createSurvivorBlades, type SurvivorBlades } from './SurvivorBlades'
 import { createSurvivorPickups, type PickupKind, type SurvivorPickups } from './SurvivorPickups'
+import { createSurvivorReflect, type SurvivorReflect } from './SurvivorReflect'
 import { createSurvivorUpgrades, type SurvivorUpgrades } from './SurvivorUpgrades'
 import { createSurvivorEffects, type SurvivorEffects } from './SurvivorEffects'
 import { createEnemyField, type EnemyField, type SvEnemySprite } from './SurvivorEnemies'
@@ -136,28 +137,35 @@ export function createSurvivorController(deps: SurvivorDeps): SurvivorController
 
   const pickups: SurvivorPickups = createSurvivorPickups(scene, deps.addWorldObject, (kind) => onCollect(kind))
 
-  const blades: SurvivorBlades = createSurvivorBlades(scene, player, deps.addWorldObject, {
-    forEachEnemy: (cb) => { field?.forEachAlive(cb) },
-    hitEnemy: (sp, damage, x, y) => {
+  /** ブーメラン刃・反射弾が共有する当たり先 */
+  const strikeHooks = {
+    forEachEnemy: (cb: (sp: SvEnemySprite) => void): void => { field?.forEachAlive(cb) },
+    hitEnemy: (sp: SvEnemySprite, damage: number, x: number, y: number): void => {
       const ex = sp.x
       const ey = sp.y
       field?.hit(sp, damage, x, y, true)
       effects.onEnemyHit(ex, ey)
       effects.damageNumber(ex, ey - 24, damage, '#c8ffb0')
     },
-    getBoss: () => {
+    getBoss: (): Boss | null => {
       const boss = deps.getBoss()
       return bossEngaged && boss && bossIsAlive(boss) ? boss : null
     },
-    hitBoss: (damage, x, y) => {
+    hitBoss: (damage: number, x: number, y: number): void => {
       const boss = deps.getBoss()
       if (!boss) return
       deps.damageBoss(damage)
       effects.onBossHit(x, y)
       effects.damageNumber(boss.x, boss.y - 40, damage, '#ffd23f')
     },
+  }
+
+  const blades: SurvivorBlades = createSurvivorBlades(scene, player, deps.addWorldObject, {
+    ...strikeHooks,
     onThrow: () => { audioBus.playSe(SE.blade, { volume: 0.4, rate: SE.bladeRate }) },
   })
+
+  const reflector: SurvivorReflect = createSurvivorReflect(scene, deps.addWorldObject, strikeHooks)
 
   // ── 撃破・ゲージ ──
   /** 強化を1つ落とす。全強化が上限なら回復に置き換える */
@@ -310,7 +318,13 @@ export function createSurvivorController(deps: SurvivorDeps): SurvivorController
       }
     }
 
-    if (targets.length === 0 && !bossInRange) return
+    // 範囲内の敵弾（敵がいなくても弾くために斬る）
+    const shots = reflector.findInRange(deps.projectiles, player.x, player.y, radius + REFLECT.reachBonus)
+    if (targets.length === 0 && !bossInRange && shots.length === 0) return
+    if (targets.length === 0 && !bossInRange && shots.length > 0) {
+      nearestX = shots[0].x
+      nearestY = shots[0].y
+    }
 
     meleeReadyAt = clock + upgrades.meleeCooldown()
     animLockUntil = clock + MELEE.animLock
@@ -327,6 +341,16 @@ export function createSurvivorController(deps: SurvivorDeps): SurvivorController
       effects.damageNumber(x, y - 24, damage, '#ffffff')
     })
     if (targets.length > 0) audioBus.playSe(SE.hit, { volume: 0.5 })
+
+    if (shots.length > 0) {
+      const points = reflector.reflect(
+        shots, player.x, player.y,
+        Math.max(1, Math.round(damage * REFLECT.damageScale)),
+        Math.max(1, Math.round(damage * REFLECT.bossDamageScale)),
+      )
+      points.slice(0, REFLECT.fxPerSlash).forEach(pt => effects.onReflect(pt.x, pt.y))
+      audioBus.playSe(SE.reflect, { volume: 0.6, rate: SE.reflectRate })
+    }
 
     if (bossInRange && boss) {
       deps.damageBoss(MELEE.bossDamage)
@@ -446,6 +470,7 @@ export function createSurvivorController(deps: SurvivorDeps): SurvivorController
     upgrades.reset()
     pickups.clear()
     blades.clear()
+    reflector.clear()
   }
 
   const stop = (): void => {
@@ -506,6 +531,7 @@ export function createSurvivorController(deps: SurvivorDeps): SurvivorController
       const body = player.body as Phaser.Physics.Arcade.Body | null
       if (body && body.velocity.lengthSq() > 1) facing.copy(body.velocity).normalize()
       blades.update(delta, upgrades.bladeCount(), upgrades.bladeDamage(), facing)
+      reflector.update(delta)
       pickups.update(delta, player, Math.max(PICKUP.magnetRadius, upgrades.meleeRadius() + PICKUP.magnetMeleeMargin))
       const burstRatio = isBurstActive() ? (burstUntil - clock) / BURST.duration : 0
       hud.update(clock, kills, gauge, GAUGE.max, burstRatio)
@@ -520,6 +546,7 @@ export function createSurvivorController(deps: SurvivorDeps): SurvivorController
       field?.freeze()
       pickups.freeze()
       blades.freeze()
+      reflector.freeze()
       burstUntil = clock
       if (flameLoopPlaying) {
         audioBus.stopSeLoop(SE.burstLoop)
@@ -541,6 +568,7 @@ export function createSurvivorController(deps: SurvivorDeps): SurvivorController
       effects.destroy()
       pickups.destroy()
       blades.destroy()
+      reflector.destroy()
       if (burstKey) {
         burstKey.removeAllListeners()
         scene.input.keyboard?.removeKey(burstKey)
